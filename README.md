@@ -12,8 +12,11 @@ Load the data
 ```{r}
 # Centerstone study 2019-2020
 setwd("S:/Indiana Research & Evaluation/Matthew Hanauer/Centerstone_Study_2019_2020")
-center_dat = read.csv("BelongGive_DataClean_7.20.csv", header = TRUE)
+center_dat_load = read.csv("BelongGive_DataClean_7.20.csv", header = TRUE)
+center_dat=  center_dat_load 
 head(center_dat)
+library(psych)
+library(prettyR)
 ```
 Create total scores for INQ and RAS
 ```{r}
@@ -117,19 +120,45 @@ employed = ifelse(demos$X17_Employment == 2 | demos$X17_Employment == 3, 1, 0)
 demos = data.frame(age = demos$X9_Age, veteran, sexual_minority, hispanic, non_white, high_school_greater, employed)
 
 ## Only want treat_c, treat_g, treat_i, treat_l, treat_m, because they have more than 25% in each category
-treatments = data.frame( treat_c = center_dat$X9_TREAT.c.Received, treat_g = center_dat$X9_Treat.g.Received, treat_l = center_dat$X9_Treat.L.Received, treat_m = center_dat$X9_Treat.m.Received)
+#treatments = data.frame( treat_c = center_dat$X9_TREAT.c.Received, treat_g = center_dat$X9_Treat.g.Received, treat_l = center_dat$X9_Treat.L.Received, treat_m = center_dat$X9_Treat.m.Received)
 
-treatments$treat_b = ifelse(treatments$treat_b == 1, 1, 0)
-treatments_fac = data.frame(apply(treatments, 2, as.factor))
-describe(treatments_fac)
+#treatments$treat_b = ifelse(treatments$treat_b == 1, 1, 0)
+#treatments_fac = data.frame(apply(treatments, 2, as.factor))
+#describe(treatments_fac)
 
 
-center_dat = data.frame(demos, treatments, INQ_1_pre, INQ_2_pre, RAS_3_pre, ISLES_pre, MILQ_pre, RCS_pre, INQ_1_post, INQ_2_post, RAS_3_post, ISLES_post, MILQ_post, RCS_post)
+center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_3_pre, ISLES_pre, MILQ_pre, RCS_pre, INQ_1_post, INQ_2_post, RAS_3_post, ISLES_post, MILQ_post, RCS_post)
 
 ```
+Descriptives with complete data
+```{r}
+center_dat
+center_dat[,2:7] = data.frame(apply(center_dat[,2:7],2, as.factor))
+describe(center_dat)
+```
+Create difference scores for linear model and assess
+```{r}
+center_dat
+```
+
+
 Assess missing 
 ```{r}
 head(center_dat)
+library(naniar)
+miss_var_summary(center_dat)
+
+dim(center_dat)
+center_dat_complete = na.omit(center_dat)
+dim(center_dat_complete)
+
+```
+
+
+Just try will complete data set and see what happens
+```{r}
+
+
 ```
 
 
