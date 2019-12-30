@@ -23,7 +23,6 @@ Create total scores for INQ and RAS
 ## Reverse score f = 6,g = 7, j=10
 ## This means reverse score 1,2,5 for second construct
 INQ_1_pre = center_dat[,5:9]
-INQ_1_pre = (INQ_1_pre)
 INQ_1_pre_des = data.frame(apply(INQ_1_pre, 2, as.factor))
 describe(INQ_1_pre_des)
 
@@ -177,36 +176,61 @@ demos = data.frame(age = demos$X9_Age, veteran, sexual_minority, hispanic, non_w
 
 
 ### SIS 1 just guessing first 5
-head(center_dat[,45:55])
-SIS_1_pre = center_dat[,45:49]
+# Resolved  = a, b, c, d, g, j, k 
+# Planned = e, f, h, i
+head(center_dat[,c(49:50,52:53)])
+SIS_1_pre = center_dat[,c(49:50,52:53)]
 SIS_1_pre_des = data.frame(apply(SIS_1_pre, 2, as.factor))
 describe(SIS_1_pre_des)
 head(SIS_1_pre)
 SIS_1_pre = rowMeans(SIS_1_pre, na.rm = TRUE)
 SIS_1_pre
 
-SIS_2_pre = center_dat[,50:55]
+head(center_dat[,c(45:48, 51, 54:55)])
+SIS_2_pre = center_dat[,c(45:48, 51, 54:55)]
 SIS_2_pre_des = data.frame(apply(SIS_2_pre, 2, as.factor))
 describe(SIS_2_pre_des)
 head(SIS_2_pre)
 SIS_2_pre = rowMeans(SIS_2_pre, na.rm = TRUE)
 SIS_2_pre
 
-SIS_1_post = center_dat[,155:159]
+head(center_dat[,c(159:160, 162:163)])
+SIS_1_post = center_dat[,c(159:160, 162:163)]
 SIS_1_post_des = data.frame(apply(SIS_1_post, 2, as.factor))
 describe(SIS_1_post_des)
 head(SIS_1_post)
 SIS_1_post = rowMeans(SIS_1_post, na.rm = TRUE)
 SIS_1_post
 
-SIS_2_post = center_dat[,160:165]
+head(center_dat[,c(155:158, 161, 164:165)])
+SIS_2_post =center_dat[,c(155:158, 161, 164:165)]
 SIS_2_post_des = data.frame(apply(SIS_2_post, 2, as.factor))
 describe(SIS_2_post_des)
 head(SIS_2_post)
 SIS_2_post = rowMeans(SIS_2_post, na.rm = TRUE)
 SIS_2_post
 
+### treatment satisfaction CSQ
+CSQ =  data.frame(X12_CSQ.a = center_dat$X12_CSQ.a,X12_CSQ.b = center_dat$X12_CSQ.b, X12_CSQ.c = center_dat$X12_CSQ.c)
+CSQ_des = data.frame(apply(CSQ, 2, as.factor))
+describe(CSQ_des)
+head(CSQ_des)
+CSQ = rowMeans(CSQ, na.rm = TRUE)
+CSQ
 
+### Find these vars Hypothesis 3: Treatment alliance and treatment satisfaction will be positively and uniquely associated with willingness to seek future help at discharge.
+WAI
+WAI = center_dat[,166:169]
+WAI_desc = data.frame(apply(WAI, 2, as.factor))
+describe(WAI_desc)
+WAI = rowMeans(WAI, na.rm = TRUE)
+
+head(center_dat)
+BID = center_dat[,201:206]
+BID_desc = data.frame(apply(BID, 2, as.factor))
+describe(BID_desc)
+BID = rowMeans(BID, na.rm = TRUE)
+BID
 ## Only want treat_c, treat_g, treat_i, treat_l, treat_m, because they have more than 25% in each category
 #treatments = data.frame( treat_c = center_dat$X9_TREAT.c.Received, treat_g = center_dat$X9_Treat.g.Received, treat_l = center_dat$X9_Treat.L.Received, treat_m = center_dat$X9_Treat.m.Received)
 
@@ -215,7 +239,7 @@ SIS_2_post
 #describe(treatments_fac)
 
 
-center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post)
+center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, CSQ, BID, WAI)
 
 ```
 Descriptives with complete data
@@ -249,6 +273,10 @@ dim(quasi_itt_dat)
 
 center_dat = quasi_itt_dat
 dim(center_dat)
+
+
+### Scale the CSQ
+center_dat$CSQ = scale(center_dat$CSQ)
 ```
 Impute data
 ```{r}
@@ -269,6 +297,7 @@ compare.density(a.out, var = "SIS_2_post")
 
 
 impute_dat_loop = a.out$imputations
+dim(impute_dat_loop[[1]])
 ```
 Do diff scores with regression, because not random and want to account
 ```{r}
@@ -285,7 +314,7 @@ for(i in 1:length(impute_dat_loop)){
 }
 out_diff_dat
 ### Evaluate normality
-out_diff_dat_norm = out_diff_dat[[1]][30:40]
+out_diff_dat_norm = out_diff_dat[[1]][30:43]
 hist_results = list() 
 qq_results = list()
 shap_results = list()
@@ -295,6 +324,9 @@ for(i in 1:length(out_diff_dat_norm)){
   shap_results[[i]] = shapiro.test(out_diff_dat_norm[[i]])
 }
 shap_results
+
+
+
 ```
 Research Question #1: Are novel treatment targets (i.e., perceived burdensomeness, thwarted belongingness, meaning made of stress, goal orientation/hope, resilience-based coping) changing from pre-treatment to post-treatment during standard episodes of care? 
 
@@ -434,19 +466,147 @@ write.csv(center_results, "center_results.csv", row.names = FALSE)
 
 
 ```
-Research Question #2: Are novel treatment targets (i.e., perceived burdensomeness, thwarted belongingness, meaning made of stress, meaning in life, goal orientation/hope coping self-efficacy, treatment alliance, treatment satisfaction) associated with episode of care outcomes (i.e., suicide risk, willingness to seek help, intentions to follow-through on discharge plans) at discharge? 
+Research Question #2: Are novel treatment targets (i.e., perceived burdensomeness, thwarted belongingness, meaning made of stress, meaning in life, goal orientation/hope coping self-efficacy, treatment alliance, treatment satisfaction) associated with episode of care outcomes (i.e., suicide risk, willingness to seek help, intentions to follow-through on discharge plans) at discharge? (Changed to change scores related to each other) 
 
 Hypothesis 1: Perceived burdensomeness and thwarted belongingness will be positively and uniquely associated with suicide risk (i.e., ideation, resolved plans/preparation) at discharge. 
-```{r}
-
-```
-
 
 Hypothesis 2: Meaning made of stress, meaning in life, coping self-efficacy, goal orientation/hope, alliance, and treatment satisfaction will be negatively and uniquely associated with suicide risk (i.e., ideation, resolved plans and preparation) at discharge. 
 
+(Add new vars above to global data set)
+
+Linear regression with importance of variables included (i.e. partial R^2ds)
+```{r}
+
+### Regression analysis
+regout_sis_1 = list()
+regout_sis_1_sum = list()
+parsout_sis_1 = list()
+sesout_sis_1 = list()
+import_sis_1 = list()
+library(relaimpo)
+head(out_diff_dat[[1]][,33:43])
+out_diff_dat_reg = list()
+for(i in 1:length(out_diff_dat)){
+  out_diff_dat_reg[[i]] =out_diff_dat[[i]][,33:43]
+}
+out_diff_dat_reg[[1]]
+
+for(i in 1:length(out_diff_dat_reg)){
+  regout_sis_1[[i]] = lm(SIS_1_diff ~ INQ_1_diff + INQ_2_diff + RAS_1_diff + RAS_3_diff+ RAS_5_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + RCS_diff, data = out_diff_dat_reg[[i]])
+  regout_sis_1_sum[[i]] = summary(regout_sis_1[[i]])
+  import_sis_1[[i]] = calc.relimp(regout_sis_1[[i]])
+  import_sis_1[[i]] = import_sis_1[[i]]@lmg
+  parsout_sis_1[[i]] = regout_sis_1_sum[[i]]$coefficients[,1]
+  sesout_sis_1[[i]] = regout_sis_1_sum[[i]]$coefficients[,2]
+}
+
+#10 cols
+parsout_sis_1 = unlist(parsout_sis_1) 
+parsout_sis_1 = matrix(parsout_sis_1, ncol = 10, byrow = TRUE)
+parsout_sis_1
+
+sesout_sis_1 = unlist(sesout_sis_1)
+sesout_sis_1 = matrix(parsout_sis_1, ncol = 10, byrow = TRUE)
+sesout_sis_1
+
+pars_sesout_sis_1 = mi.meld(parsout_sis_1, sesout_sis_1)
+t_stat_reg_sis_1 =  pars_sesout_sis_1$q.mi / pars_sesout_sis_1$se.mi
+p_values_reg_sis_1 = 2*pt(-abs(t_stat_reg_sis_1), df = dim(out_diff_dat_corr[[1]])[1]-10)
+p_values_reg_sis_1 = format(round(p_values_reg_sis_1, digits=3), nsmall = 2)
+p_values_reg_sis_1
+p_values_reg_sis_1
+critical_t_reg_sis_1 = abs(qt(0.05/2, dim(out_diff_dat_corr[[1]])[1]-10))
+critical_t_reg_sis_1
+upper_reg_sis_1 = pars_sesout_sis_1$q.mi +(critical_t_reg_sis_1*pars_sesout_sis_1$se.mi)
+upper_reg_sis_1 = format(round(upper_reg_sis_1, digits=2), nsmall = 2)
+upper_reg_sis_1
+lower_reg_sis_1 = pars_sesout_sis_1$q.mi - (critical_t_reg_sis_1*pars_sesout_sis_1$se.mi)
+lower_reg_sis_1 = format(round(lower_reg_sis_1, digits=2), nsmall = 2)
+ci_95_sis_1 = paste0(upper_reg_sis_1, sep = ",", lower_reg_sis_1)
+ci_95_sis_1
+import_sis_1 = unlist(import_sis_1)
+import_sis_1 = matrix(import_sis_1, ncol = 9, byrow = TRUE)
+import_sis_1 = colMeans(import_sis_1)
+import_sis_1 
+
+reg_results_sis_1 = data.frame(par_est = t(pars_sesout_sis_1$q.mi), se = t(pars_sesout_sis_1$se.mi), p_value = t(p_values_reg_sis_1), ci_95_sis_1)
+reg_results_sis_1
+reg_results_sis_1[,1:2] = format(round(reg_results_sis_1[,1:2], digits=2), nsmall = 2)
+reg_results_sis_1$var_names = c("Intercept", colnames(out_diff_dat_reg[[1]])[1:9])
+reg_results_sis_1 = data.frame(var_names = reg_results_sis_1$var_names, reg_results_sis_1[,1:4])
+typeof(reg_results_sis_1$p_value)
+
+write.csv(reg_results_sis_1, "reg_results_sis_1.csv", row.names = FALSE)
+reg_results_sis_1 = read.csv("reg_results_sis_1.csv", header = TRUE)
+reg_results_sis_1$var_names = as.character(reg_results_sis_1$var_names)
+
+reg_results_sis_1$var_names = ifelse(reg_results_sis_1$p_value < .05, paste0(reg_results_sis_1$var_names, sep = "*"), reg_results_sis_1$var_names)
+reg_results_sis_1$p_value = ifelse(reg_results_sis_1$p_value ==.000, "<.001", reg_results_sis_1$p_value)
+reg_results_sis_1 = reg_results_sis_1[-c(1),]
+reg_results_sis_1$import_sis_1 = import_sis_1
+reg_results_sis_1$import_sis_1 = format(round(reg_results_sis_1$import_sis_1, digits=2), nsmall = 2)
+reg_results_sis_1
+```
+Old correlation probably don't need this anymore
+```{r}
+out_diff_dat_corr = list()
+for(i in 1:length(out_diff_dat)){
+ out_diff_dat_corr[[i]] = out_diff_dat[[i]][,30:43]
+}
+out_diff_dat_corr[[1]]
+cor_results = list()
+cor_results_r = list()
+cor_results_se = list()
+for(i in 1:length(out_diff_dat_corr)){
+  cor_results[[i]] = corr.test(out_diff_dat_corr[[i]], method = "pearson")
+  cor_results_r[[i]] = cor_results[[i]]$r
+ cor_results_se[[i]] = cor_results[[i]]$se
+}
+length(cor_results_r[[1]])
+cor_results_r =  unlist(cor_results_r)
+cor_results_r
+cor_results_r = matrix(cor_results_r, ncol = 196, byrow = TRUE)
+cor_results_r
+cor_results_se = unlist(cor_results_se)
+cor_results_se = matrix(cor_results_se, ncol = 196, byrow = TRUE)
+cor_results_se
+
+cor_results_combine = mi.meld(cor_results_r, cor_results_se)
+cor_results_combine
+head(out_diff_dat_corr[[1]])
+cor_r = cor_results_combine$q.mi
+cor_r = matrix(cor_r, ncol = 14, byrow = TRUE)
+cor_r = format(round(cor_r, digits=3), nsmall = 2)
+colnames(cor_r) = colnames(out_diff_dat_corr[[1]])
+rownames(cor_r) = colnames(cor_r)
+cor_r
+t_stat = cor_results_combine$q.mi / cor_results_combine$se.mi
+p_values = 2*pt(-abs(t_stat), df = dim(out_diff_dat_corr[[1]])[1]-1)
+p_values = format(round(p_values, digits=3), nsmall = 2)
+p_values = matrix(p_values, ncol =14, byrow= TRUE)
+colnames(p_values) = colnames(cor_r)
+p_values
+rownames(p_values) = colnames(cor_r)
+p_values = apply(p_values, 1, function(x){ifelse(x < .05, paste0(x, "*"), x)})
+p_values
+```
+
+
+
 Hypothesis 3: Treatment alliance and treatment satisfaction will be positively and uniquely associated with willingness to seek future help at discharge. 
 
+Don't know what this is: willingness to seek future help at discharge
+```{r}
+
+
+
+```
 Hypothesis 4:  Treatment alliance and treatment satisfaction will be positively and uniquely associated with intention to follow-through on discharge plans. 
+```{r}
+
+
+```
+
 
 
 
