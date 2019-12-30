@@ -474,7 +474,7 @@ Hypothesis 2: Meaning made of stress, meaning in life, coping self-efficacy, goa
 
 (Add new vars above to global data set)
 
-Linear regression with importance of variables included (i.e. partial R^2ds)
+Sucidial Ideation regression
 ```{r}
 
 ### Regression analysis
@@ -483,6 +483,7 @@ regout_sis_1_sum = list()
 parsout_sis_1 = list()
 sesout_sis_1 = list()
 import_sis_1 = list()
+vif_sis_1 = list()
 library(relaimpo)
 head(out_diff_dat[[1]][,33:43])
 out_diff_dat_reg = list()
@@ -498,15 +499,16 @@ for(i in 1:length(out_diff_dat_reg)){
   import_sis_1[[i]] = import_sis_1[[i]]@lmg
   parsout_sis_1[[i]] = regout_sis_1_sum[[i]]$coefficients[,1]
   sesout_sis_1[[i]] = regout_sis_1_sum[[i]]$coefficients[,2]
+  vif_sis_1[[i]] = vif(regout_sis_1[[i]])
 }
-
+vif_sis_1
 #10 cols
 parsout_sis_1 = unlist(parsout_sis_1) 
 parsout_sis_1 = matrix(parsout_sis_1, ncol = 10, byrow = TRUE)
 parsout_sis_1
 
 sesout_sis_1 = unlist(sesout_sis_1)
-sesout_sis_1 = matrix(parsout_sis_1, ncol = 10, byrow = TRUE)
+sesout_sis_1 = matrix(sesout_sis_1, ncol = 10, byrow = TRUE)
 sesout_sis_1
 
 pars_sesout_sis_1 = mi.meld(parsout_sis_1, sesout_sis_1)
@@ -546,7 +548,85 @@ reg_results_sis_1 = reg_results_sis_1[-c(1),]
 reg_results_sis_1$import_sis_1 = import_sis_1
 reg_results_sis_1$import_sis_1 = format(round(reg_results_sis_1$import_sis_1, digits=2), nsmall = 2)
 reg_results_sis_1
+
 ```
+Resolved plans
+```{r}
+### Regression analysis
+regout_sis_2 = list()
+regout_sis_2_sum = list()
+parsout_sis_2 = list()
+sesout_sis_2 = list()
+import_sis_2 = list()
+vif_sis_2 = list()
+library(relaimpo)
+head(out_diff_dat[[1]][,33:43])
+out_diff_dat_reg = list()
+for(i in 1:length(out_diff_dat)){
+  out_diff_dat_reg[[i]] =out_diff_dat[[i]][,33:43]
+}
+out_diff_dat_reg[[1]]
+
+for(i in 1:length(out_diff_dat_reg)){
+  regout_sis_2[[i]] = lm(SIS_2_diff ~ INQ_1_diff + INQ_2_diff + RAS_1_diff + RAS_3_diff+ RAS_5_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + RCS_diff, data = out_diff_dat_reg[[i]])
+  regout_sis_2_sum[[i]] = summary(regout_sis_2[[i]])
+  import_sis_2[[i]] = calc.relimp(regout_sis_2[[i]])
+  import_sis_2[[i]] = import_sis_2[[i]]@lmg
+  parsout_sis_2[[i]] = regout_sis_2_sum[[i]]$coefficients[,1]
+  sesout_sis_2[[i]] = regout_sis_2_sum[[i]]$coefficients[,2]
+  vif_sis_2[[i]] = vif(regout_sis_2[[i]])
+}
+vif_sis_2
+#10 cols
+parsout_sis_2 = unlist(parsout_sis_2) 
+parsout_sis_2 = matrix(parsout_sis_2, ncol = 10, byrow = TRUE)
+parsout_sis_2
+
+sesout_sis_2 = unlist(sesout_sis_2)
+sesout_sis_2 = matrix(sesout_sis_2, ncol = 10, byrow = TRUE)
+sesout_sis_2
+
+pars_sesout_sis_2 = mi.meld(parsout_sis_2, sesout_sis_2)
+t_stat_reg_sis_2 =  pars_sesout_sis_2$q.mi / pars_sesout_sis_2$se.mi
+p_values_reg_sis_2 = 2*pt(-abs(t_stat_reg_sis_2), df = dim(out_diff_dat_corr[[1]])[1]-10)
+p_values_reg_sis_2 = format(round(p_values_reg_sis_2, digits=3), nsmall = 2)
+p_values_reg_sis_2
+p_values_reg_sis_2
+critical_t_reg_sis_2 = abs(qt(0.05/2, dim(out_diff_dat_corr[[1]])[1]-10))
+critical_t_reg_sis_2
+upper_reg_sis_2 = pars_sesout_sis_2$q.mi +(critical_t_reg_sis_2*pars_sesout_sis_2$se.mi)
+upper_reg_sis_2 = format(round(upper_reg_sis_2, digits=2), nsmall = 2)
+upper_reg_sis_2
+lower_reg_sis_2 = pars_sesout_sis_2$q.mi - (critical_t_reg_sis_2*pars_sesout_sis_2$se.mi)
+lower_reg_sis_2 = format(round(lower_reg_sis_2, digits=2), nsmall = 2)
+ci_95_sis_2 = paste0(upper_reg_sis_2, sep = ",", lower_reg_sis_2)
+ci_95_sis_2
+import_sis_2 = unlist(import_sis_2)
+import_sis_2 = matrix(import_sis_2, ncol = 9, byrow = TRUE)
+import_sis_2 = colMeans(import_sis_2)
+import_sis_2 
+
+reg_results_sis_2 = data.frame(par_est = t(pars_sesout_sis_2$q.mi), se = t(pars_sesout_sis_2$se.mi), p_value = t(p_values_reg_sis_2), ci_95_sis_2)
+reg_results_sis_2
+reg_results_sis_2[,1:2] = format(round(reg_results_sis_2[,1:2], digits=2), nsmall = 2)
+reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat_reg[[1]])[1:9])
+reg_results_sis_2 = data.frame(var_names = reg_results_sis_2$var_names, reg_results_sis_2[,1:4])
+typeof(reg_results_sis_2$p_value)
+
+write.csv(reg_results_sis_2, "reg_results_sis_2.csv", row.names = FALSE)
+reg_results_sis_2 = read.csv("reg_results_sis_2.csv", header = TRUE)
+reg_results_sis_2$var_names = as.character(reg_results_sis_2$var_names)
+
+reg_results_sis_2$var_names = ifelse(reg_results_sis_2$p_value < .05, paste0(reg_results_sis_2$var_names, sep = "*"), reg_results_sis_2$var_names)
+reg_results_sis_2$p_value = ifelse(reg_results_sis_2$p_value ==.000, "<.001", reg_results_sis_2$p_value)
+reg_results_sis_2 = reg_results_sis_2[-c(1),]
+reg_results_sis_2$import_sis_2 = import_sis_2
+reg_results_sis_2$import_sis_2 = format(round(reg_results_sis_2$import_sis_2, digits=2), nsmall = 2)
+reg_results_sis_2
+```
+
+
+
 Old correlation probably don't need this anymore
 ```{r}
 out_diff_dat_corr = list()
@@ -603,6 +683,73 @@ Don't know what this is: willingness to seek future help at discharge
 ```
 Hypothesis 4:  Treatment alliance and treatment satisfaction will be positively and uniquely associated with intention to follow-through on discharge plans. 
 ```{r}
+### Regression analysis
+regout_hyp_4 = list()
+regout_hyp_4_sum = list()
+parsout_hyp_4 = list()
+sesout_hyp_4 = list()
+import_hyp_4 = list()
+vif_hyp_4 = list()
+
+for(i in 1:length(out_diff_dat_reg)){
+  regout_hyp_4[[i]] = lm(BID ~ CSQ + WAI, data = out_diff_dat[[i]])
+  regout_hyp_4_sum[[i]] = summary(regout_hyp_4[[i]])
+  import_hyp_4[[i]] = calc.relimp(regout_hyp_4[[i]])
+  import_hyp_4[[i]] = import_hyp_4[[i]]@lmg
+  parsout_hyp_4[[i]] = regout_hyp_4_sum[[i]]$coefficients[,1]
+  sesout_hyp_4[[i]] = regout_hyp_4_sum[[i]]$coefficients[,2]
+  vif_hyp_4[[i]] = vif(regout_hyp_4[[i]])
+}
+vif_hyp_4
+#10 cols
+parsout_hyp_4 = unlist(parsout_hyp_4) 
+parsout_hyp_4 = matrix(parsout_hyp_4, ncol = 3, byrow = TRUE)
+parsout_hyp_4
+
+sesout_hyp_4 = unlist(sesout_hyp_4)
+sesout_hyp_4 = matrix(sesout_hyp_4, ncol = 3, byrow= TRUE)
+sesout_hyp_4
+
+pars_sesout_hyp_4 = mi.meld(parsout_hyp_4, sesout_hyp_4)
+t_stat_reg_hyp_4 =  pars_sesout_hyp_4$q.mi / pars_sesout_hyp_4$se.mi
+p_values_reg_hyp_4 = 2*pt(-abs(t_stat_reg_hyp_4), df = dim(out_diff_dat_corr[[1]])[1]-10)
+p_values_reg_hyp_4 = format(round(p_values_reg_hyp_4, digits=3), nsmall = 2)
+p_values_reg_hyp_4
+p_values_reg_hyp_4
+critical_t_reg_hyp_4 = abs(qt(0.05/2, dim(out_diff_dat_corr[[1]])[1]-10))
+critical_t_reg_hyp_4
+upper_reg_hyp_4 = pars_sesout_hyp_4$q.mi +(critical_t_reg_hyp_4*pars_sesout_hyp_4$se.mi)
+upper_reg_hyp_4 = format(round(upper_reg_hyp_4, digits=2), nsmall = 2)
+upper_reg_hyp_4
+lower_reg_hyp_4 = pars_sesout_hyp_4$q.mi - (critical_t_reg_hyp_4*pars_sesout_hyp_4$se.mi)
+lower_reg_hyp_4 = format(round(lower_reg_hyp_4, digits=2), nsmall = 2)
+ci_95_hyp_4 = paste0(upper_reg_hyp_4, sep = ",", lower_reg_hyp_4)
+ci_95_hyp_4
+import_hyp_4 = unlist(import_hyp_4)
+import_hyp_4 = matrix(import_hyp_4, ncol = 2, byrow = TRUE)
+import_hyp_4 = colMeans(import_hyp_4)
+import_hyp_4 
+
+reg_results_hyp_4 = data.frame(par_est = t(pars_sesout_hyp_4$q.mi), se = t(pars_sesout_hyp_4$se.mi), p_value = t(p_values_reg_hyp_4), ci_95_hyp_4)
+reg_results_hyp_4
+reg_results_hyp_4[,1:2] = format(round(reg_results_hyp_4[,1:2], digits=2), nsmall = 2)
+reg_results_hyp_4$var_names = c("Intercept", "CSQ", "WAI")
+reg_results_hyp_4 = data.frame(var_names = reg_results_hyp_4$var_names, reg_results_hyp_4[,1:4])
+reg_results_hyp_4
+
+write.csv(reg_results_hyp_4, "reg_results_hyp_4.csv", row.names = FALSE)
+reg_results_hyp_4 = read.csv("reg_results_hyp_4.csv", header = TRUE)
+reg_results_hyp_4$var_names = as.character(reg_results_hyp_4$var_names)
+reg_results_hyp_4
+
+reg_results_hyp_4$var_names = ifelse(reg_results_hyp_4$p_value < .05, paste0(reg_results_hyp_4$var_names, sep = "*"), reg_results_hyp_4$var_names)
+reg_results_hyp_4$p_value = ifelse(reg_results_hyp_4$p_value ==.000, "<.001", reg_results_hyp_4$p_value)
+reg_results_hyp_4 = reg_results_hyp_4[-c(1),]
+reg_results_hyp_4$par_est = format(round(reg_results_hyp_4$par_est, digits=2), nsmall = 2) 
+reg_results_hyp_4
+reg_results_hyp_4$import_hyp_4 = import_hyp_4
+reg_results_hyp_4$import_hyp_4 = format(round(reg_results_hyp_4$import_hyp_4, digits=2), nsmall = 2)
+reg_results_hyp_4
 
 
 ```
