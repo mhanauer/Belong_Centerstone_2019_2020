@@ -83,8 +83,8 @@ describe(RAS_3_post_des)
 head(RAS_3_post)
 RAS_3_post = rowMeans(RAS_3_post, na.rm = TRUE)
 
-#### RAS 5 willingness to ask for help
-RAS_5_pre = center_dat[,28:31]
+#### RAS 5 No domination by symptoms
+RAS_5_pre = center_dat[,28:30]
 head(RAS_5_pre)
 RAS_5_pre_des = data.frame(apply(RAS_5_pre, 2, as.factor))
 describe(RAS_5_pre_des)
@@ -92,7 +92,7 @@ head(RAS_5_pre)
 RAS_5_pre = rowMeans(RAS_5_pre, na.rm = TRUE)
 head(RAS_5_pre)
 
-RAS_5_post = center_dat[,123:126]
+RAS_5_post = center_dat[,123:125]
 head(RAS_5_post)
 RAS_5_post_des = data.frame(apply(RAS_5_post, 2, as.factor))
 describe(RAS_5_post_des)
@@ -157,7 +157,6 @@ head(RCS_post)
 RCS_post = rowMeans(RCS_post, na.rm = TRUE)
 
 
-### SIS first 5 and then next 6
 
 ### Demos
 demos = center_dat[,c(75:78,80,92,97:98)]
@@ -175,7 +174,7 @@ employed = ifelse(demos$X17_Employment == 2 | demos$X17_Employment == 3, 1, 0)
 demos = data.frame(age = demos$X9_Age, veteran, sexual_minority, hispanic, non_white, high_school_greater, employed)
 
 
-### SIS 1 just guessing first 5
+### SIS 1 
 # Resolved  = a, b, c, d, g, j, k 
 # Planned = e, f, h, i
 head(center_dat[,c(49:50,52:53)])
@@ -324,9 +323,6 @@ for(i in 1:length(out_diff_dat_norm)){
   shap_results[[i]] = shapiro.test(out_diff_dat_norm[[i]])
 }
 shap_results
-
-
-
 ```
 Research Question #1: Are novel treatment targets (i.e., perceived burdensomeness, thwarted belongingness, meaning made of stress, goal orientation/hope, resilience-based coping) changing from pre-treatment to post-treatment during standard episodes of care? 
 
@@ -459,7 +455,7 @@ center_results[,2:3] = NULL
 head(out_diff_dat)
 center_results
 
-outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "Willingness to ask for help", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
+outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
 center_results = data.frame(outcomes, center_results)
 
 write.csv(center_results, "center_results.csv", row.names = FALSE)
@@ -753,9 +749,3 @@ reg_results_hyp_4
 
 
 ```
-
-
-
-
-
-
