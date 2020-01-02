@@ -236,16 +236,38 @@ BID
 #treatments$treat_b = ifelse(treatments$treat_b == 1, 1, 0)
 #treatments_fac = data.frame(apply(treatments, 2, as.factor))
 #describe(treatments_fac)
+## Get whether someone died by suicide or not need to add in 0's and missing for number of attempts
+suicide = center_dat$X4_AttemptedSuic
 
-
-center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, CSQ, BID, WAI)
+center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, CSQ, BID, WAI, suicide)
 
 ```
 Descriptives with complete data
 ```{r}
 center_dat
-center_dat[,2:7] = data.frame(apply(center_dat[,2:7],2, as.factor))
-describe(center_dat)
+center_dat[,c(2:7, 33)] = data.frame(apply(center_dat[,c(2:7,33)],2, as.factor))
+
+desc_stats = describe(center_dat)
+desc_stats_numeric = data.frame(desc_stats$Numeric)
+desc_stats_numeric = desc_stats_numeric[c(1,4,5),]
+desc_stats_numeric
+desc_stats_numeric = data.frame(t(desc_stats_numeric))
+write.csv(desc_stats_numeric, "desc_stats_numeric.csv", row.names = TRUE)
+desc_stats_numeric = read.csv("desc_stats_numeric.csv", header = TRUE)
+colnames(desc_stats_numeric)[1] = "variable"
+desc_stats_numeric$percent_missing = 1-(as.numeric(desc_stats_numeric$valid.n) / 116)
+desc_stats_numeric[,2:5] = format(round(desc_stats_numeric[,2:5], digits=2), nsmall = 2)
+desc_stats_numeric
+write.csv(desc_stats_numeric, "desc_stats_numeric.csv", row.names = FALSE)
+
+desc_stats_factor = data.frame(desc_stats$Factor) 
+desc_stats_factor = t(desc_stats_factor)
+desc_stats_factor = format(round(desc_stats_factor, digits=2), nsmall = 2)
+write.csv(desc_stats_factor, "desc_stats_factor.csv", row.names = TRUE)
+desc_stats_factor = read.csv("desc_stats_factor.csv", header = TRUE)
+colnames(desc_stats_factor)[1] = "variable"
+desc_stats_factor
+write.csv(desc_stats_factor, "desc_stats_factor.csv", row.names = FALSE)
 
 ```
 
@@ -281,7 +303,7 @@ Impute data
 ```{r}
 head(center_dat)
 library(Amelia)
-a.out = amelia(x = center_dat, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed"))
+a.out = amelia(x = center_dat, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide"))
 compare.density(a.out, var = "RAS_1_post")
 compare.density(a.out, var = "RAS_3_post")
 compare.density(a.out, var = "RAS_5_post")
@@ -293,8 +315,8 @@ compare.density(a.out, var = "INQ_2_post")
 compare.density(a.out, var = "MILQ_post")
 compare.density(a.out, var = "SIS_1_post")
 compare.density(a.out, var = "SIS_2_post")
-
-
+overimpute(a.out, var = "SIS_1_post")
+overimpute(a.out, var = "SIS_2_post")
 impute_dat_loop = a.out$imputations
 dim(impute_dat_loop[[1]])
 ```
@@ -313,7 +335,7 @@ for(i in 1:length(impute_dat_loop)){
 }
 out_diff_dat
 ### Evaluate normality
-out_diff_dat_norm = out_diff_dat[[1]][30:43]
+out_diff_dat_norm = out_diff_dat[[1]][c(30:32, 34:44)]
 hist_results = list() 
 qq_results = list()
 shap_results = list()
@@ -481,10 +503,10 @@ sesout_sis_1 = list()
 import_sis_1 = list()
 vif_sis_1 = list()
 library(relaimpo)
-head(out_diff_dat[[1]][,33:43])
+head(out_diff_dat[[1]][,34:44])
 out_diff_dat_reg = list()
 for(i in 1:length(out_diff_dat)){
-  out_diff_dat_reg[[i]] =out_diff_dat[[i]][,33:43]
+  out_diff_dat_reg[[i]] =out_diff_dat[[i]][,34:44]
 }
 out_diff_dat_reg[[1]]
 
@@ -544,7 +566,7 @@ reg_results_sis_1 = reg_results_sis_1[-c(1),]
 reg_results_sis_1$import_sis_1 = import_sis_1
 reg_results_sis_1$import_sis_1 = format(round(reg_results_sis_1$import_sis_1, digits=2), nsmall = 2)
 reg_results_sis_1
-
+write.csv(reg_results_sis_1, "reg_results_sis_1.csv", row.names  = FALSE)
 ```
 Resolved plans
 ```{r}
@@ -556,10 +578,10 @@ sesout_sis_2 = list()
 import_sis_2 = list()
 vif_sis_2 = list()
 library(relaimpo)
-head(out_diff_dat[[1]][,33:43])
+head(out_diff_dat[[1]][,34:44])
 out_diff_dat_reg = list()
 for(i in 1:length(out_diff_dat)){
-  out_diff_dat_reg[[i]] =out_diff_dat[[i]][,33:43]
+  out_diff_dat_reg[[i]] =out_diff_dat[[i]][,34:44]
 }
 out_diff_dat_reg[[1]]
 
@@ -619,54 +641,9 @@ reg_results_sis_2 = reg_results_sis_2[-c(1),]
 reg_results_sis_2$import_sis_2 = import_sis_2
 reg_results_sis_2$import_sis_2 = format(round(reg_results_sis_2$import_sis_2, digits=2), nsmall = 2)
 reg_results_sis_2
+
+write.csv(reg_results_sis_2, "reg_results_sis_2.csv", row.names = FALSE)
 ```
-
-
-
-Old correlation probably don't need this anymore
-```{r}
-out_diff_dat_corr = list()
-for(i in 1:length(out_diff_dat)){
- out_diff_dat_corr[[i]] = out_diff_dat[[i]][,30:43]
-}
-out_diff_dat_corr[[1]]
-cor_results = list()
-cor_results_r = list()
-cor_results_se = list()
-for(i in 1:length(out_diff_dat_corr)){
-  cor_results[[i]] = corr.test(out_diff_dat_corr[[i]], method = "pearson")
-  cor_results_r[[i]] = cor_results[[i]]$r
- cor_results_se[[i]] = cor_results[[i]]$se
-}
-length(cor_results_r[[1]])
-cor_results_r =  unlist(cor_results_r)
-cor_results_r
-cor_results_r = matrix(cor_results_r, ncol = 196, byrow = TRUE)
-cor_results_r
-cor_results_se = unlist(cor_results_se)
-cor_results_se = matrix(cor_results_se, ncol = 196, byrow = TRUE)
-cor_results_se
-
-cor_results_combine = mi.meld(cor_results_r, cor_results_se)
-cor_results_combine
-head(out_diff_dat_corr[[1]])
-cor_r = cor_results_combine$q.mi
-cor_r = matrix(cor_r, ncol = 14, byrow = TRUE)
-cor_r = format(round(cor_r, digits=3), nsmall = 2)
-colnames(cor_r) = colnames(out_diff_dat_corr[[1]])
-rownames(cor_r) = colnames(cor_r)
-cor_r
-t_stat = cor_results_combine$q.mi / cor_results_combine$se.mi
-p_values = 2*pt(-abs(t_stat), df = dim(out_diff_dat_corr[[1]])[1]-1)
-p_values = format(round(p_values, digits=3), nsmall = 2)
-p_values = matrix(p_values, ncol =14, byrow= TRUE)
-colnames(p_values) = colnames(cor_r)
-p_values
-rownames(p_values) = colnames(cor_r)
-p_values = apply(p_values, 1, function(x){ifelse(x < .05, paste0(x, "*"), x)})
-p_values
-```
-
 
 
 Hypothesis 3: Treatment alliance and treatment satisfaction will be positively and uniquely associated with willingness to seek future help at discharge. 
@@ -697,7 +674,7 @@ for(i in 1:length(out_diff_dat_reg)){
   vif_hyp_4[[i]] = vif(regout_hyp_4[[i]])
 }
 vif_hyp_4
-#10 cols
+#3 cols
 parsout_hyp_4 = unlist(parsout_hyp_4) 
 parsout_hyp_4 = matrix(parsout_hyp_4, ncol = 3, byrow = TRUE)
 parsout_hyp_4
@@ -747,5 +724,89 @@ reg_results_hyp_4$import_hyp_4 = import_hyp_4
 reg_results_hyp_4$import_hyp_4 = format(round(reg_results_hyp_4$import_hyp_4, digits=2), nsmall = 2)
 reg_results_hyp_4
 
+write.csv(reg_results_hyp_4, "reg_results_hyp_4.csv", row.names = FALSE)
 
 ```
+Hypothesis 1: Perceived burdensomeness, thwarted belongingness, and meaning made of stress will contribute the most variance to suicide risk status scores at discharge. 
+Going to check all of them
+```{r}
+### Regression analysis
+regout_r3_hyp_1 = list()
+regout_r3_hyp_1_sum = list()
+parsout_r3_hyp_1 = list()
+sesout_r3_hyp_1 = list()
+import_r3_hyp_1 = list()
+vif_r3_hyp_1 = list()
+
+for(i in 1:length(out_diff_dat)){
+  regout_r3_hyp_1[[i]] = glm(suicide ~ INQ_1_diff + INQ_2_diff + RAS_1_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + SIS_1_diff+ SIS_2_diff, data = out_diff_dat[[i]], family = binomial()) 
+  regout_r3_hyp_1_sum[[i]] = summary(regout_r3_hyp_1[[i]])
+  #import_r3_hyp_1[[i]] = calc.relimp(regout_r3_hyp_1[[i]])
+  #import_r3_hyp_1[[i]] = import_r3_hyp_1[[i]]@lmg
+  parsout_r3_hyp_1[[i]] = regout_r3_hyp_1_sum[[i]]$coefficients[,1]
+  parsout_r3_hyp_1[[i]] = exp(parsout_r3_hyp_1[[i]])
+  sesout_r3_hyp_1[[i]] = regout_r3_hyp_1_sum[[i]]$coefficients[,2]
+  sesout_r3_hyp_1[[i]] = exp(sesout_r3_hyp_1[[i]])
+  vif_r3_hyp_1[[i]] = vif(regout_r3_hyp_1[[i]])
+}
+vif_r3_hyp_1
+#3 cols
+parsout_r3_hyp_1 = unlist(parsout_r3_hyp_1) 
+parsout_r3_hyp_1 = matrix(parsout_r3_hyp_1, ncol = 9, byrow = TRUE)
+parsout_r3_hyp_1
+
+sesout_r3_hyp_1 = unlist(sesout_r3_hyp_1)
+sesout_r3_hyp_1 = matrix(sesout_r3_hyp_1, ncol = 9, byrow= TRUE)
+sesout_r3_hyp_1
+
+pars_sesout_r3_hyp_1 = mi.meld(parsout_r3_hyp_1, sesout_r3_hyp_1)
+t_stat_reg_r3_hyp_1 =  pars_sesout_r3_hyp_1$q.mi / pars_sesout_r3_hyp_1$se.mi
+p_values_reg_r3_hyp_1 = 2*pt(-abs(t_stat_reg_r3_hyp_1), df = dim(out_diff_dat_corr[[1]])[1]-9)
+p_values_reg_r3_hyp_1 = format(round(p_values_reg_r3_hyp_1, digits=3), nsmall = 2)
+p_values_reg_r3_hyp_1
+p_values_reg_r3_hyp_1
+critical_t_reg_r3_hyp_1 = abs(qt(0.05/2, dim(out_diff_dat_corr[[1]])[1]-10))
+critical_t_reg_r3_hyp_1
+upper_reg_r3_hyp_1 = pars_sesout_r3_hyp_1$q.mi +(critical_t_reg_r3_hyp_1*pars_sesout_r3_hyp_1$se.mi)
+upper_reg_r3_hyp_1 = format(round(upper_reg_r3_hyp_1, digits=2), nsmall = 2)
+upper_reg_r3_hyp_1
+lower_reg_r3_hyp_1 = pars_sesout_r3_hyp_1$q.mi - (critical_t_reg_r3_hyp_1*pars_sesout_r3_hyp_1$se.mi)
+lower_reg_r3_hyp_1 = format(round(lower_reg_r3_hyp_1, digits=2), nsmall = 2)
+ci_95_r3_hyp_1 = paste0(upper_reg_r3_hyp_1, sep = ",", lower_reg_r3_hyp_1)
+ci_95_r3_hyp_1
+#import_r3_hyp_1 = unlist(import_r3_hyp_1)
+#import_r3_hyp_1 = matrix(import_r3_hyp_1, ncol = 2, byrow = TRUE)
+#import_r3_hyp_1 = colMeans(import_r3_hyp_1)
+#import_r3_hyp_1 
+
+reg_results_r3_hyp_1 = data.frame(par_est = t(pars_sesout_r3_hyp_1$q.mi), se = t(pars_sesout_r3_hyp_1$se.mi), p_value = t(p_values_reg_r3_hyp_1), ci_95_r3_hyp_1)
+reg_results_r3_hyp_1
+reg_results_r3_hyp_1[,1:2] = format(round(reg_results_r3_hyp_1[,1:2], digits=2), nsmall = 2)
+reg_results_r3_hyp_1$var_names = c(names(regout_r3_hyp_1[[1]]$coefficients))
+reg_results_r3_hyp_1 = data.frame(var_names = reg_results_r3_hyp_1$var_names, reg_results_r3_hyp_1[,1:4])
+reg_results_r3_hyp_1
+
+write.csv(reg_results_r3_hyp_1, "reg_results_r3_hyp_1.csv", row.names = FALSE)
+reg_results_r3_hyp_1 = read.csv("reg_results_r3_hyp_1.csv", header = TRUE)
+reg_results_r3_hyp_1$var_names = as.character(reg_results_r3_hyp_1$var_names)
+reg_results_r3_hyp_1
+
+reg_results_r3_hyp_1$var_names = ifelse(reg_results_r3_hyp_1$p_value < .05, paste0(reg_results_r3_hyp_1$var_names, sep = "*"), reg_results_r3_hyp_1$var_names)
+reg_results_r3_hyp_1$p_value = ifelse(reg_results_r3_hyp_1$p_value ==.000, "<.001", reg_results_r3_hyp_1$p_value)
+reg_results_r3_hyp_1 = reg_results_r3_hyp_1[-c(1),]
+reg_results_r3_hyp_1$par_est = format(round(reg_results_r3_hyp_1$par_est, digits=2), nsmall = 2) 
+reg_results_r3_hyp_1
+#reg_results_r3_hyp_1$import_r3_hyp_1 = import_r3_hyp_1
+#reg_results_r3_hyp_1$import_r3_hyp_1 = format(round(reg_results_r3_hyp_1$import_r3_hyp_1, digits=2), nsmall = 2)
+reg_results_r3_hyp_1
+
+write.csv(reg_results_r3_hyp_1, "reg_results_r3_hyp_1.csv", row.names = FALSE)
+
+
+```
+
+
+
+
+
+
