@@ -157,6 +157,19 @@ head(RCS_post)
 RCS_post = rowMeans(RCS_post, na.rm = TRUE)
 
 
+### BID
+BID =  center_dat[,201:206]
+BID_des  = data.frame(apply(BID, 2, as.factor))
+describe(BID_des)
+BID = rowMeans(BID, na.rm = TRUE)
+BID
+
+### CSE
+center_dat$X5_CSE.a
+
+### TSE_bin
+
+## TSE
 
 ### Demos
 demos = center_dat[,c(75:78,80,92,97:98)]
@@ -224,29 +237,28 @@ WAI_desc = data.frame(apply(WAI, 2, as.factor))
 describe(WAI_desc)
 WAI = rowMeans(WAI, na.rm = TRUE)
 
-head(center_dat)
-BID = center_dat[,201:206]
-BID_desc = data.frame(apply(BID, 2, as.factor))
-describe(BID_desc)
-BID = rowMeans(BID, na.rm = TRUE)
-BID
-## Only want treat_c, treat_g, treat_i, treat_l, treat_m, because they have more than 25% in each category
-#treatments = data.frame( treat_c = center_dat$X9_TREAT.c.Received, treat_g = center_dat$X9_Treat.g.Received, treat_l = center_dat$X9_Treat.L.Received, treat_m = center_dat$X9_Treat.m.Received)
+### CSE
+CSE =  center_dat[,138:150]
+CSE_desc = data.frame(apply(CSE,2,as.factor))
+describe(CSE_desc)
+CSE = rowMeans(CSE, na.rm = TRUE)
+CSE
 
-#treatments$treat_b = ifelse(treatments$treat_b == 1, 1, 0)
-#treatments_fac = data.frame(apply(treatments, 2, as.factor))
-#describe(treatments_fac)
+### Treatment needs post for those who received the treatment what was average
+treat_needs_post = center_dat[,170:195]
 ## Get whether someone died by suicide or not need to add in 0's and missing for number of attempts
 suicide = center_dat$X4_AttemptedSuic
 
-center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, CSQ, BID, WAI, suicide)
+center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, CSQ, BID, WAI, CSE, treat_needs_post, suicide)
 
 ```
 Descriptives with complete data
 ```{r}
-center_dat
-center_dat[,c(2:7, 33)] = data.frame(apply(center_dat[,c(2:7,33)],2, as.factor))
-
+library(psych)
+library(prettyR)
+library(installr)
+dim(center_dat)
+center_dat[,c(2:7,60)] = data.frame(apply(center_dat[,c(2:7,60)],2, as.factor))
 desc_stats = describe(center_dat)
 desc_stats_numeric = data.frame(desc_stats$Numeric)
 desc_stats_numeric = desc_stats_numeric[c(1,4,5),]
@@ -255,7 +267,7 @@ desc_stats_numeric = data.frame(t(desc_stats_numeric))
 write.csv(desc_stats_numeric, "desc_stats_numeric.csv", row.names = TRUE)
 desc_stats_numeric = read.csv("desc_stats_numeric.csv", header = TRUE)
 colnames(desc_stats_numeric)[1] = "variable"
-desc_stats_numeric$percent_missing = 1-(as.numeric(desc_stats_numeric$valid.n) / 116)
+desc_stats_numeric$percent_missing = 1-(as.numeric(desc_stats_numeric$valid.n) / 118)
 desc_stats_numeric[,2:5] = format(round(desc_stats_numeric[,2:5], digits=2), nsmall = 2)
 desc_stats_numeric
 write.csv(desc_stats_numeric, "desc_stats_numeric.csv", row.names = FALSE)
