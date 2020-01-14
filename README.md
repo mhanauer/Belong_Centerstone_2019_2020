@@ -306,10 +306,6 @@ CSE_psycho = center_psycho[,138:150]
 
 omega_list = list(INQ_1_pre_psycho, INQ_2_pre_psycho, RAS_1_pre_psycho, RAS_3_pre_psycho, RAS_5_pre_psycho, ISLES_1_pre_psycho, ISLES_2_pre_psycho, MILQ_pre_psycho, RCS_pre_psycho, CSQ_psycho, WAI_psycho, CSE_psycho)
 omega_list
-summary(omega(INQ_1_pre))
-install.packages("psych")
-require(psych)
-library(psych)
 test_omega = list()
 for(i in 1:length(omega_list)){
   test_omega[[i]] = omega(omega_list[[i]])
@@ -317,7 +313,7 @@ for(i in 1:length(omega_list)){
 }
 test_omega
 ```
-Correlations for all constructs
+
 
 
 
@@ -358,9 +354,9 @@ library(psych)
 library(prettyR)
 library(installr)
 #install.packages("Hmisc")
-uninstall.packages("Hmisc")
-uninstall.packages("psych")
-library(Hmisc)
+#uninstall.packages("Hmisc")
+#uninstall.packages("psych")
+#library(Hmisc)
 dim(center_dat)
 center_dat[,c(2:7,60)] = data.frame(apply(center_dat[,c(2:7,60)],2, as.factor))
 desc_stats = describe(center_dat)
@@ -589,6 +585,33 @@ for(i in 1:length(out_diff_dat_norm)){
 }
 shap_results
 ```
+Correlations
+```{r}
+cor_dat = out_diff_dat[[1]]
+cor_dat = cor_dat[,c(30:33, 35:45)]
+library(Hmisc)
+
+cor_dat_results = rcorr(as.matrix(cor_dat))
+
+flattenCorrMatrix <- function(cormat, pmat) {
+  ut <- upper.tri(cormat)
+  data.frame(
+    row = rownames(cormat)[row(cormat)[ut]],
+    column = rownames(cormat)[col(cormat)[ut]],
+    cor  =(cormat)[ut],
+    p = pmat[ut]
+    )
+}
+
+cor_dat_results = flattenCorrMatrix(cor_dat_results$r, cor_dat_results$P)
+cor_dat_results[,3:4] = round(cor_dat_results[,3:4],3)
+cor_dat_results = cor_dat_results
+dim(cor_dat_results)
+cor_dat_results
+cor_dat_results=subset(cor_dat_results, abs(cor) > .4)
+cor_dat_results
+```
+
 Research Question #1: Are novel treatment targets (i.e., perceived burdensomeness, thwarted belongingness, meaning made of stress, goal orientation/hope, resilience-based coping) changing from pre-treatment to post-treatment during standard episodes of care? 
 
 Hypothesis 1: There will be no change in novel treatment target scores from the pre-treatment condition to the post-treatment condition. 
