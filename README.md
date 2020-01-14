@@ -236,7 +236,6 @@ CSQ = rowMeans(CSQ, na.rm = TRUE)
 CSQ
 
 ### Find these vars Hypothesis 3: Treatment alliance and treatment satisfaction will be positively and uniquely associated with willingness to seek future help at discharge.
-WAI
 WAI = center_dat[,166:169]
 WAI_desc = data.frame(apply(WAI, 2, as.factor))
 describe(WAI_desc)
@@ -288,28 +287,29 @@ paran(BID_psycho_Complete, centile = 95, iterations = 1000, graph = TRUE, cfa = 
 
 
 ```
-Get omegas for all constructs
+Get omegas for all non-BID constructs at pre and only post if only collected at post
 ```{r}
-INQ_1_pre = center_psycho[,5:9]
-INQ_2_pre = center_psycho[,10:14]
-RAS_1_pre = center_psycho[,20:27]
-RAS_3_pre = center_psycho[,15:19]
-RAS_5_pre = center_psycho[,28:30]
-ISLES_1_pre = center_psycho[,34:36]
-ISLES_2_pre = center_psycho[,37:39]
-MILQ_pre = center_psycho[,40:44]
-RCS_pre = center_psycho[,56:59]
-SIS_1_pre = center_psycho[,c(49:50,52:53)]
-SIS_2_pre = center_psycho[,c(45:48, 51, 54:55)]
+INQ_1_pre_psycho = center_psycho[,5:9]
+INQ_2_pre_psycho = center_psycho[,10:14]
+RAS_1_pre_psycho = center_psycho[,20:27]
+RAS_3_pre_psycho = center_psycho[,15:19]
+RAS_5_pre_psycho = center_psycho[,28:30]
+ISLES_1_pre_psycho = center_psycho[,34:36]
+ISLES_2_pre_psycho = center_psycho[,37:39]
+MILQ_pre_psycho = center_psycho[,40:44]
+RCS_pre_psycho = center_psycho[,56:59]
+SIS_1_pre_psycho = center_psycho[,c(49:50,52:53)]
+SIS_2_pre_psycho = center_psycho[,c(45:48, 51, 54:55)]
+CSQ_psycho = data.frame(X12_CSQ.a = center_psycho$X12_CSQ.a,X12_CSQ.b = center_psycho$X12_CSQ.b, X12_CSQ.c = center_psycho$X12_CSQ.c) 
+WAI_psycho = center_psycho[,166:169]
+CSE_psycho = center_psycho[,138:150]
 
-
-omega_list = list(INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre)
+omega_list = list(INQ_1_pre_psycho, INQ_2_pre_psycho, RAS_1_pre_psycho, RAS_3_pre_psycho, RAS_5_pre_psycho, ISLES_1_pre_psycho, ISLES_2_pre_psycho, MILQ_pre_psycho, RCS_pre_psycho, CSQ_psycho, WAI_psycho, CSE_psycho)
 omega_list
 summary(omega(INQ_1_pre))
-
-
-
-
+install.packages("psych")
+require(psych)
+library(psych)
 test_omega = list()
 for(i in 1:length(omega_list)){
   test_omega[[i]] = omega(omega_list[[i]])
@@ -317,6 +317,7 @@ for(i in 1:length(omega_list)){
 }
 test_omega
 ```
+Correlations for all constructs
 
 
 
@@ -356,6 +357,10 @@ Descriptives with complete data
 library(psych)
 library(prettyR)
 library(installr)
+#install.packages("Hmisc")
+uninstall.packages("Hmisc")
+uninstall.packages("psych")
+library(Hmisc)
 dim(center_dat)
 center_dat[,c(2:7,60)] = data.frame(apply(center_dat[,c(2:7,60)],2, as.factor))
 desc_stats = describe(center_dat)
@@ -409,6 +414,7 @@ saftey_plan_yes_mean = mean(saftey_plan_yes$X9_TREAT.a.Score, na.rm = TRUE)
 saftey_plan_yes_sd = sd(saftey_plan_yes$X9_TREAT.a.Score, na.rm = TRUE)
 saftey_plan_yes_range = range(saftey_plan_yes$X9_TREAT.a.Score, na.rm = TRUE)
 
+
 medication =  treat_all[,3:4]
 medication_yes = subset(medication, X9_TREAT.b.Received == 1)
 dim(medication_yes)
@@ -435,40 +441,77 @@ group_therapy_yes_range = range(group_therapy$X9_Treat.d.Score, na.rm = TRUE)
 belong =  treat_all[,9:10]
 belong_yes = subset(belong, X9_Treat.e.Received == 1)
 dim(belong_yes)
-belong_yes_mean = mean(belong_yes$X9_Treat.e.Received, na.rm = TRUE)
-belong_yes_sd = sd(belong_yes$X9_Treat.e.Received, na.rm = TRUE)
-belong_yes_range = range(belong$X9_Treat.e.Received, na.rm = TRUE)
+belong_yes_mean = mean(belong_yes$X9_Treat.e.Score, na.rm = TRUE)
+belong_yes_sd = sd(belong_yes$X9_Treat.e.Score, na.rm = TRUE)
+belong_yes_range = range(belong$X9_Treat.e.Score, na.rm = TRUE)
 
 
 coping_skills =  treat_all[,11:12]
 coping_skills_yes = subset(coping_skills, X9_Treat.f.Received == 1)
 dim(coping_skills_yes)
-coping_skills_yes_mean = mean(coping_skills_yes$X9_Treat.f.Received, na.rm = TRUE)
-coping_skills_yes_sd = sd(coping_skills_yes$X9_Treat.f.Received, na.rm = TRUE)
-coping_skills_yes_range = range(coping_skills$X9_Treat.f.Received, na.rm = TRUE)
+coping_skills_yes_mean = mean(coping_skills_yes$X9_Treat.f.Score, na.rm = TRUE)
+coping_skills_yes_sd = sd(coping_skills_yes$X9_Treat.f.Score, na.rm = TRUE)
+coping_skills_yes_range = range(coping_skills$X9_Treat.f.Score, na.rm = TRUE)
 
 meaning =  treat_all[,13:14]
 meaning_yes = subset(meaning, X9_Treat.g.Received == 1)
 dim(meaning_yes)
-meaning_yes_mean = mean(meaning_yes$X9_Treat.g.Received, na.rm = TRUE)
-meaning_yes_sd = sd(meaning_yes$X9_Treat.g.Received, na.rm = TRUE)
-meaning_yes_range = range(meaning$X9_Treat.g.Received, na.rm = TRUE)
+meaning_yes_mean = mean(meaning_yes$X9_Treat.g.Score, na.rm = TRUE)
+meaning_yes_sd = sd(meaning_yes$X9_Treat.g.Score, na.rm = TRUE)
+meaning_yes_range = range(meaning$X9_Treat.g.Score, na.rm = TRUE)
 
 sense =  treat_all[,15:16]
 sense_yes = subset(sense, X9_Treat.h.Received == 1)
 dim(sense_yes)
-sense_yes_mean = mean(sense_yes$X9_Treat.h.Received, na.rm = TRUE)
-sense_yes_sd = sd(sense_yes$X9_Treat.h.Received, na.rm = TRUE)
-sense_yes_range = range(sense$X9_Treat.h.Received, na.rm = TRUE)
+sense_yes_mean = mean(sense_yes$X9_Treat.h.Score, na.rm = TRUE)
+sense_yes_sd = sd(sense_yes$X9_Treat.h.Score, na.rm = TRUE)
+sense_yes_range = range(sense$X9_Treat.h.Score, na.rm = TRUE)
 
 burden =  treat_all[,17:18]
 burden_yes = subset(burden, X9_Treat.I.Received == 1)
 dim(burden_yes)
-burden_yes_mean = mean(burden_yes$X9_Treat.I.Received, na.rm = TRUE)
-burden_yes_sd = sd(burden_yes$X9_Treat.I.Received, na.rm = TRUE)
-burden_yes_range = range(burden$X9_Treat.I.Received, na.rm = TRUE)
+burden_yes_mean = mean(burden_yes$X9_Treat.I.Score, na.rm = TRUE)
+burden_yes_sd = sd(burden_yes$X9_Treat.I.Score, na.rm = TRUE)
+burden_yes_range = range(burden$X9_Treat.I.Score, na.rm = TRUE)
 
+safe =  treat_all[,19:20]
+safe_yes = subset(safe, X9_Treat.j.Received == 1)
+safe_yes_mean = mean(safe_yes$X9_Treat.j.Score, na.rm = TRUE)
+safe_yes_sd = sd(safe_yes$X9_Treat.j.Score, na.rm = TRUE)
+safe_yes_range = range(safe$X9_Treat.j.Score, na.rm = TRUE)
 
+hope =  treat_all[,21:22]
+hope_yes = subset(hope, X9_Treat..k.Received == 1)
+dim(hope_yes)
+hope_yes_mean = mean(hope_yes$X9_Treat.k.Score, na.rm = TRUE)
+hope_yes_sd = sd(hope_yes$X9_Treat.k.Score, na.rm = TRUE)
+hope_yes_range = range(hope$X9_Treat.k.Score, na.rm = TRUE)
+
+connect =  treat_all[,23:24]
+connect_yes = subset(connect, X9_Treat.L.Received == 1)
+dim(connect_yes)
+connect_yes_mean = mean(connect_yes$X9_Treat.L.Score, na.rm = TRUE)
+connect_yes_sd = sd(connect_yes$X9_Treat.L.Score, na.rm = TRUE)
+connect_yes_range = range(connect$X9_Treat.L.Score, na.rm = TRUE)
+
+needs =  treat_all[,25:26]
+needs_yes = subset(needs, X9_Treat.m.Received == 1)
+dim(needs_yes)
+needs_yes_mean = mean(needs_yes$X9_Treat.m.Score, na.rm = TRUE)
+needs_yes_sd = sd(needs_yes$X9_Treat.m.Score, na.rm = TRUE)
+needs_yes_range = range(needs$X9_Treat.m.Score, na.rm = TRUE)
+
+treat_range = data.frame(saftey_plan_yes_range, medication_yes_range, ind_therapy_yes_range, group_therapy_yes_range, belong_yes_range, coping_skills_yes_range, meaning_yes_range, sense_yes_range, burden_yes_range, safe_yes_range, hope_yes_range, connect_yes_range, needs_yes_range)
+
+# treat_range not needed all from 1 to 7 scale make note in table
+
+treat_results = data.frame(saftey_plan_yes_mean, medication_yes_mean, ind_therapy_yes_mean, group_therapy_yes_mean, belong_yes_mean, coping_skills_yes_mean, meaning_yes_mean,sense_yes_mean, burden_yes_mean, safe_yes_mean, hope_yes_mean, connect_yes_mean, needs_yes_mean, saftey_plan_yes_sd, medication_yes_sd, ind_therapy_yes_sd , group_therapy_yes_sd, belong_yes_sd, coping_skills_yes_sd, meaning_yes_sd, sense_yes_sd, burden_yes_sd, safe_yes_sd, hope_yes_sd, connect_yes_sd, needs_yes_sd)
+treat_results = t(treat_results)
+treat_results_mean = treat_results[1:13,]
+treat_results_sd = treat_results[14:26,]
+treat_results = data.frame(treat_results_mean, treat_results_sd)
+treat_results = round(treat_results, 2)
+treat_results
 ```
 
 
