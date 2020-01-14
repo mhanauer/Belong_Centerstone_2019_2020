@@ -254,9 +254,72 @@ treat_needs_post = center_dat[,170:195]
 ## Get whether someone died by suicide or not need to add in 0's and missing for number of attempts
 suicide = center_dat$X4_AttemptedSuic
 
+center_psycho = center_dat 
 center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, CSQ, BID, WAI, CSE, treat_needs_post, suicide)
 
 ```
+Psychometrics for BID
+```{r}
+BID_psycho =  center_psycho[,201:206]
+summary(omega(BID_psycho))
+
+efa3 = fa(r = BID_psycho, nfactors = 3, fm = "gls", cor = "poly")
+efa3
+fa.diagram(efa3)
+
+efa2 = fa(r = BID_psycho, nfactors = 2, fm = "gls", cor = "poly")
+efa2
+fa.diagram(efa2)
+
+efa1 = fa(r = BID_psycho, nfactors = 1, fm = "gls", cor = "poly")
+efa1
+fa.diagram(efa1)
+
+anova(efa3,efa1)
+anova(efa3,efa2)
+anova(efa2,efa1)
+# now try VSS
+vss(BID_psycho, n = 3, rotate = "oblimin", fm = "mle", cor = "poly")
+
+# now try paran
+library(paran)
+BID_psycho_Complete = na.omit(BID_psycho)
+paran(BID_psycho_Complete, centile = 95, iterations = 1000, graph = TRUE, cfa = TRUE)
+
+
+```
+Get omegas for all constructs
+```{r}
+INQ_1_pre = center_psycho[,5:9]
+INQ_2_pre = center_psycho[,10:14]
+RAS_1_pre = center_psycho[,20:27]
+RAS_3_pre = center_psycho[,15:19]
+RAS_5_pre = center_psycho[,28:30]
+ISLES_1_pre = center_psycho[,34:36]
+ISLES_2_pre = center_psycho[,37:39]
+MILQ_pre = center_psycho[,40:44]
+RCS_pre = center_psycho[,56:59]
+SIS_1_pre = center_psycho[,c(49:50,52:53)]
+SIS_2_pre = center_psycho[,c(45:48, 51, 54:55)]
+
+
+omega_list = list(INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre)
+omega_list
+summary(omega(INQ_1_pre))
+
+
+
+
+test_omega = list()
+for(i in 1:length(omega_list)){
+  test_omega[[i]] = omega(omega_list[[i]])
+  test_omega[[i]] = summary(test_omega[[i]])
+}
+test_omega
+```
+
+
+
 Assess missing 
 ```{r}
 head(center_dat)
@@ -264,26 +327,29 @@ library(naniar)
 miss_var_summary(center_dat)
 
 dim(center_dat)
-center_dat_complete = na.omit(center_dat)
-dim(center_dat_complete)
+####### Only dropping one persn not worth it.
 
-quasi_itt =  apply(center_dat[,-c(34:59)], 1, function(x)(sum(is.na(x))))
-quasi_itt_dat = data.frame(center_dat,quasi_itt)
-describe.factor(quasi_itt_dat$quasi_itt)
+#center_dat_complete = na.omit(center_dat)
+#dim(center_dat_complete)
+
+#quasi_itt =  apply(center_dat[,-c(34:59)], 1, function(x)(sum(is.na(x))))
+#quasi_itt_dat = data.frame(center_dat,quasi_itt)
+#describe.factor(quasi_itt_dat$quasi_itt)
 
 
 
 ####Need to ignore the treatment received yes or no variables
-quasi_itt_dat = subset(quasi_itt_dat, quasi_itt < dim(quasi_itt_dat[,-c(34:59)])[2]/2)
-dim(center_dat)
-dim(quasi_itt_dat)
-quasi_itt_dat$quasi_itt = NULL
-dim(quasi_itt_dat)
+#quasi_itt_dat = subset(quasi_itt_dat, quasi_itt < dim(quasi_itt_dat[,-c(34:59)])[2]/2)
+#dim(center_dat)
+#dim(quasi_itt_dat)
+#quasi_itt_dat$quasi_itt = NULL
+#dim(quasi_itt_dat)
 
-center_dat = quasi_itt_dat
-dim(center_dat)
+#center_dat = quasi_itt_dat
+#dim(center_dat)
 
 ```
+
 
 Descriptives with complete data
 ```{r}
@@ -313,6 +379,95 @@ desc_stats_factor = read.csv("desc_stats_factor.csv", header = TRUE)
 colnames(desc_stats_factor)[1] = "variable"
 desc_stats_factor
 write.csv(desc_stats_factor, "desc_stats_factor.csv", row.names = FALSE)
+
+```
+Treat variable
+Number and percentage who said yes
+Mean and sd for the rating
+```{r}
+treat_all =  center_psycho[,170:195]
+saftey_plan = treat_all[,c(1:2)] 
+
+dim(treat_all)
+treat_receive = treat_all[,c(1,3,5,7,9,11,13,15,17,19,21,23,25)]
+treat_receive = data.frame(apply(treat_receive, 2, as.factor))
+treat_receive = describe(treat_receive)
+treat_receive_factor = data.frame(treat_receive$Factor) 
+treat_receive_factor = t(treat_receive_factor)
+treat_receive_factor = format(round(treat_receive_factor, digits=2), nsmall = 2)
+write.csv(treat_receive_factor, "treat_receive_factor.csv", row.names = TRUE)
+treat_receive_factor = read.csv("treat_receive_factor.csv", header = TRUE)
+colnames(treat_receive_factor)[1] = "variable"
+treat_receive_factor
+
+
+### Have to get the mean and sd for each one, because the data set will be different
+saftey_plan =  treat_all[,1:2]
+saftey_plan_yes = subset(saftey_plan, X9_TREAT.a.Received == 1)
+dim(saftey_plan_yes)
+saftey_plan_yes_mean = mean(saftey_plan_yes$X9_TREAT.a.Score, na.rm = TRUE)
+saftey_plan_yes_sd = sd(saftey_plan_yes$X9_TREAT.a.Score, na.rm = TRUE)
+saftey_plan_yes_range = range(saftey_plan_yes$X9_TREAT.a.Score, na.rm = TRUE)
+
+medication =  treat_all[,3:4]
+medication_yes = subset(medication, X9_TREAT.b.Received == 1)
+dim(medication_yes)
+medication_yes_mean = mean(medication_yes$X9_TREAT.b.Score, na.rm = TRUE)
+medication_yes_sd = sd(medication_yes$X9_TREAT.b.Score, na.rm = TRUE)
+medication_yes_range = range(medication$X9_TREAT.b.Score, na.rm = TRUE)
+
+ind_therapy =  treat_all[,5:6]
+ind_therapy_yes = subset(ind_therapy, X9_TREAT.c.Received == 1)
+dim(ind_therapy_yes)
+ind_therapy_yes_mean = mean(ind_therapy_yes$X9_TREAT.c.Score, na.rm = TRUE)
+ind_therapy_yes_sd = sd(ind_therapy_yes$X9_TREAT.c.Score, na.rm = TRUE)
+ind_therapy_yes_range = range(ind_therapy$X9_TREAT.c.Score, na.rm = TRUE)
+
+
+group_therapy =  treat_all[,7:8]
+group_therapy_yes = subset(group_therapy, X9_TREAT.d.Received == 1)
+dim(group_therapy_yes)
+group_therapy_yes_mean = mean(group_therapy_yes$X9_Treat.d.Score, na.rm = TRUE)
+group_therapy_yes_sd = sd(group_therapy_yes$X9_Treat.d.Score, na.rm = TRUE)
+group_therapy_yes_range = range(group_therapy$X9_Treat.d.Score, na.rm = TRUE)
+
+
+belong =  treat_all[,9:10]
+belong_yes = subset(belong, X9_Treat.e.Received == 1)
+dim(belong_yes)
+belong_yes_mean = mean(belong_yes$X9_Treat.e.Received, na.rm = TRUE)
+belong_yes_sd = sd(belong_yes$X9_Treat.e.Received, na.rm = TRUE)
+belong_yes_range = range(belong$X9_Treat.e.Received, na.rm = TRUE)
+
+
+coping_skills =  treat_all[,11:12]
+coping_skills_yes = subset(coping_skills, X9_Treat.f.Received == 1)
+dim(coping_skills_yes)
+coping_skills_yes_mean = mean(coping_skills_yes$X9_Treat.f.Received, na.rm = TRUE)
+coping_skills_yes_sd = sd(coping_skills_yes$X9_Treat.f.Received, na.rm = TRUE)
+coping_skills_yes_range = range(coping_skills$X9_Treat.f.Received, na.rm = TRUE)
+
+meaning =  treat_all[,13:14]
+meaning_yes = subset(meaning, X9_Treat.g.Received == 1)
+dim(meaning_yes)
+meaning_yes_mean = mean(meaning_yes$X9_Treat.g.Received, na.rm = TRUE)
+meaning_yes_sd = sd(meaning_yes$X9_Treat.g.Received, na.rm = TRUE)
+meaning_yes_range = range(meaning$X9_Treat.g.Received, na.rm = TRUE)
+
+sense =  treat_all[,15:16]
+sense_yes = subset(sense, X9_Treat.h.Received == 1)
+dim(sense_yes)
+sense_yes_mean = mean(sense_yes$X9_Treat.h.Received, na.rm = TRUE)
+sense_yes_sd = sd(sense_yes$X9_Treat.h.Received, na.rm = TRUE)
+sense_yes_range = range(sense$X9_Treat.h.Received, na.rm = TRUE)
+
+burden =  treat_all[,17:18]
+burden_yes = subset(burden, X9_Treat.I.Received == 1)
+dim(burden_yes)
+burden_yes_mean = mean(burden_yes$X9_Treat.I.Received, na.rm = TRUE)
+burden_yes_sd = sd(burden_yes$X9_Treat.I.Received, na.rm = TRUE)
+burden_yes_range = range(burden$X9_Treat.I.Received, na.rm = TRUE)
+
 
 ```
 
@@ -681,15 +836,6 @@ reg_results_sis_2
 write.csv(reg_results_sis_2, "reg_results_sis_2.csv", row.names = FALSE)
 ```
 
-
-Hypothesis 3: Treatment alliance and treatment satisfaction will be positively and uniquely associated with willingness to seek future help at discharge. 
-
-Don't know what this is: willingness to seek future help at discharge
-```{r}
-
-
-
-```
 Hypothesis 4:  Treatment alliance and treatment satisfaction will be positively and uniquely associated with intention to follow-through on discharge plans. 
 ```{r}
 ### Regression analysis
@@ -775,7 +921,7 @@ import_r3_hyp_1 = list()
 vif_r3_hyp_1 = list()
 
 for(i in 1:length(out_diff_dat)){
-  regout_r3_hyp_1[[i]] = glm(suicide ~ INQ_1_diff + INQ_2_diff + RAS_1_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + SIS_1_diff+ SIS_2_diff, data = out_diff_dat[[i]], family = binomial()) 
+  regout_r3_hyp_1[[i]] = glm(suicide ~ INQ_1_diff + INQ_2_diff + RAS_1_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + SIS_1_diff+ SIS_2_diff + BID + CSE, data = out_diff_dat[[i]], family = binomial()) 
   regout_r3_hyp_1_sum[[i]] = summary(regout_r3_hyp_1[[i]])
   #import_r3_hyp_1[[i]] = calc.relimp(regout_r3_hyp_1[[i]])
   #import_r3_hyp_1[[i]] = import_r3_hyp_1[[i]]@lmg
@@ -788,20 +934,20 @@ for(i in 1:length(out_diff_dat)){
 vif_r3_hyp_1
 #3 cols
 parsout_r3_hyp_1 = unlist(parsout_r3_hyp_1) 
-parsout_r3_hyp_1 = matrix(parsout_r3_hyp_1, ncol = 9, byrow = TRUE)
+parsout_r3_hyp_1 = matrix(parsout_r3_hyp_1, ncol = 11, byrow = TRUE)
 parsout_r3_hyp_1
 
 sesout_r3_hyp_1 = unlist(sesout_r3_hyp_1)
-sesout_r3_hyp_1 = matrix(sesout_r3_hyp_1, ncol = 9, byrow= TRUE)
+sesout_r3_hyp_1 = matrix(sesout_r3_hyp_1, ncol = 11, byrow= TRUE)
 sesout_r3_hyp_1
 
 pars_sesout_r3_hyp_1 = mi.meld(parsout_r3_hyp_1, sesout_r3_hyp_1)
 t_stat_reg_r3_hyp_1 =  pars_sesout_r3_hyp_1$q.mi / pars_sesout_r3_hyp_1$se.mi
-p_values_reg_r3_hyp_1 = 2*pt(-abs(t_stat_reg_r3_hyp_1), df = dim(out_diff_dat[[1]])[1]-9)
+p_values_reg_r3_hyp_1 = 2*pt(-abs(t_stat_reg_r3_hyp_1), df = dim(out_diff_dat[[1]])[1]-11)
 p_values_reg_r3_hyp_1 = format(round(p_values_reg_r3_hyp_1, digits=3), nsmall = 2)
 p_values_reg_r3_hyp_1
 p_values_reg_r3_hyp_1
-critical_t_reg_r3_hyp_1 = abs(qt(0.05/2, dim(out_diff_dat_corr[[1]])[1]-9))
+critical_t_reg_r3_hyp_1 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-11))
 critical_t_reg_r3_hyp_1
 upper_reg_r3_hyp_1 = pars_sesout_r3_hyp_1$q.mi +(critical_t_reg_r3_hyp_1*pars_sesout_r3_hyp_1$se.mi)
 upper_reg_r3_hyp_1 = format(round(upper_reg_r3_hyp_1, digits=2), nsmall = 2)
@@ -840,3 +986,9 @@ write.csv(reg_results_r3_hyp_1, "reg_results_r3_hyp_1.csv", row.names = FALSE)
 
 
 ```
+
+
+
+
+
+
