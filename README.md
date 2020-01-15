@@ -386,6 +386,13 @@ colnames(desc_stats_numeric)[1] = "variable"
 desc_stats_numeric$percent_missing = 1-(as.numeric(desc_stats_numeric$valid.n) / 118)
 desc_stats_numeric[,2:5] = format(round(desc_stats_numeric[,2:5], digits=2), nsmall = 2)
 desc_stats_numeric
+desc_range= center_dat[,-c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)]
+desc_range = apply(desc_range, 2, range, na.rm = TRUE)
+desc_range = t(desc_range)
+desc_range = round(desc_range,2)
+desc_range = paste0(desc_range[,1], sep = ",", desc_range[,2])
+desc_stats_numeric$desc_range = desc_range
+desc_stats_numeric
 write.csv(desc_stats_numeric, "desc_stats_numeric.csv", row.names = FALSE)
 
 desc_stats_factor = data.frame(desc_stats$Factor) 
