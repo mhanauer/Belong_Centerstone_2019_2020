@@ -17,6 +17,7 @@ center_dat=  center_dat_load
 head(center_dat)
 library(psych)
 library(prettyR)
+
 ```
 Create total scores for INQ and RAS
 ```{r}
@@ -241,12 +242,18 @@ WAI_desc = data.frame(apply(WAI, 2, as.factor))
 describe(WAI_desc)
 WAI = rowMeans(WAI, na.rm = TRUE)
 
-### CSE
+### CSE Use problem focused coping 1-6; Stop unpleasant emotions and thoughts 7-10; get support from friends and family 11-13
 CSE =  center_dat[,138:150]
 CSE_desc = data.frame(apply(CSE,2,as.factor))
 describe(CSE_desc)
-CSE = rowMeans(CSE, na.rm = TRUE)
-CSE
+
+CSE_1 = CSE[,1:6]
+CSE_1 = rowMeans(CSE_1, na.rm = TRUE)
+CSE_2 = CSE[,7:10]
+CSE_2 = rowMeans(CSE_2, na.rm = TRUE)
+CSE_3 = CSE[,11:13]
+CSE_3 = rowMeans(CSE_3, na.rm = TRUE)
+
 
 ### Treatment needs post for those who received the treatment what was average
 treat_needs_post = center_dat[,170:195]
@@ -254,7 +261,7 @@ treat_needs_post = center_dat[,170:195]
 suicide = center_dat$X4_AttemptedSuic
 
 center_psycho = center_dat 
-center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, CSQ, BID, WAI, CSE, treat_needs_post, suicide)
+center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, CSQ, BID, WAI, CSE_1, CSE_2, CSE_3, treat_needs_post, suicide)
 
 ```
 Psychometrics for BID
@@ -302,9 +309,13 @@ SIS_1_pre_psycho = center_psycho[,c(49:50,52:53)]
 SIS_2_pre_psycho = center_psycho[,c(45:48, 51, 54:55)]
 CSQ_psycho = data.frame(X12_CSQ.a = center_psycho$X12_CSQ.a,X12_CSQ.b = center_psycho$X12_CSQ.b, X12_CSQ.c = center_psycho$X12_CSQ.c) 
 WAI_psycho = center_psycho[,166:169]
-CSE_psycho = center_psycho[,138:150]
+CSE_1_psycho = center_psycho[,138:143]
+CSE_2_psycho = center_psycho[,144:147]
+CSE_3_psycho = center_psycho[,148:150]
 
-omega_list = list(INQ_1_pre_psycho, INQ_2_pre_psycho, RAS_1_pre_psycho, RAS_3_pre_psycho, RAS_5_pre_psycho, ISLES_1_pre_psycho, ISLES_2_pre_psycho, MILQ_pre_psycho, RCS_pre_psycho, CSQ_psycho, WAI_psycho, CSE_psycho)
+
+
+omega_list = list(INQ_1_pre_psycho, INQ_2_pre_psycho, RAS_1_pre_psycho, RAS_3_pre_psycho, RAS_5_pre_psycho, ISLES_1_pre_psycho, ISLES_2_pre_psycho, MILQ_pre_psycho, RCS_pre_psycho, CSQ_psycho, WAI_psycho, CSE_1_psycho, CSE_2_psycho, CSE_3_psycho)
 omega_list
 test_omega = list()
 for(i in 1:length(omega_list)){
@@ -358,7 +369,12 @@ library(installr)
 #uninstall.packages("psych")
 #library(Hmisc)
 dim(center_dat)
-center_dat[,c(2:7,60)] = data.frame(apply(center_dat[,c(2:7,60)],2, as.factor))
+describe.factor(center_dat$X9_TREAT.a.Received)
+center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)] = data.frame(apply(center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)],2, as.factor))
+
+center_dat[,c(35,37,39,41,43,45,47,49,51,53,55,57,59)] = data.frame(apply(center_dat[,c(35,37,39,41,43,45,47,49,51,53,55,57,59)],2, as.numeric))
+describe.factor(center_dat$X9_TREAT.a.Received)
+
 desc_stats = describe(center_dat)
 desc_stats_numeric = data.frame(desc_stats$Numeric)
 desc_stats_numeric = desc_stats_numeric[c(1,4,5),]
@@ -378,7 +394,7 @@ desc_stats_factor = format(round(desc_stats_factor, digits=2), nsmall = 2)
 write.csv(desc_stats_factor, "desc_stats_factor.csv", row.names = TRUE)
 desc_stats_factor = read.csv("desc_stats_factor.csv", header = TRUE)
 colnames(desc_stats_factor)[1] = "variable"
-desc_stats_factor
+desc_stats_factor$Percent = desc_stats_factor$Percent/100
 write.csv(desc_stats_factor, "desc_stats_factor.csv", row.names = FALSE)
 
 ```
@@ -508,6 +524,7 @@ treat_results_sd = treat_results[14:26,]
 treat_results = data.frame(treat_results_mean, treat_results_sd)
 treat_results = round(treat_results, 2)
 treat_results
+write.csv(treat_results, "treat_results.csv")
 ```
 
 
@@ -517,13 +534,13 @@ head(center_dat)
 library(Amelia)
 
 ### Get rid of the treat variables, I don't them imputted, because they are missing on purpose.
-treat_vars  =  center_dat[,c(34:59)]
-center_dat = center_dat[,-c(34:59)]
+treat_vars  =  center_dat[,c(36:61)]
+center_dat = center_dat[,-c(36:61)]
 center_dat
 
 ### Create bounds for one var and see what happens
 ## INQ Post
-center_dat[,8:33]
+center_dat[,8:35]
 
 range(center_dat$INQ_1_pre, na.rm = TRUE) 
 range(center_dat$RAS_1_pre, na.rm = TRUE) 
@@ -531,7 +548,7 @@ range(center_dat$ISLES_1_post, na.rm = TRUE)
 range(center_dat$MILQ_post, na.rm = TRUE) 
 range(center_dat$RCS_post, na.rm = TRUE) 
 
-bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5, 30,1,4, 31,1,5, 32,1,5, 33,1,10),nrow = 26, ncol = 3, byrow = TRUE)
+bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5, 30,1,4, 31,1,5, 32,1,5, 33,1,10, 34,1,10, 35,1,10),nrow = 28, ncol = 3, byrow = TRUE)
 bounds
 
 a.out = amelia(x = center_dat, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide"), bounds = bounds)
@@ -565,6 +582,7 @@ dim(impute_dat_loop[[1]])
 out_diff_dat = list()
 head(impute_dat_loop[[1]][8:18])
 head(impute_dat_loop[[1]][19:29])
+head(impute_dat_loop[[1]])
 
 for(i in 1:length(impute_dat_loop)){
   out_diff_dat[[i]] = impute_dat_loop[[i]][8:18]-impute_dat_loop[[1]][19:29]
@@ -588,7 +606,7 @@ shap_results
 Correlations
 ```{r}
 cor_dat = out_diff_dat[[1]]
-cor_dat = cor_dat[,c(30:33, 35:45)]
+cor_dat = cor_dat[,c(30:35, 37:47)]
 library(Hmisc)
 
 cor_dat_results = rcorr(as.matrix(cor_dat))
@@ -758,9 +776,19 @@ Hypothesis 2: Meaning made of stress, meaning in life, coping self-efficacy, goa
 
 (Add new vars above to global data set)
 
+---
+title: "TestRegressions"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
 Sucidial Ideation regression
 ```{r}
 library(car)
+library(Amelia)
 ### Regression analysis
 regout_sis_1 = list()
 regout_sis_1_sum = list()
@@ -770,9 +798,10 @@ import_sis_1 = list()
 vif_sis_1 = list()
 library(relaimpo)
 head(out_diff_dat[[1]][,35:45])
+head(out_diff_dat[[1]])
 
 for(i in 1:length(out_diff_dat)){
-  regout_sis_1[[i]] = lm(SIS_1_diff ~ INQ_1_diff + INQ_2_diff + RAS_1_diff + RAS_3_diff+ RAS_5_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + RCS_diff + BID + CSE, data = out_diff_dat[[i]])
+  regout_sis_1[[i]] = lm(SIS_1_diff ~ INQ_1_diff + INQ_2_diff + RAS_1_diff + RAS_3_diff+ RAS_5_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + RCS_diff + BID + CSE_1+ CSE_2 + CSE_3 , data = out_diff_dat[[i]])
   regout_sis_1_sum[[i]] = summary(regout_sis_1[[i]])
   import_sis_1[[i]] = calc.relimp(regout_sis_1[[i]])
   import_sis_1[[i]] = import_sis_1[[i]]@lmg
@@ -783,20 +812,20 @@ for(i in 1:length(out_diff_dat)){
 vif_sis_1
 #10 cols
 parsout_sis_1 = unlist(parsout_sis_1) 
-parsout_sis_1 = matrix(parsout_sis_1, ncol = 12, byrow = TRUE)
+parsout_sis_1 = matrix(parsout_sis_1, ncol = 14, byrow = TRUE)
 parsout_sis_1
 
 sesout_sis_1 = unlist(sesout_sis_1)
-sesout_sis_1 = matrix(sesout_sis_1, ncol = 12, byrow = TRUE)
+sesout_sis_1 = matrix(sesout_sis_1, ncol = 14, byrow = TRUE)
 sesout_sis_1
 
 pars_sesout_sis_1 = mi.meld(parsout_sis_1, sesout_sis_1)
 t_stat_reg_sis_1 =  pars_sesout_sis_1$q.mi / pars_sesout_sis_1$se.mi
-p_values_reg_sis_1 = 2*pt(-abs(t_stat_reg_sis_1), df = dim(out_diff_dat[[1]])[1]-12)
+p_values_reg_sis_1 = 2*pt(-abs(t_stat_reg_sis_1), df = dim(out_diff_dat[[1]])[1]-14)
 p_values_reg_sis_1 = format(round(p_values_reg_sis_1, digits=3), nsmall = 2)
 p_values_reg_sis_1
 p_values_reg_sis_1
-critical_t_reg_sis_1 = abs(qt(0.05/2, dim(out_diff_dat_reg[[1]])[1]-12))
+critical_t_reg_sis_1 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-14))
 critical_t_reg_sis_1
 upper_reg_sis_1 = pars_sesout_sis_1$q.mi +(critical_t_reg_sis_1*pars_sesout_sis_1$se.mi)
 upper_reg_sis_1 = format(round(upper_reg_sis_1, digits=2), nsmall = 2)
@@ -806,14 +835,14 @@ lower_reg_sis_1 = format(round(lower_reg_sis_1, digits=2), nsmall = 2)
 ci_95_sis_1 = paste0(upper_reg_sis_1, sep = ",", lower_reg_sis_1)
 ci_95_sis_1
 import_sis_1 = unlist(import_sis_1)
-import_sis_1 = matrix(import_sis_1, ncol = 11, byrow = TRUE)
+import_sis_1 = matrix(import_sis_1, ncol = 13, byrow = TRUE)
 import_sis_1 = colMeans(import_sis_1)
 import_sis_1 
 
 reg_results_sis_1 = data.frame(par_est = t(pars_sesout_sis_1$q.mi), se = t(pars_sesout_sis_1$se.mi), p_value = t(p_values_reg_sis_1), ci_95_sis_1)
 reg_results_sis_1
 reg_results_sis_1[,1:2] = format(round(reg_results_sis_1[,1:2], digits=2), nsmall = 2)
-reg_results_sis_1$var_names = c("Intercept", colnames(out_diff_dat[[1]])[1:9], "BID", "CSE")
+reg_results_sis_1$var_names = c("Intercept", colnames(out_diff_dat[[1]])[37:45], "BID", "CSE_1", "CSE_2", "CSE_3")
 reg_results_sis_1 = data.frame(var_names = reg_results_sis_1$var_names, reg_results_sis_1[,1:4])
 typeof(reg_results_sis_1$p_value)
 
@@ -827,8 +856,10 @@ reg_results_sis_1 = reg_results_sis_1[-c(1),]
 reg_results_sis_1$import_sis_1 = import_sis_1
 reg_results_sis_1$import_sis_1 = format(round(reg_results_sis_1$import_sis_1, digits=2), nsmall = 2)
 reg_results_sis_1
+
 write.csv(reg_results_sis_1, "reg_results_sis_1.csv", row.names  = FALSE)
 ```
+
 Resolved plans
 ```{r}
 ### Regression analysis
@@ -843,7 +874,7 @@ head(out_diff_dat[[1]][,35:45])
 
 
 for(i in 1:length(out_diff_dat)){
-  regout_sis_2[[i]] = lm(SIS_2_diff ~ INQ_1_diff + INQ_2_diff + RAS_1_diff + RAS_3_diff+ RAS_5_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + RCS_diff+ BID + CSE, data = out_diff_dat[[i]])
+  regout_sis_2[[i]] = lm(SIS_2_diff ~ INQ_1_diff + INQ_2_diff + RAS_1_diff + RAS_3_diff+ RAS_5_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + RCS_diff+ BID + CSE_1+ CSE_2+ CSE_3, data = out_diff_dat[[i]])
   regout_sis_2_sum[[i]] = summary(regout_sis_2[[i]])
   import_sis_2[[i]] = calc.relimp(regout_sis_2[[i]])
   import_sis_2[[i]] = import_sis_2[[i]]@lmg
@@ -854,20 +885,20 @@ for(i in 1:length(out_diff_dat)){
 vif_sis_2
 #10 cols
 parsout_sis_2 = unlist(parsout_sis_2) 
-parsout_sis_2 = matrix(parsout_sis_2, ncol = 12, byrow = TRUE)
+parsout_sis_2 = matrix(parsout_sis_2, ncol = 14, byrow = TRUE)
 parsout_sis_2
 
 sesout_sis_2 = unlist(sesout_sis_2)
-sesout_sis_2 = matrix(sesout_sis_2, ncol = 12, byrow = TRUE)
+sesout_sis_2 = matrix(sesout_sis_2, ncol = 14, byrow = TRUE)
 sesout_sis_2
 
 pars_sesout_sis_2 = mi.meld(parsout_sis_2, sesout_sis_2)
 t_stat_reg_sis_2 =  pars_sesout_sis_2$q.mi / pars_sesout_sis_2$se.mi
-p_values_reg_sis_2 = 2*pt(-abs(t_stat_reg_sis_2), df = dim(out_diff_dat_reg[[1]])[1]-12)
+p_values_reg_sis_2 = 2*pt(-abs(t_stat_reg_sis_2), df = dim(out_diff_dat[[1]])[1]-15)
 p_values_reg_sis_2 = format(round(p_values_reg_sis_2, digits=3), nsmall = 2)
 p_values_reg_sis_2
 p_values_reg_sis_2
-critical_t_reg_sis_2 = abs(qt(0.05/2, dim(out_diff_dat_reg[[1]])[1]-12))
+critical_t_reg_sis_2 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-15))
 critical_t_reg_sis_2
 upper_reg_sis_2 = pars_sesout_sis_2$q.mi +(critical_t_reg_sis_2*pars_sesout_sis_2$se.mi)
 upper_reg_sis_2 = format(round(upper_reg_sis_2, digits=2), nsmall = 2)
@@ -877,14 +908,14 @@ lower_reg_sis_2 = format(round(lower_reg_sis_2, digits=2), nsmall = 2)
 ci_95_sis_2 = paste0(upper_reg_sis_2, sep = ",", lower_reg_sis_2)
 ci_95_sis_2
 import_sis_2 = unlist(import_sis_2)
-import_sis_2 = matrix(import_sis_2, ncol = 11, byrow = TRUE)
+import_sis_2 = matrix(import_sis_2, ncol = 13, byrow = TRUE)
 import_sis_2 = colMeans(import_sis_2)
 import_sis_2 
 
 reg_results_sis_2 = data.frame(par_est = t(pars_sesout_sis_2$q.mi), se = t(pars_sesout_sis_2$se.mi), p_value = t(p_values_reg_sis_2), ci_95_sis_2)
 reg_results_sis_2
 reg_results_sis_2[,1:2] = format(round(reg_results_sis_2[,1:2], digits=2), nsmall = 2)
-reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat_reg[[1]])[1:9], "BID", "CSE ")
+reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat[[1]])[37:45], "BID", "CSE_1", "CSE_2", "CSE_3")
 reg_results_sis_2 = data.frame(var_names = reg_results_sis_2$var_names, reg_results_sis_2[,1:4])
 typeof(reg_results_sis_2$p_value)
 
@@ -911,8 +942,9 @@ parsout_hyp_4 = list()
 sesout_hyp_4 = list()
 import_hyp_4 = list()
 vif_hyp_4 = list()
+hist(log(out_diff_dat[[1]]$BID))
 
-for(i in 1:length(out_diff_dat_reg)){
+for(i in 1:length(out_diff_dat)){
   regout_hyp_4[[i]] = lm(BID ~ CSQ + WAI, data = out_diff_dat[[i]])
   regout_hyp_4_sum[[i]] = summary(regout_hyp_4[[i]])
   import_hyp_4[[i]] = calc.relimp(regout_hyp_4[[i]])
@@ -933,11 +965,11 @@ sesout_hyp_4
 
 pars_sesout_hyp_4 = mi.meld(parsout_hyp_4, sesout_hyp_4)
 t_stat_reg_hyp_4 =  pars_sesout_hyp_4$q.mi / pars_sesout_hyp_4$se.mi
-p_values_reg_hyp_4 = 2*pt(-abs(t_stat_reg_hyp_4), df = dim(out_diff_dat_reg[[1]])[1]-3)
+p_values_reg_hyp_4 = 2*pt(-abs(t_stat_reg_hyp_4), df = dim(out_diff_dat[[1]])[1]-3)
 p_values_reg_hyp_4 = format(round(p_values_reg_hyp_4, digits=3), nsmall = 2)
 p_values_reg_hyp_4
 p_values_reg_hyp_4
-critical_t_reg_hyp_4 = abs(qt(0.05/2, dim(out_diff_dat_corr[[1]])[1]-3))
+critical_t_reg_hyp_4 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-3))
 critical_t_reg_hyp_4
 upper_reg_hyp_4 = pars_sesout_hyp_4$q.mi +(critical_t_reg_hyp_4*pars_sesout_hyp_4$se.mi)
 upper_reg_hyp_4 = format(round(upper_reg_hyp_4, digits=2), nsmall = 2)
@@ -975,8 +1007,14 @@ reg_results_hyp_4
 write.csv(reg_results_hyp_4, "reg_results_hyp_4.csv", row.names = FALSE)
 
 ```
+
+
 Hypothesis 1: Perceived burdensomeness, thwarted belongingness, and meaning made of stress will contribute the most variance to suicide risk status scores at discharge. 
 Going to check all of them
+
+Get point biserial later: library(polycor)
+
+
 ```{r}
 ### Regression analysis
 regout_r3_hyp_1 = list()
@@ -987,7 +1025,7 @@ import_r3_hyp_1 = list()
 vif_r3_hyp_1 = list()
 
 for(i in 1:length(out_diff_dat)){
-  regout_r3_hyp_1[[i]] = glm(suicide ~ INQ_1_diff + INQ_2_diff + RAS_1_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + SIS_1_diff+ SIS_2_diff + BID + CSE, data = out_diff_dat[[i]], family = binomial()) 
+  regout_r3_hyp_1[[i]] = glm(suicide ~ INQ_1_diff + INQ_2_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + SIS_2_diff + SIS_1_diff + BID+ CSE_1 + CSE_2 + CSE_3 , data = out_diff_dat[[i]], family = binomial()) 
   regout_r3_hyp_1_sum[[i]] = summary(regout_r3_hyp_1[[i]])
   #import_r3_hyp_1[[i]] = calc.relimp(regout_r3_hyp_1[[i]])
   #import_r3_hyp_1[[i]] = import_r3_hyp_1[[i]]@lmg
@@ -1000,20 +1038,20 @@ for(i in 1:length(out_diff_dat)){
 vif_r3_hyp_1
 #3 cols
 parsout_r3_hyp_1 = unlist(parsout_r3_hyp_1) 
-parsout_r3_hyp_1 = matrix(parsout_r3_hyp_1, ncol = 11, byrow = TRUE)
+parsout_r3_hyp_1 = matrix(parsout_r3_hyp_1, ncol = 12, byrow = TRUE)
 parsout_r3_hyp_1
 
 sesout_r3_hyp_1 = unlist(sesout_r3_hyp_1)
-sesout_r3_hyp_1 = matrix(sesout_r3_hyp_1, ncol = 11, byrow= TRUE)
+sesout_r3_hyp_1 = matrix(sesout_r3_hyp_1, ncol = 12, byrow= TRUE)
 sesout_r3_hyp_1
 
 pars_sesout_r3_hyp_1 = mi.meld(parsout_r3_hyp_1, sesout_r3_hyp_1)
 t_stat_reg_r3_hyp_1 =  pars_sesout_r3_hyp_1$q.mi / pars_sesout_r3_hyp_1$se.mi
-p_values_reg_r3_hyp_1 = 2*pt(-abs(t_stat_reg_r3_hyp_1), df = dim(out_diff_dat[[1]])[1]-11)
+p_values_reg_r3_hyp_1 = 2*pt(-abs(t_stat_reg_r3_hyp_1), df = dim(out_diff_dat[[1]])[1]-12)
 p_values_reg_r3_hyp_1 = format(round(p_values_reg_r3_hyp_1, digits=3), nsmall = 2)
 p_values_reg_r3_hyp_1
 p_values_reg_r3_hyp_1
-critical_t_reg_r3_hyp_1 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-11))
+critical_t_reg_r3_hyp_1 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-12))
 critical_t_reg_r3_hyp_1
 upper_reg_r3_hyp_1 = pars_sesout_r3_hyp_1$q.mi +(critical_t_reg_r3_hyp_1*pars_sesout_r3_hyp_1$se.mi)
 upper_reg_r3_hyp_1 = format(round(upper_reg_r3_hyp_1, digits=2), nsmall = 2)
@@ -1052,9 +1090,3 @@ write.csv(reg_results_r3_hyp_1, "reg_results_r3_hyp_1.csv", row.names = FALSE)
 
 
 ```
-
-
-
-
-
-
