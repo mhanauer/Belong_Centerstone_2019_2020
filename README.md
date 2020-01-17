@@ -187,7 +187,11 @@ veteran = ifelse(demos$X11_Veteran == 2, 1,0)
 sexual_minority = ifelse(demos$X12_SO != 3, 1, 0)
 hispanic = ifelse(demos$X13_Hisp.Yes.No. == 1, 1, 0)
 non_white = ifelse(demos$X14_Race.e == 1, 0,1)
-high_school_greater = ifelse(demos$X16_Education > 2, 1, 0)
+
+
+high_school_greater = ifelse(demos$X16_Education < 3,0, ifelse(demos$X16_Education == 3,1,2))
+
+
 employed = ifelse(demos$X17_Employment == 2 | demos$X17_Employment == 3, 1, 0)
 
 demos = data.frame(age = demos$X9_Age, veteran, sexual_minority, hispanic, non_white, high_school_greater, employed)
@@ -263,6 +267,9 @@ suicide = center_dat$X4_AttemptedSuic
 center_psycho = center_dat 
 center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, CSQ, BID, WAI, CSE_1, CSE_2, CSE_3, treat_needs_post, suicide)
 
+high_school_greater = ifelse(demos$X16_Education < 3,0, ifelse(demos$X16_Education == 3,1,2))
+
+
 ```
 Psychometrics for BID
 ```{r}
@@ -313,7 +320,10 @@ CSE_1_psycho = center_psycho[,138:143]
 CSE_2_psycho = center_psycho[,144:147]
 CSE_3_psycho = center_psycho[,148:150]
 
+summary(omega(INQ_1_pre_psycho))
+library(MBESS)
 
+ci.reliability(INQ_1_pre_psycho)
 
 omega_list = list(INQ_1_pre_psycho, INQ_2_pre_psycho, RAS_1_pre_psycho, RAS_3_pre_psycho, RAS_5_pre_psycho, ISLES_1_pre_psycho, ISLES_2_pre_psycho, MILQ_pre_psycho, RCS_pre_psycho, CSQ_psycho, WAI_psycho, CSE_1_psycho, CSE_2_psycho, CSE_3_psycho)
 omega_list
@@ -361,10 +371,9 @@ dim(center_dat)
 
 Descriptives with complete data
 ```{r}
-library(psych)
-library(prettyR)
-library(installr)
-#install.packages("Hmisc")
+#library(psych)
+#library(prettyR)
+#library(installr)
 #uninstall.packages("Hmisc")
 #uninstall.packages("psych")
 #library(Hmisc)
@@ -403,6 +412,10 @@ desc_stats_factor = read.csv("desc_stats_factor.csv", header = TRUE)
 colnames(desc_stats_factor)[1] = "variable"
 desc_stats_factor$Percent = desc_stats_factor$Percent/100
 write.csv(desc_stats_factor, "desc_stats_factor.csv", row.names = FALSE)
+
+
+### Change back for analysis 
+center_dat$high_school_greater = ifelse(center_dat$high_school_greater == 0,0,1)
 
 ```
 Treat variable
@@ -533,6 +546,7 @@ treat_results = round(treat_results, 2)
 treat_results
 write.csv(treat_results, "treat_results.csv")
 ```
+
 
 
 Impute data
@@ -762,14 +776,19 @@ center_results_lower
 
 center_results = data.frame(cohen_d = center_results_cohen_d, upper = center_results_upper, lower = center_results_lower)
 center_results = round(center_results, 2)
-center_results$cohen_d = ifelse(center_results$upper > 0 & center_results$lower < 0, center_results$cohen_d, paste0(center_results$cohen_d, "*"))
-center_results$ci_95 = paste0(center_results$lower, sep = ",", center_results$upper)
-center_results[,2:3] = NULL
-head(out_diff_dat)
-center_results
 
 outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
+
 center_results = data.frame(outcomes, center_results)
+
+center_results$outcomes = ifelse(center_results$upper > 0 & center_results$lower < 0, center_results$outcomes, paste0(center_results$outcomes, "*"))
+
+center_results$ci_95 = paste0(center_results$lower, sep = ",", center_results$upper)
+center_results[,3:4] = NULL
+center_results
+
+center_results$cohen_d = as.numeric(center_results$cohen_d)
+center_results = center_results[order(abs(center_results$cohen_d), decreasing = TRUE),]
 
 write.csv(center_results, "center_results.csv", row.names = FALSE)
 
@@ -1023,6 +1042,7 @@ Get point biserial later: library(polycor)
 
 
 ```{r}
+library(car)
 ### Regression analysis
 regout_r3_hyp_1 = list()
 regout_r3_hyp_1_sum = list()
