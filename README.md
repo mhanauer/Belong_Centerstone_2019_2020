@@ -15,6 +15,7 @@ setwd("S:/Indiana Research & Evaluation/Matthew Hanauer/Centerstone_Study_2019_2
 center_dat_load = read.csv("BelongGive_DataClean_7.20.csv", header = TRUE)
 center_dat=  center_dat_load 
 head(center_dat)
+#install.packages("psych")
 library(psych)
 library(prettyR)
 
@@ -417,6 +418,8 @@ write.csv(desc_stats_factor, "desc_stats_factor.csv", row.names = FALSE)
 ### Change back for analysis 
 center_dat$high_school_greater = ifelse(center_dat$high_school_greater == 0,0,1)
 
+15*1.5*8
+
 ```
 Treat variable
 Number and percentage who said yes
@@ -545,6 +548,78 @@ treat_results = data.frame(treat_results_mean, treat_results_sd)
 treat_results = round(treat_results, 2)
 treat_results
 write.csv(treat_results, "treat_results.csv")
+```
+Effect on suicidal ideation for ind therapy, group therapy, safety plan, burden, meaning, difficultly with life events
+
+Difference in standardized average differnece (post-pre) score for suicide for receicing treatment versus not receiving treatment
+
+```{r}
+head(center_dat)
+library(effsize)
+
+center_dat$SIS_1_diff_extra = scale(center_dat$SIS_1_post-center_dat$SIS_1_pre)
+center_dat$SIS_1_diff_extra = as.numeric(center_dat$SIS_1_diff_extra)
+hist(center_dat$SIS_1_diff_extra)
+
+#g =meaning, l = burden, h = difficult
+treatments = data.frame(saftey_plan =center_dat$X9_TREAT.a.Received,  ind_therapy = center_dat$X9_TREAT.c.Received, group_therapy = center_dat$X9_TREAT.d.Received, meaning= center_dat$X9_Treat.g.Received, burden = center_dat$X9_Treat.L.Received, difficult = center_dat$X9_Treat.h.Received)
+write.csv(treatments, "treatments.csv", row.names = FALSE)
+treatments = read.csv("treatments.csv", header = TRUE)
+treatments
+results_list = list()
+library(descr)
+compmeans(center_dat$SIS_1_diff_extra, center_dat$X9_TREAT.a.Received)
+for(i in 1:length(treatments)){
+  results_list[[i]] = cohen.d(center_dat$SIS_1_diff_extra, treatments[[i]], na.rm = TRUE)
+  results_list[[i]] = results_list[[i]][c(3,5)]
+  
+}
+results_list
+results_list = unlist(results_list)
+results_list = matrix(results_list, ncol = 3, byrow = TRUE)
+results_list = data.frame(results_list)
+results_list = round(results_list, 3)
+results_list
+colnames(results_list) = c("cohen_d", "lower", "upper")
+results_list
+
+outcomes = c("Safety Plan", "Individual Therapy", "Group Therapy", "Meaning", "Burden", "Difficult")
+
+results_list = data.frame(outcomes, results_list)
+results_list[,2:4] = round(results_list[,2:4],2)
+results_list
+
+results_list$outcomes = ifelse(results_list$upper > 0 & results_list$lower < 0, results_list$outcomes, paste0(results_list$outcomes, "*"))
+
+results_list$ci_95 = paste0(results_list$lower, sep = ",", results_list$upper)
+results_list[,3:4] = NULL
+results_list
+
+results_list$cohen_d = as.numeric(results_list$cohen_d)
+results_list = results_list[order(abs(results_list$cohen_d), decreasing = TRUE),]
+
+center_dat$SIS_1_diff_extra = NULL
+results_list
+write.csv(results_list, "results_list.csv", row.names = FALSE)
+
+```
+Try statistical correction
+
+```{r}
+library(konfound)
+SIS_1_diff_extra = scale(center_dat$SIS_1_post-center_dat$SIS_1_pre)
+center_dat$SIS_1_diff_extra = as.numeric(SIS_1_diff_extra)
+treatment_dat = data.frame(saftey_plan =center_dat$X9_TREAT.a.Received,  ind_therapy = center_dat$X9_TREAT.c.Received, group_therapy = center_dat$X9_TREAT.d.Received, meaning= center_dat$X9_Treat.g.Received, burden = center_dat$X9_Treat.L.Received, difficult = center_dat$X9_Treat.h.Received, SIS_1_diff_extra)
+
+test_model = lm(SIS_1_diff_extra ~ saftey_plan + ind_therapy + group_therapy + meaning + burden + difficult,  data = treatment_dat)
+library(car)
+
+vif(test_model)
+hist(test_model$residuals)
+summary(test_model)
+konfound(test_model, meaning1)
+
+center_dat$SIS_1_diff_extra = NULL
 ```
 
 
