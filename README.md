@@ -1181,9 +1181,60 @@ reg_results_r3_hyp_1
 reg_results_r3_hyp_1
 
 write.csv(reg_results_r3_hyp_1, "reg_results_r3_hyp_1.csv", row.names = FALSE)
+```
+Try simulation (just grab parameter estimates)
+intercept: 2.81	6.58	
+```{r}
+### Just test out
+intercept_eff = 2.81
+INQ_1_diff_eff = 1.05
+INQ_2_diff_eff = .77
+ISLES_1_diff_eff = 1.51
+ISLES_2_diff_eff = .91
+MILQ_diff_eff = 1.15
+SIS_2_diff_eff = 2
+SIS_1_diff_eff = .63
+BID_eff = 1.29
+CSE_1_eff = 1.46
+CSE_2_eff = .64
+
+INQ_1_diff = rnorm(500,0,1)
+INQ_2_diff = rnorm(500,0,1)
+ISLES_1_diff = rnorm(500,0,1)
+ISLES_2_diff = rnorm(500,0,1)
+MILQ_diff = rnorm(500,0,1)
+SIS_1_diff = rnorm(500,0,1)
+SIS_2_diff = rnorm(500,0,1)
+BID = rnorm(500,0,1)
+CSE_1 = rnorm(500,0,1)
+CSE_2 = rnorm(500,0,1)
+
+
+y = intercept_eff + INQ_1_diff_eff*INQ_1_diff +INQ_2_diff_eff*INQ_2_diff+ISLES_1_diff_eff*ISLES_1_diff+ ISLES_2_diff_eff*ISLES_2_diff+MILQ_diff_eff*MILQ_diff+ SIS_1_diff_eff*SIS_1_diff +SIS_2_diff_eff*SIS_2_diff+BID_eff*BID+CSE_1_eff*CSE_1+CSE_2_eff*CSE_2
+
+y_prob = exp(y)/(1+exp(y))
+runis = runif(length(x), 0, 1) # This is the random error part
+y_out = ifelse(runis < y_prob, 1, 0)
+test_rep = glm(y_out ~ INQ_1_diff + INQ_2_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + SIS_2_diff + BID + CSE_1 + CSE_2, family = binomial())
+summary(test_rep)
+
+
+
+intercept <- 0
+beta <- 0.5
+xtest <- rnorm(100,1,1)
+linpred <- intercept + (xtest * beta)
+prob <- exp(linpred)/(1 + exp(linpred))
+runis <- runif(100,0,1)
+ytest <- ifelse(runis < prob,1,0)
+test_ytest = glm(ytest ~ xtest, family = binomial())
+summary(test_ytest)
 
 
 ```
+
+
+
 Now what predicts BID
 ```{r}
 ### Regression analysis
