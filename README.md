@@ -877,14 +877,6 @@ Hypothesis 2: Meaning made of stress, meaning in life, coping self-efficacy, goa
 
 (Add new vars above to global data set)
 
----
-title: "TestRegressions"
-output: html_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 Sucidial Ideation regression
 ```{r}
@@ -1192,3 +1184,174 @@ write.csv(reg_results_r3_hyp_1, "reg_results_r3_hyp_1.csv", row.names = FALSE)
 
 
 ```
+Now what predicts BID
+```{r}
+### Regression analysis
+regout_sis_2 = list()
+regout_sis_2_sum = list()
+parsout_sis_2 = list()
+sesout_sis_2 = list()
+import_sis_2 = list()
+vif_sis_2 = list()
+library(relaimpo)
+head(out_diff_dat[[1]][,35:45])
+
+
+for(i in 1:length(out_diff_dat)){
+  regout_sis_2[[i]] = lm(SIS_2_diff ~ INQ_1_diff + INQ_2_diff + RAS_1_diff + RAS_3_diff+ RAS_5_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + RCS_diff+ BID + CSE_1+ CSE_2+ CSE_3, data = out_diff_dat[[i]])
+  regout_sis_2_sum[[i]] = summary(regout_sis_2[[i]])
+  import_sis_2[[i]] = calc.relimp(regout_sis_2[[i]])
+  import_sis_2[[i]] = import_sis_2[[i]]@lmg
+  parsout_sis_2[[i]] = regout_sis_2_sum[[i]]$coefficients[,1]
+  sesout_sis_2[[i]] = regout_sis_2_sum[[i]]$coefficients[,2]
+  vif_sis_2[[i]] = vif(regout_sis_2[[i]])
+}
+vif_sis_2
+#10 cols
+parsout_sis_2 = unlist(parsout_sis_2) 
+parsout_sis_2 = matrix(parsout_sis_2, ncol = 14, byrow = TRUE)
+parsout_sis_2
+
+sesout_sis_2 = unlist(sesout_sis_2)
+sesout_sis_2 = matrix(sesout_sis_2, ncol = 14, byrow = TRUE)
+sesout_sis_2
+
+pars_sesout_sis_2 = mi.meld(parsout_sis_2, sesout_sis_2)
+t_stat_reg_sis_2 =  pars_sesout_sis_2$q.mi / pars_sesout_sis_2$se.mi
+p_values_reg_sis_2 = 2*pt(-abs(t_stat_reg_sis_2), df = dim(out_diff_dat[[1]])[1]-15)
+p_values_reg_sis_2 = format(round(p_values_reg_sis_2, digits=3), nsmall = 2)
+p_values_reg_sis_2
+p_values_reg_sis_2
+critical_t_reg_sis_2 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-15))
+critical_t_reg_sis_2
+upper_reg_sis_2 = pars_sesout_sis_2$q.mi +(critical_t_reg_sis_2*pars_sesout_sis_2$se.mi)
+upper_reg_sis_2 = format(round(upper_reg_sis_2, digits=2), nsmall = 2)
+upper_reg_sis_2
+lower_reg_sis_2 = pars_sesout_sis_2$q.mi - (critical_t_reg_sis_2*pars_sesout_sis_2$se.mi)
+lower_reg_sis_2 = format(round(lower_reg_sis_2, digits=2), nsmall = 2)
+ci_95_sis_2 = paste0(upper_reg_sis_2, sep = ",", lower_reg_sis_2)
+ci_95_sis_2
+import_sis_2 = unlist(import_sis_2)
+import_sis_2 = matrix(import_sis_2, ncol = 13, byrow = TRUE)
+import_sis_2 = colMeans(import_sis_2)
+import_sis_2 
+
+reg_results_sis_2 = data.frame(par_est = t(pars_sesout_sis_2$q.mi), se = t(pars_sesout_sis_2$se.mi), p_value = t(p_values_reg_sis_2), ci_95_sis_2)
+reg_results_sis_2
+reg_results_sis_2[,1:2] = format(round(reg_results_sis_2[,1:2], digits=2), nsmall = 2)
+reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat[[1]])[37:45], "BID", "CSE_1", "CSE_2", "CSE_3")
+reg_results_sis_2 = data.frame(var_names = reg_results_sis_2$var_names, reg_results_sis_2[,1:4])
+typeof(reg_results_sis_2$p_value)
+
+write.csv(reg_results_sis_2, "reg_results_sis_2.csv", row.names = FALSE)
+reg_results_sis_2 = read.csv("reg_results_sis_2.csv", header = TRUE)
+reg_results_sis_2$var_names = as.character(reg_results_sis_2$var_names)
+
+reg_results_sis_2$var_names = ifelse(reg_results_sis_2$p_value < .05, paste0(reg_results_sis_2$var_names, sep = "*"), reg_results_sis_2$var_names)
+reg_results_sis_2$p_value = ifelse(reg_results_sis_2$p_value ==.000, "<.001", reg_results_sis_2$p_value)
+reg_results_sis_2 = reg_results_sis_2[-c(1),]
+reg_results_sis_2$import_sis_2 = import_sis_2
+reg_results_sis_2$import_sis_2 = format(round(reg_results_sis_2$import_sis_2, digits=2), nsmall = 2)
+reg_results_sis_2
+
+write.csv(reg_results_sis_2, "reg_results_sis_2.csv", row.names = FALSE)
+```
+
+Hypothesis 4:  Treatment alliance and treatment satisfaction will be positively and uniquely associated with intention to follow-through on discharge plans. 
+INQ_2_diff
+<dbl>
+RAS_1_diff
+<dbl>
+RAS_3_diff
+<dbl>
+RAS_5_diff
+<dbl>
+ISLES_1_diff
+<dbl>
+ISLES_2_diff
+<dbl>
+MILQ_diff
+<dbl>
+RCS_diff
+<dbl>
+SIS_1_diff
+<dbl>
+SIS_2_diff
+<dbl
+```{r}
+library(relaimpo)
+library(car)
+### Regression analysis
+regout_BID = list()
+regout_BID_sum = list()
+parsout_BID = list()
+sesout_BID = list()
+import_BID = list()
+vif_BID = list()
+hist(log(out_diff_dat[[1]]$BID))
+head(out_diff_dat[[1]])
+
+
+for(i in 1:length(out_diff_dat)){
+  regout_BID[[i]] = lm(BID ~ INQ_1_diff + INQ_2_diff+ RAS_1_diff + RAS_3_diff + RAS_5_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + RCS_diff + SIS_1_diff + SIS_2_diff, data = out_diff_dat[[i]])
+  regout_BID_sum[[i]] = summary(regout_BID[[i]])
+  import_BID[[i]] = calc.relimp(regout_BID[[i]])
+  import_BID[[i]] = import_BID[[i]]@lmg
+  parsout_BID[[i]] = regout_BID_sum[[i]]$coefficients[,1]
+  sesout_BID[[i]] = regout_BID_sum[[i]]$coefficients[,2]
+  vif_BID[[i]] = vif(regout_BID[[i]])
+}
+vif_BID
+#3 cols
+parsout_BID = unlist(parsout_BID) 
+parsout_BID = matrix(parsout_BID, ncol = 12, byrow = TRUE)
+parsout_BID
+
+sesout_BID = unlist(sesout_BID)
+sesout_BID = matrix(sesout_BID, ncol = 12, byrow= TRUE)
+sesout_BID
+
+pars_sesout_BID = mi.meld(parsout_BID, sesout_BID)
+t_stat_reg_BID =  pars_sesout_BID$q.mi / pars_sesout_BID$se.mi
+p_values_reg_BID = 2*pt(-abs(t_stat_reg_BID), df = dim(out_diff_dat[[1]])[1]-12)
+p_values_reg_BID = format(round(p_values_reg_BID, digits=3), nsmall = 2)
+p_values_reg_BID
+critical_t_reg_BID = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-12))
+critical_t_reg_BID
+upper_reg_BID = pars_sesout_BID$q.mi +(critical_t_reg_BID*pars_sesout_BID$se.mi)
+upper_reg_BID = format(round(upper_reg_BID, digits=2), nsmall = 2)
+upper_reg_BID
+lower_reg_BID = pars_sesout_BID$q.mi - (critical_t_reg_BID*pars_sesout_BID$se.mi)
+lower_reg_BID = format(round(lower_reg_BID, digits=2), nsmall = 2)
+ci_95_BID = paste0(upper_reg_BID, sep = ",", lower_reg_BID)
+ci_95_BID
+import_BID = unlist(import_BID)
+import_BID = matrix(import_BID, ncol = 11, byrow = TRUE)
+import_BID = colMeans(import_BID)
+import_BID 
+
+reg_results_BID = data.frame(par_est = t(pars_sesout_BID$q.mi), se = t(pars_sesout_BID$se.mi), p_value = t(p_values_reg_BID), ci_95_BID)
+reg_results_BID[,1:2] = format(round(reg_results_BID[,1:2], digits=2), nsmall = 2)
+
+reg_results_BID$var_names = c("Intercept" ,colnames(out_diff_dat[[1]])[37:47])
+reg_results_BID = data.frame(var_names = reg_results_BID$var_names, reg_results_BID[,1:4])
+reg_results_BID
+
+write.csv(reg_results_BID, "reg_results_BID.csv", row.names = FALSE)
+reg_results_BID = read.csv("reg_results_BID.csv", header = TRUE)
+reg_results_BID$var_names = as.character(reg_results_BID$var_names)
+reg_results_BID
+
+reg_results_BID$var_names = ifelse(reg_results_BID$p_value < .05, paste0(reg_results_BID$var_names, sep = "*"), reg_results_BID$var_names)
+reg_results_BID$p_value = ifelse(reg_results_BID$p_value ==.000, "<.001", reg_results_BID$p_value)
+reg_results_BID = reg_results_BID[-c(1),]
+reg_results_BID$par_est = format(round(reg_results_BID$par_est, digits=2), nsmall = 2) 
+reg_results_BID
+reg_results_BID$import_BID = import_BID
+reg_results_BID$import_BID = format(round(reg_results_BID$import_BID, digits=2), nsmall = 2)
+reg_results_BID = reg_results_BID[order(abs(as.numeric(reg_results_BID$par_est)), decreasing = TRUE),]
+
+write.csv(reg_results_BID, "reg_results_BID.csv", row.names = FALSE)
+
+```
+
