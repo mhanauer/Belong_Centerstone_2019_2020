@@ -621,6 +621,20 @@ konfound(test_model, meaning1)
 
 center_dat$SIS_1_diff_extra = NULL
 ```
+Try predictors of suicide with complete data set
+```{r}
+
+head(center_dat)
+
+center_dat_pre = center_dat[,8:18]
+center_dat_post = center_dat[,19:29]
+diff_scores = center_dat_pre - center_dat_post
+diff_scores = data.frame(diff_scores, suicide = center_dat$suicide, BID = center_dat$BID, CSE_1 = center_dat$CSE_1, CSE_2 = center_dat$CSE_2, CSE_3 = center_dat$CSE_3)
+
+reg_suicide = glm(suicide ~ INQ_1_pre + INQ_2_pre + ISLES_1_pre + ISLES_2_pre + MILQ_pre + SIS_2_pre + SIS_1_pre + BID+ CSE_1 + CSE_2 + CSE_3 , data = diff_scores, family = binomial())
+
+summary(reg_suicide)
+```
 
 
 
@@ -1318,6 +1332,9 @@ test_rep_sum[[i]] =  summary(test_rep[[i]])
 #glm(y_out ~ ., family = "binomial", data =dat_sim[[1]])
 test_rep_sum[[1]]
 ```
+Try with complete data
+
+
 
 Now what predicts BID
 ```{r}
