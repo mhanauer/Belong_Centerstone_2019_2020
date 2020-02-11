@@ -867,8 +867,85 @@ center_results = center_results[order(abs(center_results$cohen_d), decreasing = 
 
 write.csv(center_results, "center_results.csv", row.names = FALSE)
 
-
 ```
+##########################################################
+Increase the number of data sets to reduce standard errors
+##########################################################
+mpute data
+```{r}
+head(center_dat)
+library(Amelia)
+
+### Get rid of the treat variables, I don't them imputted, because they are missing on purpose.
+treat_vars  =  center_dat[,c(36:61)]
+center_dat = center_dat[,-c(36:61)]
+center_dat
+
+### Create bounds for one var and see what happens
+## INQ Post
+center_dat[,8:35]
+
+range(center_dat$INQ_1_pre, na.rm = TRUE) 
+range(center_dat$RAS_1_pre, na.rm = TRUE) 
+range(center_dat$ISLES_1_post, na.rm = TRUE)
+range(center_dat$MILQ_post, na.rm = TRUE) 
+range(center_dat$RCS_post, na.rm = TRUE) 
+
+bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5, 30,1,4, 31,1,5, 32,1,5, 33,1,10, 34,1,10, 35,1,10),nrow = 28, ncol = 3, byrow = TRUE)
+bounds
+
+a.out = amelia(x = center_dat, m = 30, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide"), bounds = bounds)
+compare.density(a.out, var = "RAS_1_post")
+compare.density(a.out, var = "RAS_3_post")
+compare.density(a.out, var = "RAS_5_post")
+compare.density(a.out, var = "RCS_post")
+compare.density(a.out, var = "ISLES_1_post")
+compare.density(a.out, var = "ISLES_2_post")
+compare.density(a.out, var = "INQ_1_post")
+compare.density(a.out, var = "INQ_2_post")
+compare.density(a.out, var = "MILQ_post")
+compare.density(a.out, var = "SIS_1_post")
+compare.density(a.out, var = "SIS_2_post")
+overimpute(a.out, var = "SIS_1_post")
+overimpute(a.out, var = "SIS_2_post")
+impute_dat_loop = a.out$imputations
+describe(impute_dat_loop$imp1)
+
+
+apply(impute_dat_loop$imp1, 2, range)
+range(impute_dat_loop$imp1$INQ_1_post)
+
+
+dim(impute_dat_loop[[1]])
+```
+Do diff scores with regression, because not random and want to account
+```{r}
+dim(impute_dat_loop[[1]])
+out_diff_dat = list()
+head(impute_dat_loop[[1]][8:18])
+head(impute_dat_loop[[1]][19:29])
+head(impute_dat_loop[[1]])
+
+for(i in 1:length(impute_dat_loop)){
+  out_diff_dat[[i]] = impute_dat_loop[[i]][8:18]-impute_dat_loop[[1]][19:29]
+  colnames(out_diff_dat[[i]]) = c("INQ_1_diff", "INQ_2_diff", "RAS_1_diff", "RAS_3_diff", "RAS_5_diff", "ISLES_1_diff", "ISLES_2_diff", "MILQ_diff", "RCS_diff", "SIS_1_diff", "SIS_2_diff")
+  out_diff_dat[[i]] = scale(out_diff_dat[[i]])
+  out_diff_dat[[i]] =cbind(impute_dat_loop[[i]], out_diff_dat[[i]])
+}
+out_diff_dat
+### Evaluate normality
+out_diff_dat_norm = out_diff_dat[[1]][c(30:32, 35:44)]
+hist_results = list() 
+qq_results = list()
+shap_results = list()
+for(i in 1:length(out_diff_dat_norm)){
+  hist_results[[i]]= hist(out_diff_dat_norm[[i]], main = paste("Histogram of" , names(out_diff_dat_norm)[[i]]))
+  qq_results[[i]] = qqnorm(out_diff_dat_norm[[i]], main = names(out_diff_dat_norm)[[i]])
+  shap_results[[i]] = shapiro.test(out_diff_dat_norm[[i]])
+}
+shap_results
+```
+
 Research Question #2: Are novel treatment targets (i.e., perceived burdensomeness, thwarted belongingness, meaning made of stress, meaning in life, goal orientation/hope coping self-efficacy, treatment alliance, treatment satisfaction) associated with episode of care outcomes (i.e., suicide risk, willingness to seek help, intentions to follow-through on discharge plans) at discharge? (Changed to change scores related to each other) 
 
 Hypothesis 1: Perceived burdensomeness and thwarted belongingness will be positively and uniquely associated with suicide risk (i.e., ideation, resolved plans/preparation) at discharge. 
@@ -1182,8 +1259,7 @@ reg_results_r3_hyp_1
 
 write.csv(reg_results_r3_hyp_1, "reg_results_r3_hyp_1.csv", row.names = FALSE)
 ```
-Try simulation (just grab parameter estimates)
-intercept: 2.81	6.58	
+Original works fine why not simulation?
 ```{r}
 ### Just test out
 intercept_eff = 2.81
@@ -1198,137 +1274,52 @@ BID_eff = 1.29
 CSE_1_eff = 1.46
 CSE_2_eff = .64
 
-INQ_1_diff = rnorm(500,0,1)
-INQ_2_diff = rnorm(500,0,1)
-ISLES_1_diff = rnorm(500,0,1)
-ISLES_2_diff = rnorm(500,0,1)
-MILQ_diff = rnorm(500,0,1)
-SIS_1_diff = rnorm(500,0,1)
-SIS_2_diff = rnorm(500,0,1)
-BID = rnorm(500,0,1)
-CSE_1 = rnorm(500,0,1)
-CSE_2 = rnorm(500,0,1)
+y_out = list()
+runis_out = list()
+test_rep_out = list()
+INQ_1_diff_out = list()
+INQ_2_diff_out = list()
+ISLES_1_diff_out = list()
+ISLES_2_diff_out = list()
+SIS_1_diff_out = list()
+SIS_2_diff_out = list()
+MILQ_diff_out = list()
+BID_out = list()
+CSE_1_out = list()
+CSE_2_out = list()
+y_prob_out = list()
+dat_sim = list()
+test_rep = list()
+test_rep_sum = list()
+n = seq(from = 120, to = 300, by = 20)
 
+for(i in 1:length(n)){
 
-y = intercept_eff + INQ_1_diff_eff*INQ_1_diff +INQ_2_diff_eff*INQ_2_diff+ISLES_1_diff_eff*ISLES_1_diff+ ISLES_2_diff_eff*ISLES_2_diff+MILQ_diff_eff*MILQ_diff+ SIS_1_diff_eff*SIS_1_diff +SIS_2_diff_eff*SIS_2_diff+BID_eff*BID+CSE_1_eff*CSE_1+CSE_2_eff*CSE_2
+INQ_1_diff_out[[i]] = rnorm(n[[i]],0,1)
+INQ_2_diff_out[[i]] = rnorm(n[[i]],0,1)
+ISLES_1_diff_out[[i]] = rnorm(n[[i]],0,1)
+ISLES_2_diff_out[[i]] = rnorm(n[[i]],0,1)
+MILQ_diff_out[[i]] = rnorm(n[[i]],0,1)
+SIS_1_diff_out[[i]] = rnorm(n[[i]],0,1)
+SIS_2_diff_out[[i]] = rnorm(n[[i]],0,1)
+BID_out[[i]] = rnorm(n[[i]],0,1)
+CSE_1_out[[i]] = rnorm(n[[i]],0,1)
+CSE_2_out[[i]] = rnorm(n[[i]],0,1)
 
-y_prob = exp(y)/(1+exp(y))
-runis = runif(length(x), 0, 1) # This is the random error part
-y_out = ifelse(runis < y_prob, 1, 0)
-test_rep = glm(y_out ~ INQ_1_diff + INQ_2_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + SIS_2_diff + BID + CSE_1 + CSE_2, family = binomial())
-summary(test_rep)
+y_out[[i]] = intercept_eff + INQ_1_diff_eff*INQ_1_diff_out[[i]] +INQ_2_diff_eff*INQ_2_diff_out[[i]]+ISLES_1_diff_eff*ISLES_1_diff_out[[i]]+ ISLES_2_diff_eff*ISLES_2_diff_out[[i]]+MILQ_diff_eff*MILQ_diff_out[[i]]+ SIS_1_diff_eff*SIS_1_diff_out[[i]] +SIS_2_diff_eff*SIS_2_diff_out[[i]]+BID_eff*BID_out[[i]]+CSE_1_eff*CSE_1_out[[i]]+CSE_2_eff*CSE_2_out[[i]]
 
-
-
-intercept <- 0
-beta <- 0.5
-xtest <- rnorm(100,1,1)
-linpred <- intercept + (xtest * beta)
-prob <- exp(linpred)/(1 + exp(linpred))
-runis <- runif(100,0,1)
-ytest <- ifelse(runis < prob,1,0)
-test_ytest = glm(ytest ~ xtest, family = binomial())
-summary(test_ytest)
-
-
+y_prob_out[[i]] = exp(y_out[[i]])/(1+exp(y_out[[i]]))
+runis_out[[i]] = runif(length(INQ_1_diff_out[[i]]), 0, 1) # This is the random error part
+y_out[[i]] = ifelse(runis_out[[i]] < y_prob_out[[i]], 1, 0)
+dat_sim[[i]] = data.frame(y_out = y_out[[i]], INQ_1_diff_out = INQ_1_diff_out[[i]], INQ_2_diff_out = INQ_2_diff_out[[i]], ISLES_1_diff_out = ISLES_1_diff_out[[i]], ISLES_2_diff_out = ISLES_2_diff_out[[i]], MILQ_diff_out = MILQ_diff_out[[i]], SIS_1_diff_out = SIS_1_diff_out[[i]], SIS_2_diff_out = SIS_2_diff_out[[i]], BID_out = BID_out[[i]], CSE_1_out = CSE_1_out[[i]], CSE_2_out = CSE_2_out[[i]])
+test_rep[[i]] = glm(y_out ~ ., family = binomial(), data = dat_sim[[i]])
+test_rep_sum[[i]] =  summary(test_rep[[i]])
+}
+#glm(y_out ~ ., family = "binomial", data =dat_sim[[1]])
+test_rep_sum[[1]]
 ```
-
-
 
 Now what predicts BID
-```{r}
-### Regression analysis
-regout_sis_2 = list()
-regout_sis_2_sum = list()
-parsout_sis_2 = list()
-sesout_sis_2 = list()
-import_sis_2 = list()
-vif_sis_2 = list()
-library(relaimpo)
-head(out_diff_dat[[1]][,35:45])
-
-
-for(i in 1:length(out_diff_dat)){
-  regout_sis_2[[i]] = lm(SIS_2_diff ~ INQ_1_diff + INQ_2_diff + RAS_1_diff + RAS_3_diff+ RAS_5_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + RCS_diff+ BID + CSE_1+ CSE_2+ CSE_3, data = out_diff_dat[[i]])
-  regout_sis_2_sum[[i]] = summary(regout_sis_2[[i]])
-  import_sis_2[[i]] = calc.relimp(regout_sis_2[[i]])
-  import_sis_2[[i]] = import_sis_2[[i]]@lmg
-  parsout_sis_2[[i]] = regout_sis_2_sum[[i]]$coefficients[,1]
-  sesout_sis_2[[i]] = regout_sis_2_sum[[i]]$coefficients[,2]
-  vif_sis_2[[i]] = vif(regout_sis_2[[i]])
-}
-vif_sis_2
-#10 cols
-parsout_sis_2 = unlist(parsout_sis_2) 
-parsout_sis_2 = matrix(parsout_sis_2, ncol = 14, byrow = TRUE)
-parsout_sis_2
-
-sesout_sis_2 = unlist(sesout_sis_2)
-sesout_sis_2 = matrix(sesout_sis_2, ncol = 14, byrow = TRUE)
-sesout_sis_2
-
-pars_sesout_sis_2 = mi.meld(parsout_sis_2, sesout_sis_2)
-t_stat_reg_sis_2 =  pars_sesout_sis_2$q.mi / pars_sesout_sis_2$se.mi
-p_values_reg_sis_2 = 2*pt(-abs(t_stat_reg_sis_2), df = dim(out_diff_dat[[1]])[1]-15)
-p_values_reg_sis_2 = format(round(p_values_reg_sis_2, digits=3), nsmall = 2)
-p_values_reg_sis_2
-p_values_reg_sis_2
-critical_t_reg_sis_2 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-15))
-critical_t_reg_sis_2
-upper_reg_sis_2 = pars_sesout_sis_2$q.mi +(critical_t_reg_sis_2*pars_sesout_sis_2$se.mi)
-upper_reg_sis_2 = format(round(upper_reg_sis_2, digits=2), nsmall = 2)
-upper_reg_sis_2
-lower_reg_sis_2 = pars_sesout_sis_2$q.mi - (critical_t_reg_sis_2*pars_sesout_sis_2$se.mi)
-lower_reg_sis_2 = format(round(lower_reg_sis_2, digits=2), nsmall = 2)
-ci_95_sis_2 = paste0(upper_reg_sis_2, sep = ",", lower_reg_sis_2)
-ci_95_sis_2
-import_sis_2 = unlist(import_sis_2)
-import_sis_2 = matrix(import_sis_2, ncol = 13, byrow = TRUE)
-import_sis_2 = colMeans(import_sis_2)
-import_sis_2 
-
-reg_results_sis_2 = data.frame(par_est = t(pars_sesout_sis_2$q.mi), se = t(pars_sesout_sis_2$se.mi), p_value = t(p_values_reg_sis_2), ci_95_sis_2)
-reg_results_sis_2
-reg_results_sis_2[,1:2] = format(round(reg_results_sis_2[,1:2], digits=2), nsmall = 2)
-reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat[[1]])[37:45], "BID", "CSE_1", "CSE_2", "CSE_3")
-reg_results_sis_2 = data.frame(var_names = reg_results_sis_2$var_names, reg_results_sis_2[,1:4])
-typeof(reg_results_sis_2$p_value)
-
-write.csv(reg_results_sis_2, "reg_results_sis_2.csv", row.names = FALSE)
-reg_results_sis_2 = read.csv("reg_results_sis_2.csv", header = TRUE)
-reg_results_sis_2$var_names = as.character(reg_results_sis_2$var_names)
-
-reg_results_sis_2$var_names = ifelse(reg_results_sis_2$p_value < .05, paste0(reg_results_sis_2$var_names, sep = "*"), reg_results_sis_2$var_names)
-reg_results_sis_2$p_value = ifelse(reg_results_sis_2$p_value ==.000, "<.001", reg_results_sis_2$p_value)
-reg_results_sis_2 = reg_results_sis_2[-c(1),]
-reg_results_sis_2$import_sis_2 = import_sis_2
-reg_results_sis_2$import_sis_2 = format(round(reg_results_sis_2$import_sis_2, digits=2), nsmall = 2)
-reg_results_sis_2
-
-write.csv(reg_results_sis_2, "reg_results_sis_2.csv", row.names = FALSE)
-```
-
-Hypothesis 4:  Treatment alliance and treatment satisfaction will be positively and uniquely associated with intention to follow-through on discharge plans. 
-INQ_2_diff
-<dbl>
-RAS_1_diff
-<dbl>
-RAS_3_diff
-<dbl>
-RAS_5_diff
-<dbl>
-ISLES_1_diff
-<dbl>
-ISLES_2_diff
-<dbl>
-MILQ_diff
-<dbl>
-RCS_diff
-<dbl>
-SIS_1_diff
-<dbl>
-SIS_2_diff
-<dbl
 ```{r}
 library(relaimpo)
 library(car)
@@ -1403,6 +1394,5 @@ reg_results_BID$import_BID = format(round(reg_results_BID$import_BID, digits=2),
 reg_results_BID = reg_results_BID[order(abs(as.numeric(reg_results_BID$par_est)), decreasing = TRUE),]
 
 write.csv(reg_results_BID, "reg_results_BID.csv", row.names = FALSE)
-
 ```
 
