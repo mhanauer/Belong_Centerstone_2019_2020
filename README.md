@@ -686,6 +686,51 @@ range(impute_dat_loop$imp1$INQ_1_post)
 
 dim(impute_dat_loop[[1]])
 ```
+Get pre and post scores
+```{r}
+
+mean_out_pre = list()
+sd_out_pre = list()
+head(impute_dat_loop[[1]][8:18])
+head(impute_dat_loop[[1]][19:29])
+
+for(i in 1:length(impute_dat_loop)){
+  mean_out_pre[[i]] = apply(impute_dat_loop[[i]][8:18],2,mean)
+  sd_out_pre[[i]] = apply(impute_dat_loop[[i]][8:18], 2, sd)
+}
+dim(impute_dat_loop[[1]][8:18])
+parsout_sis_1 = unlist(mean_out_pre) 
+parsout_sis_1 = matrix(parsout_sis_1, ncol = 11, byrow = TRUE)
+parsout_sis_1
+
+sesout_sis_1 = unlist(sd_out_pre)
+sesout_sis_1 = matrix(sesout_sis_1, ncol = 11, byrow = TRUE)
+sesout_sis_1
+
+pars_sesout_sis_1 = mi.meld(parsout_sis_1, sesout_sis_1)
+pars_sesout_sis_1
+
+
+for(i in 1:length(impute_dat_loop)){
+  mean_out_pre[[i]] = apply(impute_dat_loop[[i]][19:29],2,mean)
+  sd_out_pre[[i]] = apply(impute_dat_loop[[i]][19:29], 2, sd)
+}
+dim(impute_dat_loop[[1]][8:18])
+parsout_sis_1 = unlist(mean_out_pre) 
+parsout_sis_1 = matrix(parsout_sis_1, ncol = 11, byrow = TRUE)
+parsout_sis_1
+
+sesout_sis_1 = unlist(sd_out_pre)
+sesout_sis_1 = matrix(sesout_sis_1, ncol = 11, byrow = TRUE)
+sesout_sis_1
+
+pars_sesout_sis_1 = mi.meld(parsout_sis_1, sesout_sis_1)
+pars_sesout_sis_1
+```
+
+
+
+
 Do diff scores with regression, because not random and want to account
 ```{r}
 dim(impute_dat_loop[[1]])
