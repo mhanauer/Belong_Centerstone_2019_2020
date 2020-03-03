@@ -374,10 +374,11 @@ Descriptives with complete data
 ```{r}
 #library(psych)
 #library(prettyR)
-#library(installr)
-#uninstall.packages("Hmisc")
-#uninstall.packages("psych")
-#library(Hmisc)
+library(installr)
+uninstall.packages("Hmisc")
+uninstall.packages("psych")
+install.packages("pysch")
+library(pysch)
 dim(center_dat)
 describe.factor(center_dat$X9_TREAT.a.Received)
 center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)] = data.frame(apply(center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)],2, as.factor))
@@ -386,6 +387,7 @@ center_dat[,c(35,37,39,41,43,45,47,49,51,53,55,57,59)] = data.frame(apply(center
 describe.factor(center_dat$X9_TREAT.a.Received)
 
 desc_stats = describe(center_dat)
+desc_stats$sexual_minority$values
 desc_stats_numeric = data.frame(desc_stats$Numeric)
 desc_stats_numeric = desc_stats_numeric[c(1,4,5),]
 desc_stats_numeric
@@ -784,6 +786,150 @@ cor_dat_results
 cor_dat_results=subset(cor_dat_results, abs(cor) > .4)
 cor_dat_results
 ```
+#### T-test change them
+```{r}
+Hypothesis 1: T-tests. 
+```{r}
+ 
+out_diff_dat_d1 = out_diff_dat[[1]]
+out_diff_dat_d1_pre = out_diff_dat_d1[,8:18]
+
+out_diff_dat_d2 = out_diff_dat[[2]]
+out_diff_dat_d2_pre = out_diff_dat_d2[,8:18]
+
+out_diff_dat_d3 = out_diff_dat[[3]]
+out_diff_dat_d3_pre = out_diff_dat_d3[,8:18]
+
+out_diff_dat_d4 = out_diff_dat[[4]]
+out_diff_dat_d4_pre = out_diff_dat_d4[,8:18]
+
+out_diff_dat_d5 = out_diff_dat[[5]]
+out_diff_dat_d5_pre = out_diff_dat_d5[,8:18]
+
+out_diff_dat_d1 = out_diff_dat[[1]]
+out_diff_dat_d1_post = out_diff_dat_d1[,19:29]
+
+out_diff_dat_d2 = out_diff_dat[[2]]
+out_diff_dat_d2_post = out_diff_dat_d2[,19:29]
+
+out_diff_dat_d3 = out_diff_dat[[3]]
+out_diff_dat_d3_post = out_diff_dat_d3[,19:29]
+
+out_diff_dat_d4 = out_diff_dat[[4]]
+out_diff_dat_d4_post = out_diff_dat_d4[,19:29]
+
+out_diff_dat_d5 = out_diff_dat[[5]]
+out_diff_dat_d5_post = out_diff_dat_d5[,19:29]
+
+library(effsize)
+center_results_d1 = list()
+for(i in 1:length(out_diff_dat_d1_post)){
+  center_results_d1[[i]]= t.test(out_diff_dat_d1_post[[i]], out_diff_dat_d1_pre[[i]], paired = TRUE)
+  #center_results_d1[[i]] = center_results_d1[[i]][c(3,5)]
+}
+center_results_d1
+center_results_d1 = unlist(center_results_d1)
+center_results_d1 = matrix(center_results_d1, ncol = 3, byrow = TRUE)
+center_results_d1 = data.frame(center_results_d1)
+center_results_d1 = round(center_results_d1, 3)
+center_results_d1
+colnames(center_results_d1) = c("cohen_d", "lower", "upper")
+center_results_d1
+
+center_results_d2 = list()
+for(i in 1:length(out_diff_dat_d1_post)){
+  center_results_d2[[i]]= cohen.d(out_diff_dat_d2_post[[i]], out_diff_dat_d2_pre[[i]], paired = TRUE, conf.level = .95)
+  center_results_d2[[i]] = center_results_d2[[i]][c(3,5)]
+}
+center_results_d2
+center_results_d2
+center_results_d2 = unlist(center_results_d2)
+center_results_d2 = matrix(center_results_d2, ncol = 3, byrow = TRUE)
+center_results_d2 = data.frame(center_results_d2)
+center_results_d2 = round(center_results_d2, 3)
+center_results_d2
+colnames(center_results_d2) = c("cohen_d", "lower", "upper")
+center_results_d2
+
+center_results_d3 = list()
+for(i in 1:length(out_diff_dat_d1_post)){
+  center_results_d3[[i]]= cohen.d(out_diff_dat_d3_post[[i]], out_diff_dat_d3_pre[[i]], paired = TRUE, conf.level = .95)
+  center_results_d3[[i]] = center_results_d3[[i]][c(3,5)]
+}
+center_results_d3
+center_results_d3
+center_results_d3 = unlist(center_results_d3)
+center_results_d3 = matrix(center_results_d3, ncol = 3, byrow = TRUE)
+center_results_d3 = data.frame(center_results_d3)
+center_results_d3 = round(center_results_d3, 3)
+center_results_d3
+colnames(center_results_d3) = c("cohen_d", "lower", "upper")
+center_results_d3
+
+center_results_d4 = list()
+for(i in 1:length(out_diff_dat_d1_post)){
+  center_results_d4[[i]]= cohen.d(out_diff_dat_d4_post[[i]], out_diff_dat_d4_pre[[i]], paired = TRUE, conf.level = .95)
+  center_results_d4[[i]] = center_results_d4[[i]][c(3,5)]
+}
+center_results_d4
+center_results_d4
+center_results_d4 = unlist(center_results_d4)
+center_results_d4 = matrix(center_results_d4, ncol = 3, byrow = TRUE)
+center_results_d4 = data.frame(center_results_d4)
+center_results_d4 = round(center_results_d4, 3)
+center_results_d4
+colnames(center_results_d4) = c("cohen_d", "lower", "upper")
+center_results_d4
+
+center_results_d5 = list()
+for(i in 1:length(out_diff_dat_d1_post)){
+  center_results_d5[[i]]= cohen.d(out_diff_dat_d5_post[[i]], out_diff_dat_d5_pre[[i]], paired = TRUE, conf.level = .95)
+  center_results_d5[[i]] = center_results_d5[[i]][c(3,5)]
+}
+center_results_d5
+center_results_d5
+center_results_d5 = unlist(center_results_d5)
+center_results_d5 = matrix(center_results_d5, ncol = 3, byrow = TRUE)
+center_results_d5 = data.frame(center_results_d5)
+center_results_d5 = round(center_results_d5, 3)
+center_results_d5
+colnames(center_results_d5) = c("cohen_d", "lower", "upper")
+center_results_d5
+
+
+center_results_cohen_d = data.frame(cohen_d1 = center_results_d1$cohen_d, cohen_d2 = center_results_d2$cohen_d, cohen_d3 = center_results_d3$cohen_d, cohen_d4 = center_results_d4$cohen_d, cohen_d5 = center_results_d5$cohen_d)
+center_results_cohen_d = rowMeans(center_results_cohen_d)
+center_results_cohen_d
+
+center_results_upper = data.frame(upper1 = center_results_d1$upper, upper2 = center_results_d2$upper, upper3 = center_results_d3$upper, upper4 = center_results_d4$upper, upper5 = center_results_d5$upper)
+center_results_upper = rowMeans(center_results_upper)
+center_results_upper
+
+center_results_lower = data.frame(lower1 = center_results_d1$lower, lower2 = center_results_d2$lower, lower3 = center_results_d3$lower, lower4 = center_results_d4$lower, lower5 = center_results_d5$lower)
+center_results_lower = rowMeans(center_results_lower)
+center_results_lower
+
+center_results = data.frame(cohen_d = center_results_cohen_d, upper = center_results_upper, lower = center_results_lower)
+center_results = round(center_results, 2)
+
+outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
+
+center_results = data.frame(outcomes, center_results)
+
+center_results$outcomes = ifelse(center_results$upper > 0 & center_results$lower < 0, center_results$outcomes, paste0(center_results$outcomes, "*"))
+
+center_results$ci_95 = paste0(center_results$lower, sep = ",", center_results$upper)
+center_results[,3:4] = NULL
+center_results
+
+center_results$cohen_d = as.numeric(center_results$cohen_d)
+center_results = center_results[order(abs(center_results$cohen_d), decreasing = TRUE),]
+
+write.csv(center_results, "center_results.csv", row.names = FALSE)
+
+```
+```
+
 
 Research Question #1: Are novel treatment targets (i.e., perceived burdensomeness, thwarted belongingness, meaning made of stress, goal orientation/hope, resilience-based coping) changing from pre-treatment to post-treatment during standard episodes of care? 
 
