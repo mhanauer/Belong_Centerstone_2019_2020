@@ -788,8 +788,7 @@ cor_dat_results
 ```
 #### T-test change them
 ```{r}
-Hypothesis 1: T-tests. 
-```{r}
+
  
 out_diff_dat_d1 = out_diff_dat[[1]]
 out_diff_dat_d1_pre = out_diff_dat_d1[,8:18]
@@ -928,7 +927,7 @@ center_results = center_results[order(abs(center_results$cohen_d), decreasing = 
 write.csv(center_results, "center_results.csv", row.names = FALSE)
 
 ```
-```
+
 
 
 Research Question #1: Are novel treatment targets (i.e., perceived burdensomeness, thwarted belongingness, meaning made of stress, goal orientation/hope, resilience-based coping) changing from pre-treatment to post-treatment during standard episodes of care? 
