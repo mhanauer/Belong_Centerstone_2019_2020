@@ -1050,8 +1050,6 @@ head(center_dat)
 library(Amelia)
 
 ### Get rid of the treat variables, I don't them imputted, because they are missing on purpose.
-treat_vars  =  center_dat[,c(36:61)]
-center_dat = center_dat[,-c(36:61)]
 center_dat
 
 ### Create bounds for one var and see what happens
@@ -1107,7 +1105,7 @@ for(i in 1:length(impute_dat_loop)){
 }
 out_diff_dat
 ### Evaluate normality
-out_diff_dat_norm = out_diff_dat[[1]][c(30:32, 35:44)]
+out_diff_dat_norm = out_diff_dat[[1]][c(30:32,35,37:44)]
 hist_results = list() 
 qq_results = list()
 shap_results = list()
