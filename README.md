@@ -16,7 +16,7 @@ center_dat_load = read.csv("BelongGive_DataClean_7.20.csv", header = TRUE)
 center_dat=  center_dat_load 
 head(center_dat)
 #install.packages("psych")
-library(psych)
+#library(psych)
 library(prettyR)
 
 ```
@@ -274,8 +274,9 @@ high_school_greater = ifelse(demos$X16_Education < 3,0, ifelse(demos$X16_Educati
 ```
 Psychometrics for BID
 ```{r}
+library(psych)
 BID_psycho =  center_psycho[,201:206]
-summary(omega(BID_psycho))
+#summary(omega(BID_psycho))
 
 efa3 = fa(r = BID_psycho, nfactors = 3, fm = "gls", cor = "poly")
 efa3
@@ -304,6 +305,7 @@ paran(BID_psycho_Complete, centile = 95, iterations = 1000, graph = TRUE, cfa = 
 ```
 Get omegas for all non-BID constructs at pre and only post if only collected at post
 ```{r}
+
 INQ_1_pre_psycho = center_psycho[,5:9]
 INQ_2_pre_psycho = center_psycho[,10:14]
 RAS_1_pre_psycho = center_psycho[,20:27]
@@ -321,7 +323,6 @@ CSE_1_psycho = center_psycho[,138:143]
 CSE_2_psycho = center_psycho[,144:147]
 CSE_3_psycho = center_psycho[,148:150]
 
-summary(omega(INQ_1_pre_psycho))
 library(MBESS)
 
 ci.reliability(INQ_1_pre_psycho)
@@ -330,8 +331,8 @@ omega_list = list(INQ_1_pre_psycho, INQ_2_pre_psycho, RAS_1_pre_psycho, RAS_3_pr
 omega_list
 test_omega = list()
 for(i in 1:length(omega_list)){
-  test_omega[[i]] = omega(omega_list[[i]])
-  test_omega[[i]] = summary(test_omega[[i]])
+  test_omega[[i]] = ci.reliability(omega_list[[i]])
+  #test_omega[[i]] = summary(test_omega[[i]])
 }
 test_omega
 ```
@@ -371,14 +372,12 @@ dim(center_dat)
 
 
 Descriptives with complete data
+Uninstall psych
 ```{r}
 #library(psych)
 #library(prettyR)
 library(installr)
-uninstall.packages("Hmisc")
-uninstall.packages("psych")
-install.packages("pysch")
-library(pysch)
+#uninstall.packages("Hmisc")
 dim(center_dat)
 describe.factor(center_dat$X9_TREAT.a.Received)
 center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)] = data.frame(apply(center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)],2, as.factor))
@@ -420,7 +419,6 @@ write.csv(desc_stats_factor, "desc_stats_factor.csv", row.names = FALSE)
 ### Change back for analysis 
 center_dat$high_school_greater = ifelse(center_dat$high_school_greater == 0,0,1)
 
-15*1.5*8
 
 ```
 Treat variable
@@ -749,7 +747,7 @@ for(i in 1:length(impute_dat_loop)){
 }
 out_diff_dat
 ### Evaluate normality
-out_diff_dat_norm = out_diff_dat[[1]][c(30:32, 35:44)]
+out_diff_dat_norm = out_diff_dat[[1]][c(30:32,35,37:44)]
 hist_results = list() 
 qq_results = list()
 shap_results = list()
@@ -764,6 +762,7 @@ Correlations
 ```{r}
 cor_dat = out_diff_dat[[1]]
 cor_dat = cor_dat[,c(30:35, 37:47)]
+install.packages("Hmisc")
 library(Hmisc)
 
 cor_dat_results = rcorr(as.matrix(cor_dat))
@@ -784,7 +783,9 @@ cor_dat_results = cor_dat_results
 dim(cor_dat_results)
 cor_dat_results
 cor_dat_results=subset(cor_dat_results, abs(cor) > .4)
-cor_dat_results
+write.csv(cor_dat_results, "cor_dat_results.csv", row.names = FALSE)
+library(installr)
+uninstall.packages("Hmisc")
 ```
 #### T-test change them
 ```{r}
