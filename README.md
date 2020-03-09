@@ -377,7 +377,7 @@ Uninstall psych
 #library(psych)
 #library(prettyR)
 library(installr)
-#uninstall.packages("Hmisc")
+uninstall.packages("Hmisc")
 dim(center_dat)
 describe.factor(center_dat$X9_TREAT.a.Received)
 center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)] = data.frame(apply(center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)],2, as.factor))
@@ -789,6 +789,37 @@ uninstall.packages("Hmisc")
 ```
 T-test code
 ```{r}
+
+out_diff_dat_d1 = out_diff_dat[[1]]
+out_diff_dat_d1_pre = out_diff_dat_d1[,8:18]
+
+out_diff_dat_d2 = out_diff_dat[[2]]
+out_diff_dat_d2_pre = out_diff_dat_d2[,8:18]
+
+out_diff_dat_d3 = out_diff_dat[[3]]
+out_diff_dat_d3_pre = out_diff_dat_d3[,8:18]
+
+out_diff_dat_d4 = out_diff_dat[[4]]
+out_diff_dat_d4_pre = out_diff_dat_d4[,8:18]
+
+out_diff_dat_d5 = out_diff_dat[[5]]
+out_diff_dat_d5_pre = out_diff_dat_d5[,8:18]
+
+out_diff_dat_d1 = out_diff_dat[[1]]
+out_diff_dat_d1_post = out_diff_dat_d1[,19:29]
+
+out_diff_dat_d2 = out_diff_dat[[2]]
+out_diff_dat_d2_post = out_diff_dat_d2[,19:29]
+
+out_diff_dat_d3 = out_diff_dat[[3]]
+out_diff_dat_d3_post = out_diff_dat_d3[,19:29]
+
+out_diff_dat_d4 = out_diff_dat[[4]]
+out_diff_dat_d4_post = out_diff_dat_d4[,19:29]
+
+out_diff_dat_d5 = out_diff_dat[[5]]
+out_diff_dat_d5_post = out_diff_dat_d5[,19:29]
+
 center_results_d1 = list()
 for(i in 1:length(out_diff_dat_d1_post)){
   center_results_d1[[i]]= t.test(out_diff_dat_d1_post[[i]], out_diff_dat_d1_pre[[i]], paired = TRUE)
