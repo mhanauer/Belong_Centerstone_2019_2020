@@ -177,7 +177,6 @@ center_dat$X5_CSE.a
 ### TSE_bin
 
 ## TSE
-
 ### Demos
 demos = center_dat[,c(75:78,80,92,97:98)]
 demos_fac = data.frame(apply(demos, 2, as.factor))
@@ -266,11 +265,11 @@ treat_needs_post = center_dat[,170:195]
 suicide = center_dat$X4_AttemptedSuic
 
 center_psycho = center_dat 
-center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, CSQ, BID, WAI, CSE_1, CSE_2, CSE_3, treat_needs_post, suicide)
+center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, CSQ, BID, WAI, CSE_1, CSE_2, CSE_3, treat_needs_post, suicide, female)
 
 high_school_greater = ifelse(demos$X16_Education < 3,0, ifelse(demos$X16_Education == 3,1,2))
 
-
+demos
 ```
 Psychometrics for BID
 ```{r}
@@ -380,13 +379,12 @@ library(installr)
 uninstall.packages("Hmisc")
 dim(center_dat)
 describe.factor(center_dat$X9_TREAT.a.Received)
-center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)] = data.frame(apply(center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)],2, as.factor))
-
+center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60,63)] = data.frame(apply(center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60,63)],2, as.factor))
+center_dat$female = as.factor(center_dat$female)
 center_dat[,c(35,37,39,41,43,45,47,49,51,53,55,57,59)] = data.frame(apply(center_dat[,c(35,37,39,41,43,45,47,49,51,53,55,57,59)],2, as.numeric))
 describe.factor(center_dat$X9_TREAT.a.Received)
-
+center_dat
 desc_stats = describe(center_dat)
-desc_stats$sexual_minority$values
 desc_stats_numeric = data.frame(desc_stats$Numeric)
 desc_stats_numeric = desc_stats_numeric[c(1,4,5),]
 desc_stats_numeric
@@ -397,7 +395,7 @@ colnames(desc_stats_numeric)[1] = "variable"
 desc_stats_numeric$percent_missing = 1-(as.numeric(desc_stats_numeric$valid.n) / 118)
 desc_stats_numeric[,2:5] = format(round(desc_stats_numeric[,2:5], digits=2), nsmall = 2)
 desc_stats_numeric
-desc_range= center_dat[,-c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)]
+desc_range= center_dat[,-c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60,63)]
 desc_range = apply(desc_range, 2, range, na.rm = TRUE)
 desc_range = t(desc_range)
 desc_range = round(desc_range,2)
@@ -661,7 +659,7 @@ range(center_dat$RCS_post, na.rm = TRUE)
 bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5, 30,1,4, 31,1,5, 32,1,5, 33,1,10, 34,1,10, 35,1,10),nrow = 28, ncol = 3, byrow = TRUE)
 bounds
 
-a.out = amelia(x = center_dat, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide"), bounds = bounds)
+a.out = amelia(x = center_dat, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide", "female"), bounds = bounds)
 compare.density(a.out, var = "RAS_1_post")
 compare.density(a.out, var = "RAS_3_post")
 compare.density(a.out, var = "RAS_5_post")
@@ -727,10 +725,6 @@ sesout_sis_1
 pars_sesout_sis_1 = mi.meld(parsout_sis_1, sesout_sis_1)
 pars_sesout_sis_1
 ```
-
-
-
-
 Do diff scores with regression, because not random and want to account
 ```{r}
 dim(impute_dat_loop[[1]])
@@ -747,7 +741,7 @@ for(i in 1:length(impute_dat_loop)){
 }
 out_diff_dat
 ### Evaluate normality
-out_diff_dat_norm = out_diff_dat[[1]][c(30:32,35,37:44)]
+out_diff_dat_norm = out_diff_dat[[1]][c(30:32,35,38:48)]
 hist_results = list() 
 qq_results = list()
 shap_results = list()
@@ -761,7 +755,7 @@ shap_results
 Correlations
 ```{r}
 cor_dat = out_diff_dat[[1]]
-cor_dat = cor_dat[,c(30:35, 37:47)]
+cor_dat = cor_dat[,c(30:35, 38:48)]
 install.packages("Hmisc")
 library(Hmisc)
 
@@ -1096,7 +1090,7 @@ range(center_dat$RCS_post, na.rm = TRUE)
 bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5, 30,1,4, 31,1,5, 32,1,5, 33,1,10, 34,1,10, 35,1,10),nrow = 28, ncol = 3, byrow = TRUE)
 bounds
 
-a.out = amelia(x = center_dat, m = 30, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide"), bounds = bounds)
+a.out = amelia(x = center_dat, m = 30, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide", "female"), bounds = bounds)
 compare.density(a.out, var = "RAS_1_post")
 compare.density(a.out, var = "RAS_3_post")
 compare.density(a.out, var = "RAS_5_post")
@@ -1136,7 +1130,7 @@ for(i in 1:length(impute_dat_loop)){
 }
 out_diff_dat
 ### Evaluate normality
-out_diff_dat_norm = out_diff_dat[[1]][c(30:32,35,37:44)]
+out_diff_dat_norm = out_diff_dat[[1]][c(30:32,35,38:48)]
 hist_results = list() 
 qq_results = list()
 shap_results = list()
@@ -1214,7 +1208,7 @@ import_sis_1
 reg_results_sis_1 = data.frame(par_est = t(pars_sesout_sis_1$q.mi), se = t(pars_sesout_sis_1$se.mi), p_value = t(p_values_reg_sis_1), ci_95_sis_1)
 reg_results_sis_1
 reg_results_sis_1[,1:2] = format(round(reg_results_sis_1[,1:2], digits=2), nsmall = 2)
-reg_results_sis_1$var_names = c("Intercept", colnames(out_diff_dat[[1]])[37:45], "BID", "CSE_1", "CSE_2", "CSE_3")
+reg_results_sis_1$var_names = c("Intercept", colnames(out_diff_dat[[1]])[38:46], "BID", "CSE_1", "CSE_2", "CSE_3")
 reg_results_sis_1 = data.frame(var_names = reg_results_sis_1$var_names, reg_results_sis_1[,1:4])
 typeof(reg_results_sis_1$p_value)
 
@@ -1287,7 +1281,7 @@ import_sis_2
 reg_results_sis_2 = data.frame(par_est = t(pars_sesout_sis_2$q.mi), se = t(pars_sesout_sis_2$se.mi), p_value = t(p_values_reg_sis_2), ci_95_sis_2)
 reg_results_sis_2
 reg_results_sis_2[,1:2] = format(round(reg_results_sis_2[,1:2], digits=2), nsmall = 2)
-reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat[[1]])[37:45], "BID", "CSE_1", "CSE_2", "CSE_3")
+reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat[[1]])[38:46], "BID", "CSE_1", "CSE_2", "CSE_3")
 reg_results_sis_2 = data.frame(var_names = reg_results_sis_2$var_names, reg_results_sis_2[,1:4])
 typeof(reg_results_sis_2$p_value)
 
