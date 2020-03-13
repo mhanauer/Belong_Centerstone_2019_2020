@@ -419,6 +419,26 @@ center_dat$high_school_greater = ifelse(center_dat$high_school_greater == 0,0,1)
 
 
 ```
+Get age categories
+15-24
+25-34
+35-44
+45-54
+55-64
+```{r}
+age_dat = na.omit(center_dat$age)
+
+age_cat = ifelse(age_dat <= 24, "15-24", ifelse(age_dat > 24 & age_dat <=  34, "25-34",ifelse(age_dat > 34 & age_dat <= 44, "35-44", ifelse(age_dat > 44 & age_dat <= 54, "45-54", ifelse(age_dat > 54, "55-64","wrong")))))
+range(age_dat, na.rm = TRUE)
+age_cat
+age_test = data.frame(age_dat, age_cat)
+age_test
+describe.factor(age_cat)
+
+
+```
+
+
 Treat variable
 Number and percentage who said yes
 Mean and sd for the rating
