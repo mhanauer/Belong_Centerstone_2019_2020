@@ -425,9 +425,10 @@ Get age categories
 35-44
 45-54
 55-64
+There are four clients with missing data.
 ```{r}
 age_dat = na.omit(center_dat$age)
-
+length(age_dat)
 age_cat = ifelse(age_dat <= 24, "15-24", ifelse(age_dat > 24 & age_dat <=  34, "25-34",ifelse(age_dat > 34 & age_dat <= 44, "35-44", ifelse(age_dat > 44 & age_dat <= 54, "45-54", ifelse(age_dat > 54, "55-64","wrong")))))
 range(age_dat, na.rm = TRUE)
 age_cat
@@ -707,6 +708,7 @@ Impute data
 ```
 Load imputed data
 ```{r}
+setwd("S:/Indiana Research & Evaluation/Matthew Hanauer/Centerstone_Study_2019_2020")
 impute_dat_loop = readRDS(file = "impute_dat_loop.rds")
 impute_dat_loop
 ```
@@ -944,6 +946,7 @@ center_results_t_test
 
 #center_results_t_test$t_stat = as.numeric(center_results_t_test$t_stat)
 #center_results_t_test = center_results_t_test[order(abs(center_results_t_test$t_stat), decreasing = TRUE),]
+center_results_t_test$p_value = ifelse(center_results_t_test$p_value <= 0, "<.001", center_results_t_test$p_value)
 
 write.csv(center_results_t_test, "center_results_t_test.csv", row.names = FALSE)
 
@@ -1089,7 +1092,7 @@ center_results[,3:4] = NULL
 center_results
 
 center_results$cohen_d = as.numeric(center_results$cohen_d)
-center_results = center_results[order(abs(center_results$cohen_d), decreasing = TRUE),]
+#center_results = center_results[order(abs(center_results$cohen_d), decreasing = TRUE),]
 
 write.csv(center_results, "center_results.csv", row.names = FALSE)
 
