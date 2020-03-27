@@ -568,7 +568,7 @@ treat_results
 write.csv(treat_results, "treat_results.csv")
 ```
 Effect on suicidal ideation for ind therapy, group therapy, safety plan, burden, meaning, difficultly with life events
-
+Not imputting, because planned missing data (if you did not select anything you selected no)
 Difference in standardized average differnece (post-pre) score for suicide for receicing treatment versus not receiving treatment
 
 ```{r}
@@ -653,57 +653,65 @@ reg_suicide = glm(suicide ~ INQ_1_pre + INQ_2_pre + ISLES_1_pre + ISLES_2_pre + 
 
 summary(reg_suicide)
 ```
-
-
-
 Impute data
 ```{r}
-head(center_dat)
-library(Amelia)
+#head(center_dat)
+#library(Amelia)
 
 ### Get rid of the treat variables, I don't them imputted, because they are missing on purpose.
-treat_vars  =  center_dat[,c(36:61)]
-center_dat = center_dat[,-c(36:61)]
-center_dat
+#treat_vars  =  center_dat[,c(36:61)]
+#center_dat = center_dat[,-c(36:61)]
+#center_dat
 
 ### Create bounds for one var and see what happens
 ## INQ Post
-center_dat[,8:35]
+#center_dat[,8:35]
 
-range(center_dat$INQ_1_pre, na.rm = TRUE) 
-range(center_dat$RAS_1_pre, na.rm = TRUE) 
-range(center_dat$ISLES_1_post, na.rm = TRUE)
-range(center_dat$MILQ_post, na.rm = TRUE) 
-range(center_dat$RCS_post, na.rm = TRUE) 
+#range(center_dat$INQ_1_pre, na.rm = TRUE) 
+#range(center_dat$RAS_1_pre, na.rm = TRUE) 
+#range(center_dat$ISLES_1_post, na.rm = TRUE)
+#range(center_dat$MILQ_post, na.rm = TRUE) 
+#range(center_dat$RCS_post, na.rm = TRUE) 
 
-bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5, 30,1,4, 31,1,5, 32,1,5, 33,1,10, 34,1,10, 35,1,10),nrow = 28, ncol = 3, byrow = TRUE)
-bounds
+#bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5, 30,1,4, 31,1,5, 32,1,5, 33,1,10, 34,1,10, 35,1,10),nrow = 28, ncol = 3, byrow = TRUE)
+#bounds
 
-a.out = amelia(x = center_dat, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide", "female"), bounds = bounds)
-compare.density(a.out, var = "RAS_1_post")
-compare.density(a.out, var = "RAS_3_post")
-compare.density(a.out, var = "RAS_5_post")
-compare.density(a.out, var = "RCS_post")
-compare.density(a.out, var = "ISLES_1_post")
-compare.density(a.out, var = "ISLES_2_post")
-compare.density(a.out, var = "INQ_1_post")
-compare.density(a.out, var = "INQ_2_post")
-compare.density(a.out, var = "MILQ_post")
-compare.density(a.out, var = "SIS_1_post")
-compare.density(a.out, var = "SIS_2_post")
-overimpute(a.out, var = "SIS_1_post")
-overimpute(a.out, var = "SIS_2_post")
-impute_dat_loop = a.out$imputations
-describe(impute_dat_loop$imp1)
-
-
-apply(impute_dat_loop$imp1, 2, range)
-range(impute_dat_loop$imp1$INQ_1_post)
+#a.out = amelia(x = center_dat, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide", "female"), bounds = bounds)
+#compare.density(a.out, var = "RAS_1_post")
+#compare.density(a.out, var = "RAS_3_post")
+#compare.density(a.out, var = "RAS_5_post")
+#compare.density(a.out, var = "RCS_post")
+#compare.density(a.out, var = "ISLES_1_post")
+#compare.density(a.out, var = "ISLES_2_post")
+#compare.density(a.out, var = "INQ_1_post")
+#compare.density(a.out, var = "INQ_2_post")
+#compare.density(a.out, var = "MILQ_post")
+#compare.density(a.out, var = "SIS_1_post")
+#compare.density(a.out, var = "SIS_2_post")
+#overimpute(a.out, var = "SIS_1_post")
+#overimpute(a.out, var = "SIS_2_post")
+#impute_dat_loop = a.out$imputations
+#describe(impute_dat_loop$imp1)
 
 
+#apply(impute_dat_loop$imp1, 2, range)
+#range(impute_dat_loop$imp1$INQ_1_post)
 
-dim(impute_dat_loop[[1]])
+#saveRDS(impute_dat_loop, file = "impute_dat_loop.rds")
+#impute_dat_loop = readRDS(file = "impute_dat_loop.rds")
+#impute_dat_loop
+
+#dim(impute_dat_loop[[1]])
+
+
 ```
+Load imputed data
+```{r}
+impute_dat_loop = readRDS(file = "impute_dat_loop.rds")
+impute_dat_loop
+```
+
+
 Get pre and post scores
 ```{r}
 
@@ -1086,90 +1094,6 @@ center_results = center_results[order(abs(center_results$cohen_d), decreasing = 
 write.csv(center_results, "center_results.csv", row.names = FALSE)
 
 ```
-##########################################################
-Increase the number of data sets to reduce standard errors
-##########################################################
-Impute data
-```{r}
-head(center_dat)
-library(Amelia)
-
-### Get rid of the treat variables, I don't them imputted, because they are missing on purpose.
-center_dat
-
-### Create bounds for one var and see what happens
-## INQ Post
-center_dat[,8:35]
-
-range(center_dat$INQ_1_pre, na.rm = TRUE) 
-range(center_dat$RAS_1_pre, na.rm = TRUE) 
-range(center_dat$ISLES_1_post, na.rm = TRUE)
-range(center_dat$MILQ_post, na.rm = TRUE) 
-range(center_dat$RCS_post, na.rm = TRUE) 
-
-bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5, 30,1,4, 31,1,5, 32,1,5, 33,1,10, 34,1,10, 35,1,10),nrow = 28, ncol = 3, byrow = TRUE)
-bounds
-
-a.out = amelia(x = center_dat, m = 30, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide", "female"), bounds = bounds)
-compare.density(a.out, var = "RAS_1_post")
-compare.density(a.out, var = "RAS_3_post")
-compare.density(a.out, var = "RAS_5_post")
-compare.density(a.out, var = "RCS_post")
-compare.density(a.out, var = "ISLES_1_post")
-compare.density(a.out, var = "ISLES_2_post")
-compare.density(a.out, var = "INQ_1_post")
-compare.density(a.out, var = "INQ_2_post")
-compare.density(a.out, var = "MILQ_post")
-compare.density(a.out, var = "SIS_1_post")
-compare.density(a.out, var = "SIS_2_post")
-overimpute(a.out, var = "SIS_1_post")
-overimpute(a.out, var = "SIS_2_post")
-impute_dat_loop = a.out$imputations
-describe(impute_dat_loop$imp1)
-
-
-apply(impute_dat_loop$imp1, 2, range)
-range(impute_dat_loop$imp1$INQ_1_post)
-
-
-dim(impute_dat_loop[[1]])
-```
-Do diff scores with regression, because not random and want to account
-```{r}
-dim(impute_dat_loop[[1]])
-out_diff_dat = list()
-head(impute_dat_loop[[1]][8:18])
-head(impute_dat_loop[[1]][19:29])
-head(impute_dat_loop[[1]])
-
-for(i in 1:length(impute_dat_loop)){
-  out_diff_dat[[i]] = impute_dat_loop[[i]][8:18]-impute_dat_loop[[1]][19:29]
-  colnames(out_diff_dat[[i]]) = c("INQ_1_diff", "INQ_2_diff", "RAS_1_diff", "RAS_3_diff", "RAS_5_diff", "ISLES_1_diff", "ISLES_2_diff", "MILQ_diff", "RCS_diff", "SIS_1_diff", "SIS_2_diff")
-  out_diff_dat[[i]] = scale(out_diff_dat[[i]])
-  out_diff_dat[[i]] =cbind(impute_dat_loop[[i]], out_diff_dat[[i]])
-}
-out_diff_dat
-### Evaluate normality
-out_diff_dat_norm = out_diff_dat[[1]][c(30:32,35,38:48)]
-hist_results = list() 
-qq_results = list()
-shap_results = list()
-for(i in 1:length(out_diff_dat_norm)){
-  hist_results[[i]]= hist(out_diff_dat_norm[[i]], main = paste("Histogram of" , names(out_diff_dat_norm)[[i]]))
-  qq_results[[i]] = qqnorm(out_diff_dat_norm[[i]], main = names(out_diff_dat_norm)[[i]])
-  shap_results[[i]] = shapiro.test(out_diff_dat_norm[[i]])
-}
-shap_results
-```
-
-Research Question #2: Are novel treatment targets (i.e., perceived burdensomeness, thwarted belongingness, meaning made of stress, meaning in life, goal orientation/hope coping self-efficacy, treatment alliance, treatment satisfaction) associated with episode of care outcomes (i.e., suicide risk, willingness to seek help, intentions to follow-through on discharge plans) at discharge? (Changed to change scores related to each other) 
-
-Hypothesis 1: Perceived burdensomeness and thwarted belongingness will be positively and uniquely associated with suicide risk (i.e., ideation, resolved plans/preparation) at discharge. 
-
-Hypothesis 2: Meaning made of stress, meaning in life, coping self-efficacy, goal orientation/hope, alliance, and treatment satisfaction will be negatively and uniquely associated with suicide risk (i.e., ideation, resolved plans and preparation) at discharge. 
-
-(Add new vars above to global data set)
-
 
 Sucidial Ideation regression
 ```{r}
