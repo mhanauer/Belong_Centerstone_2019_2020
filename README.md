@@ -335,38 +335,23 @@ for(i in 1:length(omega_list)){
 }
 test_omega
 ```
-
-
-
-
 Assess missing 
 ```{r}
 head(center_dat)
 library(naniar)
 miss_var_summary(center_dat)
-
-dim(center_dat)
-####### Only dropping one persn not worth it.
-
-#center_dat_complete = na.omit(center_dat)
-#dim(center_dat_complete)
-
-#quasi_itt =  apply(center_dat[,-c(34:59)], 1, function(x)(sum(is.na(x))))
-#quasi_itt_dat = data.frame(center_dat,quasi_itt)
-#describe.factor(quasi_itt_dat$quasi_itt)
-
-
-
-####Need to ignore the treatment received yes or no variables
-#quasi_itt_dat = subset(quasi_itt_dat, quasi_itt < dim(quasi_itt_dat[,-c(34:59)])[2]/2)
-#dim(center_dat)
-#dim(quasi_itt_dat)
-#quasi_itt_dat$quasi_itt = NULL
-#dim(quasi_itt_dat)
-
-#center_dat = quasi_itt_dat
-#dim(center_dat)
-
+### Attrition is the percentage of all the data divided by those completed at 50% of the follow-up
+center_dat
+head(center_dat[,c(19:35, 62:63)])
+### Not included treatment provided or score, because score is planned missing
+attrition = center_dat[,c(19:35, 62:63)]
+attrition$drop= apply(attrition, 1, function(x)(sum(is.na(x))))
+attrition$drop= ifelse(attrition$drop > dim(attrition)[2]/2, 1, 0)
+attrition = subset(attrition, drop == 1)
+attrition_n = dim(attrition)[1]
+attrition_rate = round(attrition_n / dim(center_dat)[1],2)
+attrition_n
+attrition_rate
 ```
 
 
@@ -445,9 +430,10 @@ Number and percentage who said yes
 Mean and sd for the rating
 ```{r}
 treat_all =  center_psycho[,170:195]
-saftey_plan = treat_all[,c(1:2)] 
-
-dim(treat_all)
+### Change treatment med to NA
+describe.factor(treat_all$X9_TREAT.b.Received)
+treat_all$X9_TREAT.b.Received[treat_all$X9_TREAT.b.Received == 2] = NA
+describe.factor(treat_all$X9_TREAT.b.Received)
 treat_receive = treat_all[,c(1,3,5,7,9,11,13,15,17,19,21,23,25)]
 treat_receive = data.frame(apply(treat_receive, 2, as.factor))
 treat_receive = describe(treat_receive)
@@ -457,8 +443,7 @@ treat_receive_factor = format(round(treat_receive_factor, digits=2), nsmall = 2)
 write.csv(treat_receive_factor, "treat_receive_factor.csv", row.names = TRUE)
 treat_receive_factor = read.csv("treat_receive_factor.csv", header = TRUE)
 colnames(treat_receive_factor)[1] = "variable"
-treat_receive_factor
-
+treat_receive_factor 
 
 ### Have to get the mean and sd for each one, because the data set will be different
 saftey_plan =  treat_all[,1:2]
@@ -467,7 +452,14 @@ dim(saftey_plan_yes)
 saftey_plan_yes_mean = mean(saftey_plan_yes$X9_TREAT.a.Score, na.rm = TRUE)
 saftey_plan_yes_sd = sd(saftey_plan_yes$X9_TREAT.a.Score, na.rm = TRUE)
 saftey_plan_yes_range = range(saftey_plan_yes$X9_TREAT.a.Score, na.rm = TRUE)
-
+saftey_plan_percent= na.omit(saftey_plan$X9_TREAT.a.Received)
+saftey_plan_percent = describe.factor(saftey_plan_percent)
+saftey_plan_percent = round(saftey_plan_percent, 0)
+saftey_plan_percent
+saftey_plan_percent_yes = paste0(saftey_plan_percent[1],"(",saftey_plan_percent[2], "%", ")") 
+saftey_plan_percent_yes
+saftey_plan_percent_no = paste0(saftey_plan_percent[3],"(",saftey_plan_percent[4], "%", ")") 
+saftey_plan_percent_no
 
 medication =  treat_all[,3:4]
 medication_yes = subset(medication, X9_TREAT.b.Received == 1)
@@ -475,6 +467,15 @@ dim(medication_yes)
 medication_yes_mean = mean(medication_yes$X9_TREAT.b.Score, na.rm = TRUE)
 medication_yes_sd = sd(medication_yes$X9_TREAT.b.Score, na.rm = TRUE)
 medication_yes_range = range(medication$X9_TREAT.b.Score, na.rm = TRUE)
+medication_percent= na.omit(medication$X9_TREAT.b.Received)
+medication_percent = describe.factor(medication_percent)
+medication_percent = round(medication_percent, 0)
+medication_percent
+medication_percent_yes = paste0(medication_percent[1],"(",medication_percent[2], "%", ")")
+medication_percent_yes
+medication_percent_no = paste0(medication_percent[3],"(",medication_percent[4], "%", ")") 
+medication_percent_no
+
 
 ind_therapy =  treat_all[,5:6]
 ind_therapy_yes = subset(ind_therapy, X9_TREAT.c.Received == 1)
@@ -482,6 +483,14 @@ dim(ind_therapy_yes)
 ind_therapy_yes_mean = mean(ind_therapy_yes$X9_TREAT.c.Score, na.rm = TRUE)
 ind_therapy_yes_sd = sd(ind_therapy_yes$X9_TREAT.c.Score, na.rm = TRUE)
 ind_therapy_yes_range = range(ind_therapy$X9_TREAT.c.Score, na.rm = TRUE)
+ind_therapy_percent= na.omit(ind_therapy$X9_TREAT.c.Received)
+ind_therapy_percent = describe.factor(ind_therapy_percent)
+ind_therapy_percent = round(ind_therapy_percent, 0)
+ind_therapy_percent
+ind_therapy_percent_yes = paste0(ind_therapy_percent[1],"(",ind_therapy_percent[2], "%", ")") 
+ind_therapy_percent_yes
+ind_therapy_percent_no = paste0(ind_therapy_percent[3],"(",ind_therapy_percent[4], "%", ")") 
+ind_therapy_percent_no
 
 
 group_therapy =  treat_all[,7:8]
@@ -490,6 +499,14 @@ dim(group_therapy_yes)
 group_therapy_yes_mean = mean(group_therapy_yes$X9_Treat.d.Score, na.rm = TRUE)
 group_therapy_yes_sd = sd(group_therapy_yes$X9_Treat.d.Score, na.rm = TRUE)
 group_therapy_yes_range = range(group_therapy$X9_Treat.d.Score, na.rm = TRUE)
+group_therapy_percent= na.omit(group_therapy$X9_TREAT.d.Received)
+group_therapy_percent = describe.factor(group_therapy_percent)
+group_therapy_percent = round(group_therapy_percent, 0)
+group_therapy_percent
+group_therapy_percent_yes = paste0(group_therapy_percent[1],"(",group_therapy_percent[2], "%", ")") 
+group_therapy_percent_yes
+group_therapy_percent_no = paste0(group_therapy_percent[3],"(",group_therapy_percent[4], "%", ")") 
+group_therapy_percent_no
 
 
 belong =  treat_all[,9:10]
@@ -498,6 +515,14 @@ dim(belong_yes)
 belong_yes_mean = mean(belong_yes$X9_Treat.e.Score, na.rm = TRUE)
 belong_yes_sd = sd(belong_yes$X9_Treat.e.Score, na.rm = TRUE)
 belong_yes_range = range(belong$X9_Treat.e.Score, na.rm = TRUE)
+belong_percent= na.omit(belong$X9_Treat.e.Received)
+belong_percent = describe.factor(belong_percent)
+belong_percent = round(belong_percent, 0)
+belong_percent
+belong_percent_yes = paste0(belong_percent[1],"(",belong_percent[2], "%", ")") 
+belong_percent_yes
+belong_percent_no = paste0(belong_percent[3],"(",belong_percent[4], "%", ")") 
+belong_percent_no
 
 
 coping_skills =  treat_all[,11:12]
@@ -506,6 +531,14 @@ dim(coping_skills_yes)
 coping_skills_yes_mean = mean(coping_skills_yes$X9_Treat.f.Score, na.rm = TRUE)
 coping_skills_yes_sd = sd(coping_skills_yes$X9_Treat.f.Score, na.rm = TRUE)
 coping_skills_yes_range = range(coping_skills$X9_Treat.f.Score, na.rm = TRUE)
+coping_skills_percent= na.omit(coping_skills$X9_Treat.f.Received)
+coping_skills_percent = describe.factor(coping_skills_percent)
+coping_skills_percent = round(coping_skills_percent, 0)
+coping_skills_percent
+coping_skills_percent_yes = paste0(coping_skills_percent[1],"(",coping_skills_percent[2], "%", ")") 
+coping_skills_percent_yes
+coping_skills_percent_no = paste0(coping_skills_percent[3],"(",coping_skills_percent[4], "%", ")") 
+coping_skills_percent_no
 
 meaning =  treat_all[,13:14]
 meaning_yes = subset(meaning, X9_Treat.g.Received == 1)
@@ -513,6 +546,14 @@ dim(meaning_yes)
 meaning_yes_mean = mean(meaning_yes$X9_Treat.g.Score, na.rm = TRUE)
 meaning_yes_sd = sd(meaning_yes$X9_Treat.g.Score, na.rm = TRUE)
 meaning_yes_range = range(meaning$X9_Treat.g.Score, na.rm = TRUE)
+meaning_percent= na.omit(meaning$X9_Treat.g.Received)
+meaning_percent = describe.factor(meaning_percent)
+meaning_percent = round(meaning_percent, 0)
+meaning_percent
+meaning_percent_yes = paste0(meaning_percent[1],"(",meaning_percent[2], "%", ")") 
+meaning_percent_yes
+meaning_percent_no = paste0(meaning_percent[3],"(",meaning_percent[4], "%", ")") 
+meaning_percent_no
 
 sense =  treat_all[,15:16]
 sense_yes = subset(sense, X9_Treat.h.Received == 1)
@@ -520,6 +561,14 @@ dim(sense_yes)
 sense_yes_mean = mean(sense_yes$X9_Treat.h.Score, na.rm = TRUE)
 sense_yes_sd = sd(sense_yes$X9_Treat.h.Score, na.rm = TRUE)
 sense_yes_range = range(sense$X9_Treat.h.Score, na.rm = TRUE)
+sense_percent= na.omit(sense$X9_Treat.h.Received)
+sense_percent = describe.factor(sense_percent)
+sense_percent = round(sense_percent, 0)
+sense_percent
+sense_percent_yes = paste0(sense_percent[1],"(",sense_percent[2], "%", ")") 
+sense_percent_yes
+sense_percent_no = paste0(sense_percent[3],"(",sense_percent[4], "%", ")") 
+sense_percent_no
 
 burden =  treat_all[,17:18]
 burden_yes = subset(burden, X9_Treat.I.Received == 1)
@@ -527,12 +576,28 @@ dim(burden_yes)
 burden_yes_mean = mean(burden_yes$X9_Treat.I.Score, na.rm = TRUE)
 burden_yes_sd = sd(burden_yes$X9_Treat.I.Score, na.rm = TRUE)
 burden_yes_range = range(burden$X9_Treat.I.Score, na.rm = TRUE)
+burden_percent= na.omit(burden$X9_Treat.I.Received)
+burden_percent = describe.factor(burden_percent)
+burden_percent = round(burden_percent, 0)
+burden_percent
+burden_percent_yes = paste0(burden_percent[1],"(",burden_percent[2], "%", ")") 
+burden_percent_yes
+burden_percent_no = paste0(burden_percent[3],"(",burden_percent[4], "%", ")") 
+burden_percent_no
 
 safe =  treat_all[,19:20]
 safe_yes = subset(safe, X9_Treat.j.Received == 1)
 safe_yes_mean = mean(safe_yes$X9_Treat.j.Score, na.rm = TRUE)
 safe_yes_sd = sd(safe_yes$X9_Treat.j.Score, na.rm = TRUE)
 safe_yes_range = range(safe$X9_Treat.j.Score, na.rm = TRUE)
+safe_percent= na.omit(safe$X9_Treat.j.Received)
+safe_percent = describe.factor(safe_percent)
+safe_percent = round(safe_percent, 0)
+safe_percent
+safe_percent_yes = paste0(safe_percent[1],"(",safe_percent[2], "%", ")") 
+safe_percent_yes
+safe_percent_no = paste0(safe_percent[3],"(",safe_percent[4], "%", ")") 
+safe_percent_no
 
 hope =  treat_all[,21:22]
 hope_yes = subset(hope, X9_Treat..k.Received == 1)
@@ -540,6 +605,14 @@ dim(hope_yes)
 hope_yes_mean = mean(hope_yes$X9_Treat.k.Score, na.rm = TRUE)
 hope_yes_sd = sd(hope_yes$X9_Treat.k.Score, na.rm = TRUE)
 hope_yes_range = range(hope$X9_Treat.k.Score, na.rm = TRUE)
+hope_percent= na.omit(hope$X9_Treat..k.Received)
+hope_percent = describe.factor(hope_percent)
+hope_percent = round(hope_percent, 0)
+hope_percent
+hope_percent_yes = paste0(hope_percent[1],"(",hope_percent[2], "%", ")") 
+hope_percent_yes
+hope_percent_no = paste0(hope_percent[3],"(",hope_percent[4], "%", ")") 
+hope_percent_no
 
 connect =  treat_all[,23:24]
 connect_yes = subset(connect, X9_Treat.L.Received == 1)
@@ -547,6 +620,14 @@ dim(connect_yes)
 connect_yes_mean = mean(connect_yes$X9_Treat.L.Score, na.rm = TRUE)
 connect_yes_sd = sd(connect_yes$X9_Treat.L.Score, na.rm = TRUE)
 connect_yes_range = range(connect$X9_Treat.L.Score, na.rm = TRUE)
+connect_percent= na.omit(connect$X9_Treat.L.Received)
+connect_percent = describe.factor(connect_percent)
+connect_percent = round(connect_percent, 0)
+connect_percent
+connect_percent_yes = paste0(connect_percent[1],"(",connect_percent[2], "%", ")") 
+connect_percent_yes
+connect_percent_no = paste0(connect_percent[3],"(",connect_percent[4], "%", ")") 
+connect_percent_no
 
 needs =  treat_all[,25:26]
 needs_yes = subset(needs, X9_Treat.m.Received == 1)
@@ -554,17 +635,30 @@ dim(needs_yes)
 needs_yes_mean = mean(needs_yes$X9_Treat.m.Score, na.rm = TRUE)
 needs_yes_sd = sd(needs_yes$X9_Treat.m.Score, na.rm = TRUE)
 needs_yes_range = range(needs$X9_Treat.m.Score, na.rm = TRUE)
+needs_percent= na.omit(needs$X9_Treat.m.Received)
+needs_percent = describe.factor(needs_percent)
+needs_percent = round(needs_percent, 0)
+needs_percent
+needs_percent_yes = paste0(needs_percent[1],"(",needs_percent[2], "%", ")") 
+needs_percent_yes
+needs_percent_no = paste0(needs_percent[3],"(",needs_percent[4], "%", ")") 
+needs_percent_no
 
 treat_range = data.frame(saftey_plan_yes_range, medication_yes_range, ind_therapy_yes_range, group_therapy_yes_range, belong_yes_range, coping_skills_yes_range, meaning_yes_range, sense_yes_range, burden_yes_range, safe_yes_range, hope_yes_range, connect_yes_range, needs_yes_range)
 
+
 # treat_range not needed all from 1 to 7 scale make note in table
 
-treat_results = data.frame(saftey_plan_yes_mean, medication_yes_mean, ind_therapy_yes_mean, group_therapy_yes_mean, belong_yes_mean, coping_skills_yes_mean, meaning_yes_mean,sense_yes_mean, burden_yes_mean, safe_yes_mean, hope_yes_mean, connect_yes_mean, needs_yes_mean, saftey_plan_yes_sd, medication_yes_sd, ind_therapy_yes_sd , group_therapy_yes_sd, belong_yes_sd, coping_skills_yes_sd, meaning_yes_sd, sense_yes_sd, burden_yes_sd, safe_yes_sd, hope_yes_sd, connect_yes_sd, needs_yes_sd)
+treat_results = data.frame(saftey_plan_yes_mean, medication_yes_mean, ind_therapy_yes_mean, group_therapy_yes_mean, belong_yes_mean, coping_skills_yes_mean, meaning_yes_mean,sense_yes_mean, burden_yes_mean, safe_yes_mean, hope_yes_mean, connect_yes_mean, needs_yes_mean, saftey_plan_yes_sd, medication_yes_sd, ind_therapy_yes_sd , group_therapy_yes_sd, belong_yes_sd, coping_skills_yes_sd, meaning_yes_sd, sense_yes_sd, burden_yes_sd, safe_yes_sd, hope_yes_sd, connect_yes_sd, needs_yes_sd, saftey_plan_percent_yes, medication_percent_yes, ind_therapy_percent_yes, group_therapy_percent_yes, belong_percent_yes, coping_skills_percent_yes, meaning_percent_yes, sense_percent_yes, burden_percent_yes, safe_percent_yes, hope_percent_yes, connect_percent_yes, needs_percent_yes, saftey_plan_percent_no, medication_percent_no, ind_therapy_percent_no, group_therapy_percent_no, belong_percent_no, coping_skills_percent_no, meaning_percent_no, sense_percent_no, burden_percent_no, safe_percent_no, hope_percent_no, connect_percent_no, needs_percent_no)
+treat_results[,1:26] = round(treat_results[,1:26], 2)
 treat_results = t(treat_results)
+treat_results
 treat_results_mean = treat_results[1:13,]
 treat_results_sd = treat_results[14:26,]
-treat_results = data.frame(treat_results_mean, treat_results_sd)
-treat_results = round(treat_results, 2)
+treat_results_p_yes = treat_results[27:39,]
+treat_results_p_no = treat_results[40:52,]
+
+treat_results = data.frame(treat_results_mean, treat_results_sd, treat_results_p_yes, treat_results_p_no)
 treat_results
 write.csv(treat_results, "treat_results.csv")
 ```
@@ -585,11 +679,36 @@ treatments = data.frame(saftey_plan =center_dat$X9_TREAT.a.Received,  ind_therap
 write.csv(treatments, "treatments.csv", row.names = FALSE)
 treatments = read.csv("treatments.csv", header = TRUE)
 treatments
+
+## Mean for yes and no of SIS 
+mean_sd_list = list()
+mean_sd_n_1 = list()
+mean_sd_n_0 = list()
+
+for(i in 1:length(treatments)){
+  mean_sd_list[[i]] =  compmeans(center_dat$SIS_1_diff_extra, treatments[[i]])
+  mean_sd_list[[i]] = mean_sd_list[[i]][c(1:2,4:5,7:8)]
+  #Reorder to mean 1, sd 1, n 1
+  mean_sd_list[[i]] = round(mean_sd_list[[i]],2)
+  mean_sd_n_1[[i]] = mean_sd_list[[i]][c(2,6,4)]
+  mean_sd_n_0[[i]] = mean_sd_list[[i]][c(1,5,3)]
+}
+mean_sd_list
+mean_sd_n_1[[1]]
+mean_sd_n_1 = unlist(mean_sd_n_1)
+mean_sd_n_1 = matrix(mean_sd_n_1, ncol= 3, byrow = TRUE)
+write.csv(mean_sd_n_1, "mean_sd_n_1.csv", row.names = FALSE)
+
+mean_sd_n_0 = unlist(mean_sd_n_0)
+mean_sd_n_0 = matrix(mean_sd_n_0, ncol= 3, byrow = TRUE)
+write.csv(mean_sd_n_0, "mean_sd_n_0.csv", row.names = FALSE)
+
+
 results_list = list()
 library(descr)
 compmeans(center_dat$SIS_1_diff_extra, center_dat$X9_TREAT.a.Received)
 for(i in 1:length(treatments)){
-  results_list[[i]] = cohen.d(center_dat$SIS_1_diff_extra, treatments[[i]], na.rm = TRUE)
+  results_list[[i]] = cohen.d(center_dat$SIS_1_diff_extra~ treatments[[i]], na.rm = TRUE)
   results_list[[i]] = results_list[[i]][c(3,5)]
   
 }
@@ -615,11 +734,50 @@ results_list[,3:4] = NULL
 results_list
 
 results_list$cohen_d = as.numeric(results_list$cohen_d)
-results_list = results_list[order(abs(results_list$cohen_d), decreasing = TRUE),]
+#results_list = results_list[order(abs(results_list$cohen_d), decreasing = TRUE),]
 
-center_dat$SIS_1_diff_extra = NULL
+#center_dat$SIS_1_diff_extra = NULL
 results_list
 write.csv(results_list, "results_list.csv", row.names = FALSE)
+
+### Now t-tests for table five
+results_list_t = list()
+library(descr)
+for(i in 1:length(treatments)){
+  results_list_t[[i]] = t.test(center_dat$SIS_1_diff_extra~ treatments[[i]], na.rm = TRUE)
+  results_list_t[[i]] = results_list_t[[i]][c(1,3,4)]
+}
+results_list_t
+results_list_t = unlist(results_list_t)
+results_list_t = matrix(results_list_t, ncol = 4, byrow = TRUE)
+results_list_t = data.frame(results_list_t)
+results_list_t = round(results_list_t, 4)
+results_list_t
+colnames(results_list_t) = c("t_value", "p_value", "lower", "upper")
+results_list_t
+
+outcomes = c("Safety Plan", "Individual Therapy", "Group Therapy", "Meaning", "Burden", "Difficult")
+
+results_list_t = data.frame(outcomes, results_list_t)
+results_list_t[,2:5] = round(results_list_t[,2:5],2)
+results_list_t
+
+results_list_t$outcomes = ifelse(results_list_t$upper > 0 & results_list_t$lower < 0, results_list_t$outcomes, paste0(results_list_t$outcomes, "*"))
+
+results_list_t$ci_95 = paste0(results_list_t$lower, sep = ",", results_list_t$upper)
+results_list_t[,4:5] = NULL
+results_list_t$p_value = ifelse(results_list_t$p_value <= 0, "<.001", results_list_t$p_value)
+
+#results_list_t$cohen_d = as.numeric(results_list_t$cohen_d)
+#results_list_t = results_list_t[order(abs(results_list_t$cohen_d), decreasing = TRUE),]
+
+center_dat$SIS_1_diff_extra = NULL
+results_list_t
+write.csv(results_list_t, "results_list_t.csv", row.names = FALSE)
+
+
+
+
 
 ```
 Try statistical correction
@@ -659,11 +817,14 @@ Impute data
 #head(center_dat)
 #library(Amelia)
 
-### Get rid of the treat variables, I don't them imputted, because they are missing on purpose.
+### Get rid of the treat variables, because they crash R.
 #treat_vars  =  center_dat[,c(36:61)]
-#center_dat = center_dat[,-c(36:61)]
-#center_dat
-
+#center_dat =  center_dat[,c(36:61)]
+#center_dat[,8:35]
+#dim(center_dat)
+### Create new names
+#colnames(center_dat)[36:48] = c("safe_plan", "meds", "ind_therapy", "group_therapy", "belonging", "coping_skills", "meaning", "difficult", "burden", "safe", "hope", "connection", "needs")
+head(center_dat)
 ### Create bounds for one var and see what happens
 ## INQ Post
 #center_dat[,8:35]
@@ -673,11 +834,11 @@ Impute data
 #range(center_dat$ISLES_1_post, na.rm = TRUE)
 #range(center_dat$MILQ_post, na.rm = TRUE) 
 #range(center_dat$RCS_post, na.rm = TRUE) 
-
+#center_dat
 #bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5, 30,1,4, 31,1,5, 32,1,5, 33,1,10, 34,1,10, 35,1,10),nrow = 28, ncol = 3, byrow = TRUE)
 #bounds
 
-#a.out = amelia(x = center_dat, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide", "female"), bounds = bounds)
+#a.out = amelia(x = center_dat, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide", "female", "safe_plan", "meds", "ind_therapy", "group_therapy", "belonging", "coping_skills", "meaning", "difficult", "burden", "safe", "hope", "connection", "needs"), bounds = bounds)
 #compare.density(a.out, var = "RAS_1_post")
 #compare.density(a.out, var = "RAS_3_post")
 #compare.density(a.out, var = "RAS_5_post")
@@ -720,40 +881,53 @@ Get pre and post scores
 mean_out_pre = list()
 sd_out_pre = list()
 head(impute_dat_loop[[1]][8:18])
-head(impute_dat_loop[[1]][19:29])
+head(impute_dat_loop[[1]][19:35])
 
 for(i in 1:length(impute_dat_loop)){
   mean_out_pre[[i]] = apply(impute_dat_loop[[i]][8:18],2,mean)
   sd_out_pre[[i]] = apply(impute_dat_loop[[i]][8:18], 2, sd)
 }
 dim(impute_dat_loop[[1]][8:18])
-parsout_sis_1 = unlist(mean_out_pre) 
-parsout_sis_1 = matrix(parsout_sis_1, ncol = 11, byrow = TRUE)
-parsout_sis_1
 
-sesout_sis_1 = unlist(sd_out_pre)
-sesout_sis_1 = matrix(sesout_sis_1, ncol = 11, byrow = TRUE)
-sesout_sis_1
+parsout_pre = unlist(mean_out_pre) 
+parsout_pre = matrix(parsout_pre, ncol = 11, byrow = TRUE)
+parsout_pre
 
-pars_sesout_sis_1 = mi.meld(parsout_sis_1, sesout_sis_1)
-pars_sesout_sis_1
+sesout_pre = unlist(sd_out_pre)
+sesout_pre = matrix(sesout_pre, ncol = 11, byrow = TRUE)
+sesout_pre
 
+pars_sesout_pre = mi.meld(parsout_pre, sesout_pre)
+pars_sesout_pre
+mean_pre = t(pars_sesout_pre$q.mi)
+sd_pre = t(pars_sesout_pre$se.mi)
+mean_sd_pre = round(data.frame(mean_pre, sd_pre),2)
+mean_sd_pre$names = names(impute_dat_loop[[1]][8:18])           
+write.csv(mean_sd_pre, "mean_sd_pre.csv", row.names = TRUE)
 
+           
 for(i in 1:length(impute_dat_loop)){
-  mean_out_pre[[i]] = apply(impute_dat_loop[[i]][19:29],2,mean)
-  sd_out_pre[[i]] = apply(impute_dat_loop[[i]][19:29], 2, sd)
+  mean_out_pre[[i]] = apply(impute_dat_loop[[i]][19:35],2,mean)
+  sd_out_pre[[i]] = apply(impute_dat_loop[[i]][19:35], 2, sd)
 }
-dim(impute_dat_loop[[1]][8:18])
-parsout_sis_1 = unlist(mean_out_pre) 
-parsout_sis_1 = matrix(parsout_sis_1, ncol = 11, byrow = TRUE)
-parsout_sis_1
+dim(impute_dat_loop[[1]][19:35])
+parsout_post = unlist(mean_out_pre) 
+parsout_post = matrix(parsout_post, ncol = 17, byrow = TRUE)
+parsout_post
 
-sesout_sis_1 = unlist(sd_out_pre)
-sesout_sis_1 = matrix(sesout_sis_1, ncol = 11, byrow = TRUE)
-sesout_sis_1
+sesout_post = unlist(sd_out_pre)
+sesout_post = matrix(sesout_post, ncol = 17, byrow = TRUE)
+sesout_post
 
-pars_sesout_sis_1 = mi.meld(parsout_sis_1, sesout_sis_1)
-pars_sesout_sis_1
+pars_sesout_post = mi.meld(parsout_post, sesout_post)
+pars_sesout_post
+
+mean_post = t(pars_sesout_post$q.mi)
+sd_post = t(pars_sesout_post$se.mi)
+mean_sd_post = round(data.frame(mean_post, sd_post),2)
+mean_sd_post$names = names(impute_dat_loop[[1]][19:35])           
+write.csv(mean_sd_post, "mean_sd_post.csv", row.names = TRUE)
+
 ```
 Do diff scores with regression, because not random and want to account
 ```{r}
@@ -1339,7 +1513,7 @@ import_r3_hyp_1 = list()
 vif_r3_hyp_1 = list()
 
 for(i in 1:length(out_diff_dat)){
-  regout_r3_hyp_1[[i]] = glm(suicide ~ INQ_1_diff + INQ_2_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + SIS_2_diff + SIS_1_diff + BID+ CSE_1 + CSE_2 + CSE_3 , data = out_diff_dat[[i]], family = binomial()) 
+  regout_r3_hyp_1[[i]] = glm(suicide ~ INQ_1_diff + INQ_2_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + SIS_1_diff+SIS_2_diff  + BID+ CSE_1 + CSE_2 + CSE_3 , data = out_diff_dat[[i]], family = binomial()) 
   regout_r3_hyp_1_sum[[i]] = summary(regout_r3_hyp_1[[i]])
   #import_r3_hyp_1[[i]] = calc.relimp(regout_r3_hyp_1[[i]])
   #import_r3_hyp_1[[i]] = import_r3_hyp_1[[i]]@lmg
@@ -1523,7 +1697,7 @@ import_BID
 reg_results_BID = data.frame(par_est = t(pars_sesout_BID$q.mi), se = t(pars_sesout_BID$se.mi), p_value = t(p_values_reg_BID), ci_95_BID)
 reg_results_BID[,1:2] = format(round(reg_results_BID[,1:2], digits=2), nsmall = 2)
 
-reg_results_BID$var_names = c("Intercept" ,colnames(out_diff_dat[[1]])[37:47])
+reg_results_BID$var_names = c("Intercept" ,colnames(out_diff_dat[[1]])[38:48])
 reg_results_BID = data.frame(var_names = reg_results_BID$var_names, reg_results_BID[,1:4])
 reg_results_BID
 
@@ -1540,7 +1714,7 @@ reg_results_BID
 reg_results_BID$import_BID = import_BID
 reg_results_BID$import_BID = format(round(reg_results_BID$import_BID, digits=2), nsmall = 2)
 reg_results_BID = reg_results_BID[order(abs(as.numeric(reg_results_BID$par_est)), decreasing = TRUE),]
-
+reg_results_BID
 write.csv(reg_results_BID, "reg_results_BID.csv", row.names = FALSE)
 ```
 
