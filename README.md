@@ -928,7 +928,7 @@ sd_post = t(pars_sesout_post$se.mi)
 mean_sd_post = round(data.frame(mean_post, sd_post),2)
 mean_sd_post$names = names(impute_dat_loop[[1]][19:35])           
 write.csv(mean_sd_post, "mean_sd_post.csv", row.names = TRUE)
-
+mean_sd_post
 ### Get the differnece scores for t-test and cohen's d
 ## Need difference mean, differene sd
 out_dif_t = list()
@@ -1040,7 +1040,6 @@ lower_reg_t =  mean_sd_diff$mean_diff -(critical_t*se_diff)
 
 ci_95_t = paste0(round(upper_reg_t,2), sep = ",", round(lower_reg_t,2))
 cohen_d_t = round(mean_sd_diff$mean_diff / mean_sd_diff$sd_diff,2)
-cohen_d_t
 outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
 t_test_results = data.frame(outcomes, t_stat, p_values_t, ci_95_t, cohen_d_t)
 write.csv(t_test_results, "t_test_results.csv", row.names = FALSE)
