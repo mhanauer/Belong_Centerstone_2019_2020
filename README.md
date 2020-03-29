@@ -404,8 +404,8 @@ write.csv(desc_stats_factor, "desc_stats_factor.csv", row.names = FALSE)
 
 ### Change back for analysis 
 center_dat$high_school_greater = ifelse(center_dat$high_school_greater == 0,0,1)
-
-
+library(naniar)
+miss_var_summary(center_dat)
 ```
 Get age categories
 15-24
@@ -689,9 +689,11 @@ treatments
 mean_sd_list = list()
 mean_sd_n_1 = list()
 mean_sd_n_0 = list()
+mean_sd_list_test = list()
 
 for(i in 1:length(treatments)){
   mean_sd_list[[i]] =  compmeans(center_dat$SIS_1_diff_extra, treatments[[i]])
+  mean_sd_list_test[[i]] = mean_sd_list
   mean_sd_list[[i]] = mean_sd_list[[i]][c(1:2,4:5,7:8)]
   #Reorder to mean 1, sd 1, n 1
   mean_sd_list[[i]] = round(mean_sd_list[[i]],2)
@@ -779,9 +781,6 @@ results_list_t$p_value = ifelse(results_list_t$p_value <= 0, "<.001", results_li
 center_dat$SIS_1_diff_extra = NULL
 results_list_t
 write.csv(results_list_t, "results_list_t.csv", row.names = FALSE)
-
-
-
 
 
 ```
@@ -876,7 +875,7 @@ Load imputed data
 ```{r}
 setwd("S:/Indiana Research & Evaluation/Matthew Hanauer/Centerstone_Study_2019_2020")
 impute_dat_loop = readRDS(file = "impute_dat_loop.rds")
-impute_dat_loop
+#impute_dat_loop
 ```
 
 
@@ -897,6 +896,7 @@ dim(impute_dat_loop[[1]][8:18])
 parsout_pre = unlist(mean_out_pre) 
 parsout_pre = matrix(parsout_pre, ncol = 11, byrow = TRUE)
 parsout_pre
+write.csv(parsout_pre, "parsout_pre.csv", row.names = FALSE)
 
 sesout_pre = unlist(sd_out_pre)
 sesout_pre = matrix(sesout_pre, ncol = 11, byrow = TRUE)
@@ -910,17 +910,19 @@ mean_sd_pre = round(data.frame(mean_pre, sd_pre),2)
 mean_sd_pre$names = names(impute_dat_loop[[1]][8:18])           
 write.csv(mean_sd_pre, "mean_sd_pre.csv", row.names = TRUE)
 
+mean_out_post = list()
+sd_out_post = list()
            
 for(i in 1:length(impute_dat_loop)){
-  mean_out_pre[[i]] = apply(impute_dat_loop[[i]][19:35],2,mean)
-  sd_out_pre[[i]] = apply(impute_dat_loop[[i]][19:35], 2, sd)
+  mean_out_post[[i]] = apply(impute_dat_loop[[i]][19:35],2,mean)
+  sd_out_post[[i]] = apply(impute_dat_loop[[i]][19:35], 2, sd)
 }
 dim(impute_dat_loop[[1]][19:35])
-parsout_post = unlist(mean_out_pre) 
+parsout_post = unlist(mean_out_post) 
 parsout_post = matrix(parsout_post, ncol = 17, byrow = TRUE)
 parsout_post
-
-sesout_post = unlist(sd_out_pre)
+write.csv(parsout_post, "parsout_post.csv", row.names = FALSE)
+sesout_post = unlist(sd_out_post)
 sesout_post = matrix(sesout_post, ncol = 17, byrow = TRUE)
 sesout_post
 
@@ -1024,18 +1026,20 @@ out_diff_dat_d5 = out_diff_dat[[5]]
 out_diff_dat_d5_post = out_diff_dat_d5[,19:29]
 
 center_results_d1 = list()
+center_results_d1_test = list()
 for(i in 1:length(out_diff_dat_d1_post)){
   center_results_d1[[i]]= t.test(out_diff_dat_d1_post[[i]], out_diff_dat_d1_pre[[i]], paired = TRUE)
-  center_results_d1[[i]] = center_results_d1[[i]][c(1,3,4)]
+  center_results_d1_test[[i]] = center_results_d1[[i]]
+  center_results_d1[[i]] = center_results_d1[[i]][c(1,7)]
 }
-
+center_results_d1_test
 center_results_d1 = unlist(center_results_d1)
 center_results_d1 = matrix(center_results_d1, ncol = 4, byrow = TRUE)
 center_results_d1 = data.frame(center_results_d1)
 center_results_d1 = round(center_results_d1, 3)
 center_results_d1
 colnames(center_results_d1) = c("t_stat", "p_value", "lower", "upper")
-center_results_d1
+write.csv(center_results_d1, "center_results_d1.csv", row.names = FALSE)
 
 center_results_d2 = list()
 for(i in 1:length(out_diff_dat_d2_post)){
@@ -1093,24 +1097,8 @@ center_results_d5
 colnames(center_results_d5) = c("t_stat", "p_value", "lower", "upper")
 center_results_d5
 
-center_results_t_stat = data.frame(t_test1 = center_results_d1$t_stat, t_test2 = center_results_d2$t_stat, t_test3 = center_results_d3$t_stat, t_test4 = center_results_d4$t_stat, t_test5 = center_results_d5$t_stat)
-center_results_t_stat = rowMeans(center_results_t_stat)
-center_results_t_stat
+### Combine using rubins rules
 
-center_results_p_value = data.frame(p_value1 = center_results_d1$p_value, p_value2 = center_results_d2$p_value, p_value3 = center_results_d3$p_value, p_value4 = center_results_d4$p_value, p_value5 = center_results_d5$p_value)
-center_results_p_value = rowMeans(center_results_p_value)
-center_results_p_value
-
-center_results_upper = data.frame(upper1 = center_results_d1$upper, upper2 = center_results_d2$upper, upper3 = center_results_d3$upper, upper4 = center_results_d4$upper, upper5 = center_results_d5$upper)
-center_results_upper = rowMeans(center_results_upper)
-center_results_upper
-
-center_results_lower = data.frame(lower1 = center_results_d1$lower, lower2 = center_results_d2$lower, lower3 = center_results_d3$lower, lower4 = center_results_d4$lower, lower5 = center_results_d5$lower)
-center_results_lower = rowMeans(center_results_lower)
-center_results_lower
-
-center_results_t_test = data.frame(t_stat = center_results_t_stat, p_value = center_results_p_value, upper = center_results_upper, lower = center_results_lower)
-center_results_t_test = round(center_results_t_test, 2)
 
 outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
 
@@ -1128,6 +1116,8 @@ center_results_t_test
 center_results_t_test$p_value = ifelse(center_results_t_test$p_value <= 0, "<.001", center_results_t_test$p_value)
 
 write.csv(center_results_t_test, "center_results_t_test.csv", row.names = FALSE)
+
+
 
 ```
 
