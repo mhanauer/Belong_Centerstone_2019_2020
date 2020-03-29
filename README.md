@@ -361,10 +361,9 @@ attrition_rate
 Descriptives with complete data
 Uninstall psych
 ```{r}
-#library(psych)
-#library(prettyR)
-library(installr)
-uninstall.packages("Hmisc")
+library(psych)
+library(prettyR)
+uninstall.packages("psych")
 dim(center_dat)
 describe.factor(center_dat$X9_TREAT.a.Received)
 center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60,63)] = data.frame(apply(center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60,63)],2, as.factor))
