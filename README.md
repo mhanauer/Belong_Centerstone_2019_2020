@@ -361,7 +361,7 @@ attrition_rate
 Descriptives with complete data
 Uninstall psych
 ```{r}
-library(psych)
+
 library(prettyR)
 uninstall.packages("psych")
 dim(center_dat)
@@ -405,6 +405,8 @@ write.csv(desc_stats_factor, "desc_stats_factor.csv", row.names = FALSE)
 center_dat$high_school_greater = ifelse(center_dat$high_school_greater == 0,0,1)
 library(naniar)
 miss_var_summary(center_dat)
+install.packages("psych")
+library(psych)
 ```
 Get age categories
 15-24
