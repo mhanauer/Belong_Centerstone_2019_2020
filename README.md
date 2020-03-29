@@ -344,9 +344,12 @@ miss_var_summary(center_dat)
 center_dat
 head(center_dat[,c(19:35, 62:63)])
 ### Not included treatment provided or score, because score is planned missing
+## If treatment provided is included in later analyses add it back here, but that is a extra analysis
 attrition = center_dat[,c(19:35, 62:63)]
 attrition$drop= apply(attrition, 1, function(x)(sum(is.na(x))))
-attrition$drop= ifelse(attrition$drop > dim(attrition)[2]/2, 1, 0)
+describe.factor(attrition$drop)
+### -1 because you don't count the drop variable
+attrition$drop= ifelse(attrition$drop > (dim(attrition)[2]-1)/2, 1, 0)
 attrition = subset(attrition, drop == 1)
 attrition_n = dim(attrition)[1]
 attrition_rate = round(attrition_n / dim(center_dat)[1],2)
@@ -431,6 +434,8 @@ Mean and sd for the rating
 ```{r}
 treat_all =  center_psycho[,170:195]
 ### Change treatment med to NA
+install.packages("psych")
+library(pysch)
 describe.factor(treat_all$X9_TREAT.b.Received)
 treat_all$X9_TREAT.b.Received[treat_all$X9_TREAT.b.Received == 2] = NA
 describe.factor(treat_all$X9_TREAT.b.Received)
