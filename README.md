@@ -432,23 +432,18 @@ Treat variable
 Number and percentage who said yes
 Mean and sd for the rating
 ```{r}
+
+
 treat_all =  center_psycho[,170:195]
+
 ### Change treatment med to NA
-install.packages("psych")
-library(pysch)
+library(psych)
 describe.factor(treat_all$X9_TREAT.b.Received)
 treat_all$X9_TREAT.b.Received[treat_all$X9_TREAT.b.Received == 2] = NA
 describe.factor(treat_all$X9_TREAT.b.Received)
 treat_receive = treat_all[,c(1,3,5,7,9,11,13,15,17,19,21,23,25)]
 treat_receive = data.frame(apply(treat_receive, 2, as.factor))
-treat_receive = describe(treat_receive)
-treat_receive_factor = data.frame(treat_receive$Factor) 
-treat_receive_factor = t(treat_receive_factor)
-treat_receive_factor = format(round(treat_receive_factor, digits=2), nsmall = 2)
-write.csv(treat_receive_factor, "treat_receive_factor.csv", row.names = TRUE)
-treat_receive_factor = read.csv("treat_receive_factor.csv", header = TRUE)
-colnames(treat_receive_factor)[1] = "variable"
-treat_receive_factor 
+
 
 ### Have to get the mean and sd for each one, because the data set will be different
 saftey_plan =  treat_all[,1:2]
@@ -673,8 +668,7 @@ Difference in standardized average differnece (post-pre) score for suicide for r
 
 ```{r}
 head(center_dat)
-library(effsize)
-
+center_dat$X9_TREAT.b.Received[center_dat$X9_TREAT.b.Received == 2] = NA
 center_dat$SIS_1_diff_extra = scale(center_dat$SIS_1_post-center_dat$SIS_1_pre)
 center_dat$SIS_1_diff_extra = as.numeric(center_dat$SIS_1_diff_extra)
 hist(center_dat$SIS_1_diff_extra)
@@ -701,6 +695,7 @@ for(i in 1:length(treatments)){
   mean_sd_n_0[[i]] = mean_sd_list[[i]][c(1,5,3)]
 }
 mean_sd_list
+mean_sd_list_test
 mean_sd_n_1[[1]]
 mean_sd_n_1 = unlist(mean_sd_n_1)
 mean_sd_n_1 = matrix(mean_sd_n_1, ncol= 3, byrow = TRUE)
@@ -715,32 +710,23 @@ results_list = list()
 library(descr)
 compmeans(center_dat$SIS_1_diff_extra, center_dat$X9_TREAT.a.Received)
 for(i in 1:length(treatments)){
-  results_list[[i]] = cohen.d(center_dat$SIS_1_diff_extra~ treatments[[i]], na.rm = TRUE)
-  results_list[[i]] = results_list[[i]][c(3,5)]
+  results_list[[i]] = cohen.d(center_dat$SIS_1_diff_extra, treatments[[i]])
+  results_list[[i]] = results_list[[i]]$cohen.d[2]
   
 }
-results_list
+results_list[[1]][2]
 results_list = unlist(results_list)
-results_list = matrix(results_list, ncol = 3, byrow = TRUE)
+results_list = matrix(results_list, ncol = 1, byrow = TRUE)
 results_list = data.frame(results_list)
 results_list = round(results_list, 3)
 results_list
-colnames(results_list) = c("cohen_d", "lower", "upper")
+colnames(results_list) = c("cohen_d")
 results_list
 
 outcomes = c("Safety Plan", "Individual Therapy", "Group Therapy", "Meaning", "Burden", "Difficult")
 
 results_list = data.frame(outcomes, results_list)
-results_list[,2:4] = round(results_list[,2:4],2)
-results_list
 
-results_list$outcomes = ifelse(results_list$upper > 0 & results_list$lower < 0, results_list$outcomes, paste0(results_list$outcomes, "*"))
-
-results_list$ci_95 = paste0(results_list$lower, sep = ",", results_list$upper)
-results_list[,3:4] = NULL
-results_list
-
-results_list$cohen_d = as.numeric(results_list$cohen_d)
 #results_list = results_list[order(abs(results_list$cohen_d), decreasing = TRUE),]
 
 #center_dat$SIS_1_diff_extra = NULL
@@ -782,7 +768,14 @@ center_dat$SIS_1_diff_extra = NULL
 results_list_t
 write.csv(results_list_t, "results_list_t.csv", row.names = FALSE)
 
+describe.factor(treatments$ind_therapy)
+compmeans(center_dat$SIS_1_diff_extra, treatments$ind_therapy)
+test_diff = data.frame(SIS_1_diff_extra = center_dat$SIS_1_diff_extra, group_therapy = treatments$group_therapy)
 
+test_diff_in = data.frame(SIS_1_diff_extra = center_dat$SIS_1_diff_extra, ind_therapy = treatments$ind_therapy)
+### N's are different 
+test_diff_in
+test_diff
 ```
 Try statistical correction
 
@@ -935,6 +928,36 @@ mean_sd_post = round(data.frame(mean_post, sd_post),2)
 mean_sd_post$names = names(impute_dat_loop[[1]][19:35])           
 write.csv(mean_sd_post, "mean_sd_post.csv", row.names = TRUE)
 
+### Get the differnece scores for t-test and cohen's d
+## Need difference mean, differene sd
+out_dif_t = list()
+mean_out_diff = list()
+sd_out_diff = list()
+colMeans(head(out_diff_dat[[1]][38:48]))
+
+for(i in 1:length(impute_dat_loop)){
+  out_dif_t[[i]] = impute_dat_loop[[1]][19:29] - impute_dat_loop[[i]][8:18]
+  mean_out_diff[[i]] = apply(out_dif_t[[i]],2,mean)
+  sd_out_diff[[i]] = apply(out_dif_t[[i]], 2, sd)
+}
+dim(out_diff_dat[[1]][38:48])
+parsout_diff = unlist(mean_out_diff) 
+parsout_diff = matrix(parsout_diff, ncol = 11, byrow = TRUE)
+parsout_diff
+write.csv(parsout_diff, "parsout_diff.csv", row.names = FALSE)
+
+sesout_diff = unlist(sd_out_diff)
+sesout_diff = matrix(sesout_diff, ncol = 11, byrow = TRUE)
+sesout_diff
+
+pars_sesout_diff = mi.meld(parsout_diff, sesout_diff)
+pars_sesout_diff
+mean_diff = t(pars_sesout_diff$q.mi)
+sd_diff = t(pars_sesout_diff$se.mi)
+mean_sd_diff = round(data.frame(mean_diff, sd_diff),2)
+mean_sd_diff$names = names(out_diff_dat[[i]][38:48]) 
+mean_sd_diff
+write.csv(mean_sd_diff, "mean_sd_diff.csv", row.names = TRUE)
 
 ```
 Do diff scores with regression, because not random and want to account
@@ -963,38 +986,6 @@ for(i in 1:length(out_diff_dat_norm)){
   shap_results[[i]] = shapiro.test(out_diff_dat_norm[[i]])
 }
 shap_results
-```
-```{r}
-### Get the differnece scores for t-test and cohen's d
-## Need difference mean, differene sd
-out_dif_t = list()
-mean_out_diff = list()
-sd_out_diff = list()
-colMeans(head(out_diff_dat[[1]][38:48]))
-
-for(i in 1:length(impute_dat_loop)){
-  out_dif_t[[i]] = impute_dat_loop[[1]][19:29] - impute_dat_loop[[i]][8:18]
-  mean_out_diff[[i]] = apply(out_dif_t[[i]],2,mean)
-  sd_out_diff[[i]] = apply(out_dif_t[[i]], 2, sd)
-}
-dim(out_diff_dat[[1]][38:48])
-parsout_diff = unlist(mean_out_diff) 
-parsout_diff = matrix(parsout_diff, ncol = 11, byrow = TRUE)
-parsout_diff
-write.csv(parsout_diff, "parsout_diff.csv", row.names = FALSE)
-
-sesout_diff = unlist(sd_out_diff)
-sesout_diff = matrix(sesout_diff, ncol = 11, byrow = TRUE)
-sesout_diff
-
-pars_sesout_diff = mi.meld(parsout_diff, sesout_diff)
-pars_sesout_diff
-mean_diff = t(pars_sesout_diff$q.mi)
-sd_diff = t(pars_sesout_diff$se.mi)
-mean_sd_diff = round(data.frame(mean_diff, sd_diff),2)
-mean_sd_diff$names = names(out_diff_dat[[i]][38:48])           
-write.csv(mean_sd_diff, "mean_sd_diff.csv", row.names = TRUE)
-
 ```
 Correlations
 ```{r}
@@ -1025,168 +1016,35 @@ write.csv(cor_dat_results, "cor_dat_results.csv", row.names = FALSE)
 library(installr)
 uninstall.packages("Hmisc")
 ```
+Overall effect board member table for T-test and Cohen's D
 T-test code
+One sample cohen's D is just diff_score / diff_sd
 http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/SAS/SAS4-OneSampleTtest/SAS4-OneSampleTtest7.html
+https://ncss-wpengine.netdna-ssl.com/wp-content/themes/ncss/pdf/Procedures/PASS/One-Sample_T-Tests_using_Effect_Size.pdf
 ```{r}
-mean_sd_post
-mean_sd_pre
-mean_diff = mean_sd_post$mean_post[1:11] - mean_sd_pre$mean_pre
+mean_sd_diff = round(mean_sd_diff[,1:2],2)
+mean_sd_diff 
 ## sd_diff / sqrt(n) 
-se_diff = sd() / sqrt(dim(center_dat)[1])
+se_diff = mean_sd_diff$sd_diff / sqrt(dim(center_dat)[1])
 se_diff
+t_stat = round(mean_sd_diff$mean_diff / se_diff,2)
+t_stat
+p_values_t = round(2*pt(-abs(t_stat), df = dim(out_diff_dat[[1]])[1]-1),3)
+p_values_t = ifelse(p_values_t <= 0, "<.001", p_values_t)
+p_values_t
+critical_t = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-1))
 
+upper_reg_t = mean_sd_diff$mean_diff +(critical_t*se_diff)
+lower_reg_t =  mean_sd_diff$mean_diff -(critical_t*se_diff)
+
+ci_95_t = paste0(round(upper_reg_t,2), sep = ",", round(lower_reg_t,2))
+cohen_d_t = round(mean_sd_diff$mean_diff / mean_sd_diff$sd_diff,2)
+cohen_d_t
 outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
-
-
-
+t_test_results = data.frame(outcomes, t_stat, p_values_t, ci_95_t, cohen_d_t)
+write.csv(t_test_results, "t_test_results.csv", row.names = FALSE)
+t_test_results
 ```
-
-
-
-
-Research Question #1: Are novel treatment targets (i.e., perceived burdensomeness, thwarted belongingness, meaning made of stress, goal orientation/hope, resilience-based coping) changing from pre-treatment to post-treatment during standard episodes of care? 
-
-Hypothesis 1: There will be no change in novel treatment target scores from the pre-treatment condition to the post-treatment condition. 
-```{r}
- 
-out_diff_dat_d1 = out_diff_dat[[1]]
-out_diff_dat_d1_pre = out_diff_dat_d1[,8:18]
-
-out_diff_dat_d2 = out_diff_dat[[2]]
-out_diff_dat_d2_pre = out_diff_dat_d2[,8:18]
-
-out_diff_dat_d3 = out_diff_dat[[3]]
-out_diff_dat_d3_pre = out_diff_dat_d3[,8:18]
-
-out_diff_dat_d4 = out_diff_dat[[4]]
-out_diff_dat_d4_pre = out_diff_dat_d4[,8:18]
-
-out_diff_dat_d5 = out_diff_dat[[5]]
-out_diff_dat_d5_pre = out_diff_dat_d5[,8:18]
-
-out_diff_dat_d1 = out_diff_dat[[1]]
-out_diff_dat_d1_post = out_diff_dat_d1[,19:29]
-
-out_diff_dat_d2 = out_diff_dat[[2]]
-out_diff_dat_d2_post = out_diff_dat_d2[,19:29]
-
-out_diff_dat_d3 = out_diff_dat[[3]]
-out_diff_dat_d3_post = out_diff_dat_d3[,19:29]
-
-out_diff_dat_d4 = out_diff_dat[[4]]
-out_diff_dat_d4_post = out_diff_dat_d4[,19:29]
-
-out_diff_dat_d5 = out_diff_dat[[5]]
-out_diff_dat_d5_post = out_diff_dat_d5[,19:29]
-
-library(effsize)
-center_results_d1 = list()
-for(i in 1:length(out_diff_dat_d1_post)){
-  center_results_d1[[i]]= cohen.d(out_diff_dat_d1_post[[i]], out_diff_dat_d1_pre[[i]], paired = TRUE, conf.level = .95)
-  center_results_d1[[i]] = center_results_d1[[i]][c(3,5)]
-}
-center_results_d1
-center_results_d1 = unlist(center_results_d1)
-center_results_d1 = matrix(center_results_d1, ncol = 3, byrow = TRUE)
-center_results_d1 = data.frame(center_results_d1)
-center_results_d1 = round(center_results_d1, 3)
-center_results_d1
-colnames(center_results_d1) = c("cohen_d", "lower", "upper")
-center_results_d1
-
-center_results_d2 = list()
-for(i in 1:length(out_diff_dat_d1_post)){
-  center_results_d2[[i]]= cohen.d(out_diff_dat_d2_post[[i]], out_diff_dat_d2_pre[[i]], paired = TRUE, conf.level = .95)
-  center_results_d2[[i]] = center_results_d2[[i]][c(3,5)]
-}
-center_results_d2
-center_results_d2
-center_results_d2 = unlist(center_results_d2)
-center_results_d2 = matrix(center_results_d2, ncol = 3, byrow = TRUE)
-center_results_d2 = data.frame(center_results_d2)
-center_results_d2 = round(center_results_d2, 3)
-center_results_d2
-colnames(center_results_d2) = c("cohen_d", "lower", "upper")
-center_results_d2
-
-center_results_d3 = list()
-for(i in 1:length(out_diff_dat_d1_post)){
-  center_results_d3[[i]]= cohen.d(out_diff_dat_d3_post[[i]], out_diff_dat_d3_pre[[i]], paired = TRUE, conf.level = .95)
-  center_results_d3[[i]] = center_results_d3[[i]][c(3,5)]
-}
-center_results_d3
-center_results_d3
-center_results_d3 = unlist(center_results_d3)
-center_results_d3 = matrix(center_results_d3, ncol = 3, byrow = TRUE)
-center_results_d3 = data.frame(center_results_d3)
-center_results_d3 = round(center_results_d3, 3)
-center_results_d3
-colnames(center_results_d3) = c("cohen_d", "lower", "upper")
-center_results_d3
-
-center_results_d4 = list()
-for(i in 1:length(out_diff_dat_d1_post)){
-  center_results_d4[[i]]= cohen.d(out_diff_dat_d4_post[[i]], out_diff_dat_d4_pre[[i]], paired = TRUE, conf.level = .95)
-  center_results_d4[[i]] = center_results_d4[[i]][c(3,5)]
-}
-center_results_d4
-center_results_d4
-center_results_d4 = unlist(center_results_d4)
-center_results_d4 = matrix(center_results_d4, ncol = 3, byrow = TRUE)
-center_results_d4 = data.frame(center_results_d4)
-center_results_d4 = round(center_results_d4, 3)
-center_results_d4
-colnames(center_results_d4) = c("cohen_d", "lower", "upper")
-center_results_d4
-
-center_results_d5 = list()
-for(i in 1:length(out_diff_dat_d1_post)){
-  center_results_d5[[i]]= cohen.d(out_diff_dat_d5_post[[i]], out_diff_dat_d5_pre[[i]], paired = TRUE, conf.level = .95)
-  center_results_d5[[i]] = center_results_d5[[i]][c(3,5)]
-}
-center_results_d5
-center_results_d5
-center_results_d5 = unlist(center_results_d5)
-center_results_d5 = matrix(center_results_d5, ncol = 3, byrow = TRUE)
-center_results_d5 = data.frame(center_results_d5)
-center_results_d5 = round(center_results_d5, 3)
-center_results_d5
-colnames(center_results_d5) = c("cohen_d", "lower", "upper")
-center_results_d5
-
-
-center_results_cohen_d = data.frame(cohen_d1 = center_results_d1$cohen_d, cohen_d2 = center_results_d2$cohen_d, cohen_d3 = center_results_d3$cohen_d, cohen_d4 = center_results_d4$cohen_d, cohen_d5 = center_results_d5$cohen_d)
-center_results_cohen_d = rowMeans(center_results_cohen_d)
-center_results_cohen_d
-
-center_results_upper = data.frame(upper1 = center_results_d1$upper, upper2 = center_results_d2$upper, upper3 = center_results_d3$upper, upper4 = center_results_d4$upper, upper5 = center_results_d5$upper)
-center_results_upper = rowMeans(center_results_upper)
-center_results_upper
-
-center_results_lower = data.frame(lower1 = center_results_d1$lower, lower2 = center_results_d2$lower, lower3 = center_results_d3$lower, lower4 = center_results_d4$lower, lower5 = center_results_d5$lower)
-center_results_lower = rowMeans(center_results_lower)
-center_results_lower
-
-center_results = data.frame(cohen_d = center_results_cohen_d, upper = center_results_upper, lower = center_results_lower)
-center_results = round(center_results, 2)
-
-outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
-
-center_results = data.frame(outcomes, center_results)
-
-center_results$outcomes = ifelse(center_results$upper > 0 & center_results$lower < 0, center_results$outcomes, paste0(center_results$outcomes, "*"))
-
-center_results$ci_95 = paste0(center_results$lower, sep = ",", center_results$upper)
-center_results[,3:4] = NULL
-center_results
-
-center_results$cohen_d = as.numeric(center_results$cohen_d)
-#center_results = center_results[order(abs(center_results$cohen_d), decreasing = TRUE),]
-
-write.csv(center_results, "center_results.csv", row.names = FALSE)
-
-```
-
 Sucidial Ideation regression
 ```{r}
 library(car)
