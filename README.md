@@ -935,6 +935,7 @@ mean_sd_post = round(data.frame(mean_post, sd_post),2)
 mean_sd_post$names = names(impute_dat_loop[[1]][19:35])           
 write.csv(mean_sd_post, "mean_sd_post.csv", row.names = TRUE)
 
+
 ```
 Do diff scores with regression, because not random and want to account
 ```{r}
@@ -945,7 +946,7 @@ head(impute_dat_loop[[1]][19:29])
 head(impute_dat_loop[[1]])
 
 for(i in 1:length(impute_dat_loop)){
-  out_diff_dat[[i]] = impute_dat_loop[[i]][8:18]-impute_dat_loop[[1]][19:29]
+  out_diff_dat[[i]] =  impute_dat_loop[[i]][19:29] - impute_dat_loop[[i]][8:18]
   colnames(out_diff_dat[[i]]) = c("INQ_1_diff", "INQ_2_diff", "RAS_1_diff", "RAS_3_diff", "RAS_5_diff", "ISLES_1_diff", "ISLES_2_diff", "MILQ_diff", "RCS_diff", "SIS_1_diff", "SIS_2_diff")
   out_diff_dat[[i]] = scale(out_diff_dat[[i]])
   out_diff_dat[[i]] =cbind(impute_dat_loop[[i]], out_diff_dat[[i]])
@@ -962,6 +963,38 @@ for(i in 1:length(out_diff_dat_norm)){
   shap_results[[i]] = shapiro.test(out_diff_dat_norm[[i]])
 }
 shap_results
+```
+```{r}
+### Get the differnece scores for t-test and cohen's d
+## Need difference mean, differene sd
+out_dif_t = list()
+mean_out_diff = list()
+sd_out_diff = list()
+colMeans(head(out_diff_dat[[1]][38:48]))
+
+for(i in 1:length(impute_dat_loop)){
+  out_dif_t[[i]] = impute_dat_loop[[1]][19:29] - impute_dat_loop[[i]][8:18]
+  mean_out_diff[[i]] = apply(out_dif_t[[i]],2,mean)
+  sd_out_diff[[i]] = apply(out_dif_t[[i]], 2, sd)
+}
+dim(out_diff_dat[[1]][38:48])
+parsout_diff = unlist(mean_out_diff) 
+parsout_diff = matrix(parsout_diff, ncol = 11, byrow = TRUE)
+parsout_diff
+write.csv(parsout_diff, "parsout_diff.csv", row.names = FALSE)
+
+sesout_diff = unlist(sd_out_diff)
+sesout_diff = matrix(sesout_diff, ncol = 11, byrow = TRUE)
+sesout_diff
+
+pars_sesout_diff = mi.meld(parsout_diff, sesout_diff)
+pars_sesout_diff
+mean_diff = t(pars_sesout_diff$q.mi)
+sd_diff = t(pars_sesout_diff$se.mi)
+mean_sd_diff = round(data.frame(mean_diff, sd_diff),2)
+mean_sd_diff$names = names(out_diff_dat[[i]][38:48])           
+write.csv(mean_sd_diff, "mean_sd_diff.csv", row.names = TRUE)
+
 ```
 Correlations
 ```{r}
@@ -993,129 +1026,16 @@ library(installr)
 uninstall.packages("Hmisc")
 ```
 T-test code
+http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/SAS/SAS4-OneSampleTtest/SAS4-OneSampleTtest7.html
 ```{r}
-
-out_diff_dat_d1 = out_diff_dat[[1]]
-out_diff_dat_d1_pre = out_diff_dat_d1[,8:18]
-
-out_diff_dat_d2 = out_diff_dat[[2]]
-out_diff_dat_d2_pre = out_diff_dat_d2[,8:18]
-
-out_diff_dat_d3 = out_diff_dat[[3]]
-out_diff_dat_d3_pre = out_diff_dat_d3[,8:18]
-
-out_diff_dat_d4 = out_diff_dat[[4]]
-out_diff_dat_d4_pre = out_diff_dat_d4[,8:18]
-
-out_diff_dat_d5 = out_diff_dat[[5]]
-out_diff_dat_d5_pre = out_diff_dat_d5[,8:18]
-
-out_diff_dat_d1 = out_diff_dat[[1]]
-out_diff_dat_d1_post = out_diff_dat_d1[,19:29]
-
-out_diff_dat_d2 = out_diff_dat[[2]]
-out_diff_dat_d2_post = out_diff_dat_d2[,19:29]
-
-out_diff_dat_d3 = out_diff_dat[[3]]
-out_diff_dat_d3_post = out_diff_dat_d3[,19:29]
-
-out_diff_dat_d4 = out_diff_dat[[4]]
-out_diff_dat_d4_post = out_diff_dat_d4[,19:29]
-
-out_diff_dat_d5 = out_diff_dat[[5]]
-out_diff_dat_d5_post = out_diff_dat_d5[,19:29]
-
-center_results_d1 = list()
-center_results_d1_test = list()
-for(i in 1:length(out_diff_dat_d1_post)){
-  center_results_d1[[i]]= t.test(out_diff_dat_d1_post[[i]], out_diff_dat_d1_pre[[i]], paired = TRUE)
-  center_results_d1_test[[i]] = center_results_d1[[i]]
-  center_results_d1[[i]] = center_results_d1[[i]][c(1,7)]
-}
-center_results_d1_test
-center_results_d1 = unlist(center_results_d1)
-center_results_d1 = matrix(center_results_d1, ncol = 4, byrow = TRUE)
-center_results_d1 = data.frame(center_results_d1)
-center_results_d1 = round(center_results_d1, 3)
-center_results_d1
-colnames(center_results_d1) = c("t_stat", "p_value", "lower", "upper")
-write.csv(center_results_d1, "center_results_d1.csv", row.names = FALSE)
-
-center_results_d2 = list()
-for(i in 1:length(out_diff_dat_d2_post)){
-  center_results_d2[[i]]= t.test(out_diff_dat_d2_post[[i]], out_diff_dat_d2_pre[[i]], paired = TRUE)
-  center_results_d2[[i]] = center_results_d2[[i]][c(1,3,4)]
-}
-
-center_results_d2 = unlist(center_results_d2)
-center_results_d2 = matrix(center_results_d2, ncol = 4, byrow = TRUE)
-center_results_d2 = data.frame(center_results_d2)
-center_results_d2 = round(center_results_d2, 3)
-center_results_d2
-colnames(center_results_d2) = c("t_stat", "p_value", "lower", "upper")
-center_results_d2
-
-center_results_d3 = list()
-for(i in 1:length(out_diff_dat_d3_post)){
-  center_results_d3[[i]]= t.test(out_diff_dat_d3_post[[i]], out_diff_dat_d3_pre[[i]], paired = TRUE)
-  center_results_d3[[i]] = center_results_d3[[i]][c(1,3,4)]
-}
-
-center_results_d3 = unlist(center_results_d3)
-center_results_d3 = matrix(center_results_d3, ncol = 4, byrow = TRUE)
-center_results_d3 = data.frame(center_results_d3)
-center_results_d3 = round(center_results_d3, 3)
-center_results_d3
-colnames(center_results_d3) = c("t_stat", "p_value", "lower", "upper")
-center_results_d3
-
-center_results_d4 = list()
-for(i in 1:length(out_diff_dat_d4_post)){
-  center_results_d4[[i]]= t.test(out_diff_dat_d4_post[[i]], out_diff_dat_d4_pre[[i]], paired = TRUE)
-  center_results_d4[[i]] = center_results_d4[[i]][c(1,3,4)]
-}
-
-center_results_d4 = unlist(center_results_d4)
-center_results_d4 = matrix(center_results_d4, ncol = 4, byrow = TRUE)
-center_results_d4 = data.frame(center_results_d4)
-center_results_d4 = round(center_results_d4, 3)
-center_results_d4
-colnames(center_results_d4) = c("t_stat", "p_value", "lower", "upper")
-center_results_d4
-
-center_results_d5 = list()
-for(i in 1:length(out_diff_dat_d5_post)){
-  center_results_d5[[i]]= t.test(out_diff_dat_d5_post[[i]], out_diff_dat_d5_pre[[i]], paired = TRUE)
-  center_results_d5[[i]] = center_results_d5[[i]][c(1,3,4)]
-}
-
-center_results_d5 = unlist(center_results_d5)
-center_results_d5 = matrix(center_results_d5, ncol = 4, byrow = TRUE)
-center_results_d5 = data.frame(center_results_d5)
-center_results_d5 = round(center_results_d5, 3)
-center_results_d5
-colnames(center_results_d5) = c("t_stat", "p_value", "lower", "upper")
-center_results_d5
-
-### Combine using rubins rules
-
+mean_sd_post
+mean_sd_pre
+mean_diff = mean_sd_post$mean_post[1:11] - mean_sd_pre$mean_pre
+## sd_diff / sqrt(n) 
+se_diff = sd() / sqrt(dim(center_dat)[1])
+se_diff
 
 outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
-
-center_results_t_test = data.frame(outcomes, center_results_t_test)
-
-center_results_t_test$outcomes = ifelse(center_results_t_test$upper > 0 & center_results_t_test$lower < 0, center_results_t_test$outcomes, paste0(center_results_t_test$outcomes, "*"))
-center_results_t_test
-
-center_results_t_test$ci_95 = paste0(center_results_t_test$lower, sep = ",", center_results_t_test$upper)
-center_results_t_test[,4:5] = NULL
-center_results_t_test
-
-#center_results_t_test$t_stat = as.numeric(center_results_t_test$t_stat)
-#center_results_t_test = center_results_t_test[order(abs(center_results_t_test$t_stat), decreasing = TRUE),]
-center_results_t_test$p_value = ifelse(center_results_t_test$p_value <= 0, "<.001", center_results_t_test$p_value)
-
-write.csv(center_results_t_test, "center_results_t_test.csv", row.names = FALSE)
 
 
 
