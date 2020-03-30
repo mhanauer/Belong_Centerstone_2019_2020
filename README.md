@@ -340,6 +340,7 @@ Assess missing
 head(center_dat)
 library(naniar)
 miss_var_summary(center_dat)
+prop_complete_case(center_dat)
 ### Attrition is the percentage of all the data divided by those completed at 50% of the follow-up
 center_dat
 head(center_dat[,c(19:35, 62:63)])
@@ -670,7 +671,7 @@ Difference in standardized average differnece (post-pre) score for suicide for r
 ```{r}
 head(center_dat)
 center_dat$X9_TREAT.b.Received[center_dat$X9_TREAT.b.Received == 2] = NA
-center_dat$SIS_1_diff_extra = scale(center_dat$SIS_1_post-center_dat$SIS_1_pre)
+center_dat$SIS_1_diff_extra = center_dat$SIS_1_post-center_dat$SIS_1_pre
 center_dat$SIS_1_diff_extra = as.numeric(center_dat$SIS_1_diff_extra)
 hist(center_dat$SIS_1_diff_extra)
 
@@ -722,7 +723,7 @@ results_list = data.frame(results_list)
 results_list = round(results_list, 3)
 results_list
 colnames(results_list) = c("cohen_d")
-results_list
+results_list = round(results_list,2)
 
 outcomes = c("Safety Plan", "Individual Therapy", "Group Therapy", "Meaning", "Burden", "Difficult")
 
@@ -765,7 +766,7 @@ results_list_t$p_value = ifelse(results_list_t$p_value <= 0, "<.001", results_li
 #results_list_t$cohen_d = as.numeric(results_list_t$cohen_d)
 #results_list_t = results_list_t[order(abs(results_list_t$cohen_d), decreasing = TRUE),]
 
-center_dat$SIS_1_diff_extra = NULL
+
 results_list_t
 write.csv(results_list_t, "results_list_t.csv", row.names = FALSE)
 
@@ -777,6 +778,7 @@ test_diff_in = data.frame(SIS_1_diff_extra = center_dat$SIS_1_diff_extra, ind_th
 ### N's are different 
 test_diff_in
 test_diff
+center_dat$SIS_1_diff_extra = NULL
 ```
 Try statistical correction
 
@@ -1022,6 +1024,8 @@ T-test code
 One sample cohen's D is just diff_score / diff_sd
 http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/SAS/SAS4-OneSampleTtest/SAS4-OneSampleTtest7.html
 https://ncss-wpengine.netdna-ssl.com/wp-content/themes/ncss/pdf/Procedures/PASS/One-Sample_T-Tests_using_Effect_Size.pdf
+standard error: https://www.bmj.com/about-bmj/resources-readers/publications/statistics-square-one/7-t-tests
+P-value: https://www.cyclismo.org/tutorial/R/pValues.html
 ```{r}
 mean_sd_diff = round(mean_sd_diff[,1:2],2)
 mean_sd_diff 
