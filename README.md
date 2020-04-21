@@ -275,7 +275,7 @@ Psychometrics for BID
 ```{r}
 library(psych)
 BID_psycho =  center_psycho[,201:206]
-#summary(omega(BID_psycho))
+summary(omega(BID_psycho))
 
 efa3 = fa(r = BID_psycho, nfactors = 3, fm = "gls", cor = "poly")
 efa3
@@ -869,11 +869,38 @@ head(center_dat)
 ```
 Load imputed data
 ```{r}
+library(Amelia)
 setwd("S:/Indiana Research & Evaluation/Matthew Hanauer/Centerstone_Study_2019_2020")
 impute_dat_loop = readRDS(file = "impute_dat_loop.rds")
 #impute_dat_loop
 ```
+Do diff scores with regression, because not random and want to account
+```{r}
+dim(impute_dat_loop[[1]])
+out_diff_dat = list()
+head(impute_dat_loop[[1]][8:18])
+head(impute_dat_loop[[1]][19:29])
+head(impute_dat_loop[[1]])
 
+for(i in 1:length(impute_dat_loop)){
+  out_diff_dat[[i]] =  impute_dat_loop[[i]][19:29] - impute_dat_loop[[i]][8:18]
+  colnames(out_diff_dat[[i]]) = c("INQ_1_diff", "INQ_2_diff", "RAS_1_diff", "RAS_3_diff", "RAS_5_diff", "ISLES_1_diff", "ISLES_2_diff", "MILQ_diff", "RCS_diff", "SIS_1_diff", "SIS_2_diff")
+  out_diff_dat[[i]] = scale(out_diff_dat[[i]])
+  out_diff_dat[[i]] =cbind(impute_dat_loop[[i]], out_diff_dat[[i]])
+}
+out_diff_dat
+### Evaluate normality
+out_diff_dat_norm = out_diff_dat[[1]][c(30:32,35,38:48)]
+hist_results = list() 
+qq_results = list()
+shap_results = list()
+for(i in 1:length(out_diff_dat_norm)){
+  hist_results[[i]]= hist(out_diff_dat_norm[[i]], main = paste("Histogram of" , names(out_diff_dat_norm)[[i]]))
+  qq_results[[i]] = qqnorm(out_diff_dat_norm[[i]], main = names(out_diff_dat_norm)[[i]])
+  shap_results[[i]] = shapiro.test(out_diff_dat_norm[[i]])
+}
+shap_results
+```
 
 Get pre and post scores
 ```{r}
@@ -936,14 +963,12 @@ mean_sd_post
 out_dif_t = list()
 mean_out_diff = list()
 sd_out_diff = list()
-colMeans(head(out_diff_dat[[1]][38:48]))
 
 for(i in 1:length(impute_dat_loop)){
   out_dif_t[[i]] = impute_dat_loop[[1]][19:29] - impute_dat_loop[[i]][8:18]
   mean_out_diff[[i]] = apply(out_dif_t[[i]],2,mean)
   sd_out_diff[[i]] = apply(out_dif_t[[i]], 2, sd)
 }
-dim(out_diff_dat[[1]][38:48])
 parsout_diff = unlist(mean_out_diff) 
 parsout_diff = matrix(parsout_diff, ncol = 11, byrow = TRUE)
 parsout_diff
@@ -963,61 +988,15 @@ mean_sd_diff
 write.csv(mean_sd_diff, "mean_sd_diff.csv", row.names = TRUE)
 
 ```
-Do diff scores with regression, because not random and want to account
-```{r}
-dim(impute_dat_loop[[1]])
-out_diff_dat = list()
-head(impute_dat_loop[[1]][8:18])
-head(impute_dat_loop[[1]][19:29])
-head(impute_dat_loop[[1]])
 
-for(i in 1:length(impute_dat_loop)){
-  out_diff_dat[[i]] =  impute_dat_loop[[i]][19:29] - impute_dat_loop[[i]][8:18]
-  colnames(out_diff_dat[[i]]) = c("INQ_1_diff", "INQ_2_diff", "RAS_1_diff", "RAS_3_diff", "RAS_5_diff", "ISLES_1_diff", "ISLES_2_diff", "MILQ_diff", "RCS_diff", "SIS_1_diff", "SIS_2_diff")
-  out_diff_dat[[i]] = scale(out_diff_dat[[i]])
-  out_diff_dat[[i]] =cbind(impute_dat_loop[[i]], out_diff_dat[[i]])
-}
-out_diff_dat
-### Evaluate normality
-out_diff_dat_norm = out_diff_dat[[1]][c(30:32,35,38:48)]
-hist_results = list() 
-qq_results = list()
-shap_results = list()
-for(i in 1:length(out_diff_dat_norm)){
-  hist_results[[i]]= hist(out_diff_dat_norm[[i]], main = paste("Histogram of" , names(out_diff_dat_norm)[[i]]))
-  qq_results[[i]] = qqnorm(out_diff_dat_norm[[i]], main = names(out_diff_dat_norm)[[i]])
-  shap_results[[i]] = shapiro.test(out_diff_dat_norm[[i]])
-}
-shap_results
-```
 Correlations
 ```{r}
 cor_dat = out_diff_dat[[1]]
 cor_dat = cor_dat[,c(30:35, 38:48)]
-install.packages("Hmisc")
-library(Hmisc)
-
-cor_dat_results = rcorr(as.matrix(cor_dat))
-
-flattenCorrMatrix <- function(cormat, pmat) {
-  ut <- upper.tri(cormat)
-  data.frame(
-    row = rownames(cormat)[row(cormat)[ut]],
-    column = rownames(cormat)[col(cormat)[ut]],
-    cor  =(cormat)[ut],
-    p = pmat[ut]
-    )
-}
-
-cor_dat_results = flattenCorrMatrix(cor_dat_results$r, cor_dat_results$P)
-cor_dat_results[,3:4] = round(cor_dat_results[,3:4],3)
-cor_dat_results = cor_dat_results
-dim(cor_dat_results)
-cor_dat_results
-cor_dat_results=subset(cor_dat_results, abs(cor) > .4)
-write.csv(cor_dat_results, "cor_dat_results.csv", row.names = FALSE)
-library(installr)
-uninstall.packages("Hmisc")
+cor_dat_results = cor(cor_dat)
+cor_dat_results_bid = round(cor_dat_results[,2],2)
+cor_dat_results_bid 
+write.csv(cor_dat_results_bid, "cor_dat_results_bid.csv")
 ```
 Overall effect board member table for T-test and Cohen's D
 T-test code
