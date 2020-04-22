@@ -812,6 +812,8 @@ reg_suicide = glm(suicide ~ INQ_1_pre + INQ_2_pre + ISLES_1_pre + ISLES_2_pre + 
 
 summary(reg_suicide)
 ```
+
+
 Impute data
 ```{r}
 #head(center_dat)
@@ -901,6 +903,52 @@ for(i in 1:length(out_diff_dat_norm)){
 }
 shap_results
 ```
+Correlations
+```{r}
+cor_dat_pre_1 = impute_dat_loop[[1]][c(8:18, 31)]
+cor_dat_pre_1_results = cor(cor_dat_pre_1)
+cor_dat_pre_1_results_bid = round(cor_dat_pre_1_results[,12],2)
+cor_dat_pre_2 = impute_dat_loop[[2]][c(8:18, 31)]
+cor_dat_pre_2_results = cor(cor_dat_pre_2)
+cor_dat_pre_2_results_bid = round(cor_dat_pre_2_results[,12],2)
+cor_dat_pre_3 = impute_dat_loop[[3]][c(8:18, 31)]
+cor_dat_pre_3_results = cor(cor_dat_pre_3)
+cor_dat_pre_3_results_bid = round(cor_dat_pre_3_results[,12],2)
+cor_dat_pre_4 = impute_dat_loop[[4]][c(8:18, 31)]
+cor_dat_pre_4_results = cor(cor_dat_pre_4)
+cor_dat_pre_4_results_bid = round(cor_dat_pre_4_results[,12],2)
+cor_dat_pre_5 = impute_dat_loop[[5]][c(8:18, 31)]
+cor_dat_pre_5_results = cor(cor_dat_pre_5)
+cor_dat_pre_5_results_bid = round(cor_dat_pre_5_results[,12],2)
+
+cor_dat_pre_1_results_bid
+cor_dat_pre = data.frame(cor_dat_pre_1_results_bid, cor_dat_pre_2_results_bid, cor_dat_pre_3_results_bid, cor_dat_pre_4_results_bid, cor_dat_pre_5_results_bid)
+cor_dat_pre = apply(cor_dat_pre, 1, mean)
+write.csv(cor_dat_pre, "cor_dat_pre.csv")
+
+cor_dat_post_1 = impute_dat_loop[[1]][c(19:35)]
+cor_dat_post_1_results = cor(cor_dat_post_1)
+cor_dat_post_1_results_bid = round(cor_dat_post_1_results[,13],2)
+cor_dat_post_2 = impute_dat_loop[[2]][c(19:35)]
+cor_dat_post_2_results = cor(cor_dat_post_2)
+cor_dat_post_2_results_bid = round(cor_dat_post_2_results[,13],2)
+cor_dat_post_3 = impute_dat_loop[[3]][c(19:35)]
+cor_dat_post_3_results = cor(cor_dat_post_3)
+cor_dat_post_3_results_bid = round(cor_dat_post_3_results[,13],2)
+cor_dat_post_4 = impute_dat_loop[[4]][c(19:35)]
+cor_dat_post_4_results = cor(cor_dat_post_4)
+cor_dat_post_4_results_bid = round(cor_dat_post_4_results[,13],2)
+cor_dat_post_5 = impute_dat_loop[[5]][c(19:35)]
+cor_dat_post_5_results = cor(cor_dat_post_5)
+cor_dat_post_5_results_bid = round(cor_dat_post_5_results[,13],2)
+
+cor_dat_post_1_results_bid
+cor_dat_post = data.frame(cor_dat_post_1_results_bid, cor_dat_post_2_results_bid, cor_dat_post_3_results_bid, cor_dat_post_4_results_bid, cor_dat_post_5_results_bid)
+cor_dat_post = apply(cor_dat_post, 1, mean)
+write.csv(cor_dat_post, "cor_dat_post.csv")
+
+```
+
 
 Get pre and post scores
 ```{r}
@@ -989,15 +1037,7 @@ write.csv(mean_sd_diff, "mean_sd_diff.csv", row.names = TRUE)
 
 ```
 
-Correlations
-```{r}
-cor_dat = out_diff_dat[[1]]
-cor_dat = cor_dat[,c(30:35, 38:48)]
-cor_dat_results = cor(cor_dat)
-cor_dat_results_bid = round(cor_dat_results[,2],2)
-cor_dat_results_bid 
-write.csv(cor_dat_results_bid, "cor_dat_results_bid.csv")
-```
+
 Overall effect board member table for T-test and Cohen's D
 T-test code
 One sample cohen's D is just diff_score / diff_sd
