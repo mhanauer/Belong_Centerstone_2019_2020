@@ -19,6 +19,8 @@ head(center_dat)
 #library(psych)
 library(prettyR)
 
+
+
 ```
 Create total scores for INQ and RAS
 ```{r}
@@ -178,23 +180,25 @@ center_dat$X5_CSE.a
 
 ## TSE
 ### Demos
-demos = center_dat[,c(75:78,80,92,97:98)]
+demos = center_dat[,c(75:78,80, 90,92,97:98)]
 demos_fac = data.frame(apply(demos, 2, as.factor))
 describe(demos_fac)
 female = ifelse(demos$X10_Sex == 2, 1, 0)
 demos
+demos$X12_SO[demos$X12_SO == 4] = NA 
 veteran = ifelse(demos$X11_Veteran == 2, 1,0)
 sexual_minority = ifelse(demos$X12_SO != 3, 1, 0)
 hispanic = ifelse(demos$X13_Hisp.Yes.No. == 1, 1, 0)
-non_white = ifelse(demos$X14_Race.e == 1, 0,1)
-
+white = ifelse(demos$X14_Race.e == 1, 1,0)
+black = ifelse(demos$X14_Race.c == 1, 1, 0)
+another_race = ifelse(demos$X14_Race.e == 0 & demos$X14_Race.c == 0,1, 0)
 
 high_school_greater = ifelse(demos$X16_Education < 3,0, ifelse(demos$X16_Education == 3,1,2))
 
 
 employed = ifelse(demos$X17_Employment == 2 | demos$X17_Employment == 3, 1, 0)
 
-demos = data.frame(age = demos$X9_Age, veteran, sexual_minority, hispanic, non_white, high_school_greater, employed)
+demos = data.frame(age = demos$X9_Age, veteran, sexual_minority, hispanic, white, black, another_race, high_school_greater, employed)
 
 
 ### SIS 1 
@@ -362,14 +366,15 @@ attrition_rate
 Descriptives with complete data
 Uninstall psych
 ```{r}
-
+library(installr)
 library(prettyR)
 uninstall.packages("psych")
 dim(center_dat)
 describe.factor(center_dat$X9_TREAT.a.Received)
-center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60,63)] = data.frame(apply(center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60,63)],2, as.factor))
 center_dat$female = as.factor(center_dat$female)
-center_dat[,c(35,37,39,41,43,45,47,49,51,53,55,57,59)] = data.frame(apply(center_dat[,c(35,37,39,41,43,45,47,49,51,53,55,57,59)],2, as.numeric))
+center_dat[,c(2:9,38,40,42,44,46,48,50,52,54,56,58,60, 62, 64, 65)] = data.frame(apply(center_dat[,c(2:9,38,40,42,44,46,48,50,52,54,56,58,60, 62, 64, 65)],2, as.factor))
+
+center_dat[,c(39,41,43,45,47,49,51,53,55,57,59, 61, 63)] = data.frame(apply(center_dat[,c(39,41,43,45,47,49,51,53,55,57,59, 61, 63)],2, as.numeric))
 describe.factor(center_dat$X9_TREAT.a.Received)
 center_dat
 desc_stats = describe(center_dat)
@@ -383,7 +388,7 @@ colnames(desc_stats_numeric)[1] = "variable"
 desc_stats_numeric$percent_missing = 1-(as.numeric(desc_stats_numeric$valid.n) / 118)
 desc_stats_numeric[,2:5] = format(round(desc_stats_numeric[,2:5], digits=2), nsmall = 2)
 desc_stats_numeric
-desc_range= center_dat[,-c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60,63)]
+desc_range= center_dat[,-c(2:9,38,40,42,44,46,48,50,52,54,56,58,60, 62, 64, 65)]
 desc_range = apply(desc_range, 2, range, na.rm = TRUE)
 desc_range = t(desc_range)
 desc_range = round(desc_range,2)
@@ -404,6 +409,11 @@ write.csv(desc_stats_factor, "desc_stats_factor.csv", row.names = FALSE)
 
 ### Change back for analysis 
 center_dat$high_school_greater = ifelse(center_dat$high_school_greater == 0,0,1)
+### Get rid black and another race and reverse white to non-white
+center_dat$another_race = NULL
+center_dat$black = NULL
+center_dat$non_white = ifelse(center_dat$white == 1, 0,1)
+
 library(naniar)
 miss_var_summary(center_dat)
 install.packages("psych")
