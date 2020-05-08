@@ -18,9 +18,6 @@ head(center_dat)
 #install.packages("psych")
 #library(psych)
 library(prettyR)
-
-
-
 ```
 Create total scores for INQ and RAS
 ```{r}
@@ -203,7 +200,7 @@ demos = data.frame(age = demos$X9_Age, veteran, sexual_minority, hispanic, white
 
 ### SIS 1 
 # Resolved  = a, b, c, d, g, j, k 
-# Planned = e, f, h, i
+# Suicidal ideation = e, f, h, i
 head(center_dat[,c(49:50,52:53)])
 SIS_1_pre = center_dat[,c(49:50,52:53)]
 SIS_1_pre_des = data.frame(apply(SIS_1_pre, 2, as.factor))
@@ -308,7 +305,7 @@ paran(BID_psycho_Complete, centile = 95, iterations = 1000, graph = TRUE, cfa = 
 ```
 Get omegas for all non-BID constructs at pre and only post if only collected at post
 ```{r}
-
+############### Pre
 INQ_1_pre_psycho = center_psycho[,5:9]
 INQ_2_pre_psycho = center_psycho[,10:14]
 RAS_1_pre_psycho = center_psycho[,20:27]
@@ -320,25 +317,95 @@ MILQ_pre_psycho = center_psycho[,40:44]
 RCS_pre_psycho = center_psycho[,56:59]
 SIS_1_pre_psycho = center_psycho[,c(49:50,52:53)]
 SIS_2_pre_psycho = center_psycho[,c(45:48, 51, 54:55)]
-CSQ_psycho = data.frame(X12_CSQ.a = center_psycho$X12_CSQ.a,X12_CSQ.b = center_psycho$X12_CSQ.b, X12_CSQ.c = center_psycho$X12_CSQ.c) 
-WAI_psycho = center_psycho[,166:169]
-CSE_1_psycho = center_psycho[,138:143]
-CSE_2_psycho = center_psycho[,144:147]
-CSE_3_psycho = center_psycho[,148:150]
 
-library(MBESS)
+library(psych)
+alpha_pre_list = list(INQ_1_pre_psycho, INQ_2_pre_psycho, RAS_1_pre_psycho, RAS_3_pre_psycho, RAS_5_pre_psycho, ISLES_1_pre_psycho, ISLES_2_pre_psycho, MILQ_pre_psycho, RCS_pre_psycho, SIS_1_pre_psycho, SIS_2_pre_psycho)
+alpha_list
 
-ci.reliability(INQ_1_pre_psycho)
 
-omega_list = list(INQ_1_pre_psycho, INQ_2_pre_psycho, RAS_1_pre_psycho, RAS_3_pre_psycho, RAS_5_pre_psycho, ISLES_1_pre_psycho, ISLES_2_pre_psycho, MILQ_pre_psycho, RCS_pre_psycho, CSQ_psycho, WAI_psycho, CSE_1_psycho, CSE_2_psycho, CSE_3_psycho)
-omega_list
-test_omega = list()
-for(i in 1:length(omega_list)){
-  test_omega[[i]] = ci.reliability(omega_list[[i]])
-  #test_omega[[i]] = summary(test_omega[[i]])
+alpha_pre = list()
+for(i in 1:length(alpha_pre_list)){
+  alpha_pre[[i]] = omega(alpha_pre_list[[i]], poly = TRUE)
+  alpha_pre[[i]] = alpha_pre[[i]]$alpha
 }
-test_omega
+alpha_pre
+
+############ Post
+INQ_1_post_psycho = center_psycho[,100:104]
+INQ_2_post_psycho = center_psycho[,105:109]
+RAS_1_post_psycho = center_psycho[,115:122]
+RAS_3_post_psycho = center_psycho[,110:114]
+RAS_5_post_psycho = center_psycho[,123:125]
+ISLES_1_post_psycho = center_psycho[,132:134]
+ISLES_2_post_psycho = center_psycho[,135:137]
+MILQ_post_psycho = center_psycho[,127:131]
+RCS_post_psycho = center_psycho[,151:154]
+SIS_1_post_psycho = center_psycho[,c(159:160, 162:163)]
+SIS_2_post_psycho =center_psycho[,c(155:158, 161, 164:165)]
+
+alpha_post_list = list(INQ_1_post_psycho, INQ_2_post_psycho, RAS_1_post_psycho, RAS_3_post_psycho, RAS_5_post_psycho, ISLES_1_post_psycho, ISLES_2_post_psycho, MILQ_post_psycho, RCS_post_psycho, SIS_1_post_psycho, SIS_2_post_psycho)
+
+alpha_post = list()
+for(i in 1:length(alpha_post_list)){
+  alpha_post[[i]] = omega(alpha_post_list[[i]], poly = TRUE)
+  alpha_post[[i]] = alpha_post[[i]]$alpha
+}
+alpha_post
+
+########## MAP and paran for pre
+
+vss_pre = list()
+for(i in 1:length(alpha_pre_list)){
+  vss_pre[[i]] = vss(alpha_pre_list[[i]], n = 3, cor = "poly")
+  vss_pre[[i]] = vss_pre[[i]]$map
+}
+vss_pre
+
+vss_post = list()
+for(i in 1:length(alpha_post_list)){
+  vss_post[[i]] = vss(alpha_post_list[[i]], n = 3, cor = "poly")
+  vss_post[[i]] = vss_post[[i]]$map
+}
+vss_post
+
+### Need complete data for paran
+library(paran)
+alpha_pre_list_complete = list()
+for(i in 1:length(alpha_pre_list)){
+ alpha_pre_list_complete[[i]] = na.omit(alpha_pre_list[[i]])
+}
+alpha_pre_list_complete
+paran_pre = list()
+for(i in 1:length(alpha_pre_list_complete)){
+  paran_pre[[i]] = paran(alpha_pre_list_complete[[1]], centile = 95, iterations = 1000, graph = TRUE, cfa = TRUE)
+  paran_pre[[i]] = paran_pre[[i]]$Retained
+}
+paran_pre
+
+alpha_post_list_complete = list()
+for(i in 1:length(alpha_post_list)){
+  alpha_post_list_complete[[i]] = na.omit(alpha_post_list[[i]])
+}
+alpha_post_list_complete
+paran_post = list()
+for(i in 1:length(alpha_post_list_complete)){
+  paran_post[[i]] = paran(alpha_post_list_complete[[1]], centile = 95, iterations = 1000, graph = TRUE, cfa = TRUE)
+  paran_post[[i]] = paran_post[[i]]$Retained
+}
+paran_post
+
 ```
+Psycho results
+```{r}
+alpha_pre
+alpha_post
+vss_pre
+vss_post
+paran_pre
+paran_post
+```
+
+
 Assess missing 
 ```{r}
 head(center_dat)
@@ -913,6 +980,73 @@ for(i in 1:length(out_diff_dat_norm)){
 }
 shap_results
 ```
+Pre convergent and divergent reliability
+```{r}
+cor_dat_pre_1 = impute_dat_loop[[1]][c(8:18)]
+cor_dat_pre_1_results = rcorr(as.matrix(cor_dat_pre_1))
+cor_dat_pre_2 = impute_dat_loop[[2]][c(8:18)]
+cor_dat_pre_2_results = cor(cor_dat_pre_2)
+cor_dat_pre_3 = impute_dat_loop[[3]][c(8:18)]
+cor_dat_pre_3_results = cor(cor_dat_pre_3)
+cor_dat_pre_4 = impute_dat_loop[[4]][c(8:18)]
+cor_dat_pre_4_results = cor(cor_dat_pre_4)
+cor_dat_pre_5 = impute_dat_loop[[5]][c(8:18)]
+cor_dat_pre_5_results = cor(cor_dat_pre_5)
+
+cor_dat_pre_1
+
+flattenCorrMatrix <- function(cormat, pmat) {
+  ut <- upper.tri(cormat)
+  data.frame(
+    row = rownames(cormat)[row(cormat)[ut]],
+    column = rownames(cormat)[col(cormat)[ut]],
+    cor  =(cormat)[ut],
+    p = pmat[ut]
+    )
+}
+cor_dat_pre_1
+
+
+cor_dat_pre_1 = rcorr(as.matrix(cor_dat_pre_1))
+cor_dat_pre_1 = flattenCorrMatrix(cor_dat_pre_1$r, cor_dat_pre_1$P)
+var_names =  cor_dat_pre_1[,1:2]
+cor_dat_pre_1 = cor_dat_pre_1$cor
+cor_dat_pre_1
+
+
+cor_dat_pre_2 = rcorr(as.matrix(cor_dat_pre_2))
+cor_dat_pre_2 = flattenCorrMatrix(cor_dat_pre_2$r, cor_dat_pre_2$P)
+cor_dat_pre_2 = cor_dat_pre_2$cor
+cor_dat_pre_2
+
+cor_dat_pre_3 = rcorr(as.matrix(cor_dat_pre_3))
+cor_dat_pre_3 = flattenCorrMatrix(cor_dat_pre_3$r, cor_dat_pre_3$P)
+cor_dat_pre_3 = cor_dat_pre_3$cor
+cor_dat_pre_3
+
+cor_dat_pre_4 = rcorr(as.matrix(cor_dat_pre_4))
+cor_dat_pre_4 = flattenCorrMatrix(cor_dat_pre_4$r, cor_dat_pre_4$P)
+cor_dat_pre_4 = cor_dat_pre_4$cor
+cor_dat_pre_4
+
+cor_dat_pre_5 = rcorr(as.matrix(cor_dat_pre_5))
+cor_dat_pre_5 = flattenCorrMatrix(cor_dat_pre_5$r, cor_dat_pre_5$P)
+cor_dat_pre_5 = cor_dat_pre_5$cor
+cor_dat_pre_5
+
+cor_dat_pre_dat = data.frame(cor_dat_pre_1, cor_dat_pre_2, cor_dat_pre_3, cor_dat_pre_4, cor_dat_pre_5)
+
+cor_dat_pre_dat = apply(cor_dat_pre_dat, 1, mean)
+cor_dat_pre_dat = data.frame(var_names, cor_dat_pre_dat)
+cor_dat_pre_dat[,3] = round(cor_dat_pre_dat[,3], 2)
+cor_dat_pre_dat= cor_dat_pre_dat[order(cor_dat_pre_dat$row),]
+cor_dat_pre_dat
+#perceived burdensomeness, thwarted belongingness  
+#cor_dat_pre_dat$row = ifelse(cor_dat_pre_dat$row == "INQ_1_pre", "perceived burdensomeness", ifelse(cor_dat_pre_dat$row, "INQ_2_pre", "thwarted belongingness", ifelse(cor_dat_pre_dat$row == "ISLES_1_pre", "footing the world", ifelse(cor_dat_pre_dat$row == "ISLES_2_pre"))))
+#write.csv(cor_dat_pre_dat, "cor_dat_pre_dat.csv", row.names = FALSE)
+
+```
+
 Correlations
 ```{r}
 cor_dat_pre_1 = impute_dat_loop[[1]][c(8:18, 31)]
