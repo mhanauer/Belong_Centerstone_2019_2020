@@ -314,11 +314,11 @@ RAS_5_pre_psycho = center_psycho[,28:30]
 ISLES_1_pre_psycho = center_psycho[,34:36]
 ISLES_2_pre_psycho = center_psycho[,37:39]
 MILQ_pre_psycho = center_psycho[,40:44]
-RCS_pre_psycho = center_psycho[,56:59]
 SIS_1_pre_psycho = center_psycho[,c(49:50,52:53)]
 SIS_2_pre_psycho = center_psycho[,c(45:48, 51, 54:55)]
 
 library(psych)
+uninstall.packages("coefficientalpha")
 alpha_pre_list = list(INQ_1_pre_psycho, INQ_2_pre_psycho, RAS_1_pre_psycho, RAS_3_pre_psycho, RAS_5_pre_psycho, ISLES_1_pre_psycho, ISLES_2_pre_psycho, MILQ_pre_psycho, RCS_pre_psycho, SIS_1_pre_psycho, SIS_2_pre_psycho)
 alpha_list
 
@@ -340,10 +340,17 @@ ISLES_1_post_psycho = center_psycho[,132:134]
 ISLES_2_post_psycho = center_psycho[,135:137]
 MILQ_post_psycho = center_psycho[,127:131]
 RCS_post_psycho = center_psycho[,151:154]
+RCS_post_psycho[RCS_post_psycho == 10] = NA
 SIS_1_post_psycho = center_psycho[,c(159:160, 162:163)]
 SIS_2_post_psycho =center_psycho[,c(155:158, 161, 164:165)]
 
 alpha_post_list = list(INQ_1_post_psycho, INQ_2_post_psycho, RAS_1_post_psycho, RAS_3_post_psycho, RAS_5_post_psycho, ISLES_1_post_psycho, ISLES_2_post_psycho, MILQ_post_psycho, RCS_post_psycho, SIS_1_post_psycho, SIS_2_post_psycho)
+
+range_out = list()
+for(i in 1:length(alpha_post_list)){
+  range_out[[i]] = apply(alpha_post_list[[i]], 2, range, na.rm = TRUE)
+}
+range_out
 
 alpha_post = list()
 for(i in 1:length(alpha_post_list)){
@@ -375,6 +382,7 @@ for(i in 1:length(alpha_pre_list)){
  alpha_pre_list_complete[[i]] = na.omit(alpha_pre_list[[i]])
 }
 alpha_pre_list_complete
+
 paran_pre = list()
 for(i in 1:length(alpha_pre_list_complete)){
   paran_pre[[i]] = paran(alpha_pre_list_complete[[1]], centile = 95, iterations = 1000, graph = TRUE, cfa = TRUE)
