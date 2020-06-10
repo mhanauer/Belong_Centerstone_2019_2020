@@ -317,9 +317,7 @@ SIS_1_pre_psycho = center_psycho[,c(49:50,52:53)]
 SIS_2_pre_psycho = center_psycho[,c(45:48, 51, 54:55)]
 
 library(psych)
-uninstall.packages("coefficientalpha")
 alpha_pre_list = list(INQ_1_pre_psycho, INQ_2_pre_psycho, RAS_1_pre_psycho, RAS_3_pre_psycho, RAS_5_pre_psycho, ISLES_1_pre_psycho, ISLES_2_pre_psycho, MILQ_pre_psycho, RCS_pre_psycho, SIS_1_pre_psycho, SIS_2_pre_psycho)
-alpha_list
 
 
 alpha_pre = list()
@@ -411,6 +409,26 @@ vss_post
 paran_pre
 paran_post
 ```
+Need the percentage missing for each variable by each person just doing it for post, because most people completed 
+```{r}
+
+missing_post_list = list(INQ_1_post_psycho, INQ_2_post_psycho, RAS_1_post_psycho, RAS_3_post_psycho, RAS_5_post_psycho, ISLES_1_post_psycho, ISLES_2_post_psycho, MILQ_post_psycho, RCS_post_psycho, SIS_1_post_psycho, SIS_2_post_psycho)
+
+missing_post_list
+missing_post_fill = list()
+dim_missing_post_fill = list()
+missing_person_var = list()
+for(i in 1:length(missing_post_list)){
+  dim_missing_post_fill[[i]] = dim(missing_post_list[[i]])[2]
+  missing_post_fill[[i]] = apply(missing_post_list[[i]], 1, function(x){sum(is.na(x))})
+  missing_person_var[[i]] = round(missing_post_fill[[i]] / dim_missing_post_fill[[i]],2)
+}
+
+attrition$drop= apply(attrition, 1, function(x)(sum(is.na(x))))
+
+
+```
+
 
 
 Assess missing 
