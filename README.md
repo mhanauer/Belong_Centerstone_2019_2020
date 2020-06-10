@@ -268,7 +268,6 @@ suicide = center_dat$X4_AttemptedSuic
 center_psycho = center_dat 
 center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, CSQ, BID, WAI, CSE_1, CSE_2, CSE_3, treat_needs_post, suicide, female)
 
-high_school_greater = ifelse(demos$X16_Education < 3,0, ifelse(demos$X16_Education == 3,1,2))
 
 demos
 ```
@@ -439,20 +438,21 @@ attrition_rate
 
 
 Descriptives with complete data
-Uninstall psych
+
+
 ```{r}
 library(installr)
 library(prettyR)
-uninstall.packages("psych")
+library(Hmisc)
 dim(center_dat)
 describe.factor(center_dat$X9_TREAT.a.Received)
 center_dat$female = as.factor(center_dat$female)
 center_dat[,c(2:9,38,40,42,44,46,48,50,52,54,56,58,60, 62, 64, 65)] = data.frame(apply(center_dat[,c(2:9,38,40,42,44,46,48,50,52,54,56,58,60, 62, 64, 65)],2, as.factor))
-
 center_dat[,c(39,41,43,45,47,49,51,53,55,57,59, 61, 63)] = data.frame(apply(center_dat[,c(39,41,43,45,47,49,51,53,55,57,59, 61, 63)],2, as.numeric))
 describe.factor(center_dat$X9_TREAT.a.Received)
 center_dat
-desc_stats = describe(center_dat)
+desc_stats = prettyR::describe(center_dat)
+
 desc_stats_numeric = data.frame(desc_stats$Numeric)
 desc_stats_numeric = desc_stats_numeric[c(1,4,5),]
 desc_stats_numeric
@@ -482,16 +482,9 @@ desc_stats_factor$Percent = desc_stats_factor$Percent/100
 write.csv(desc_stats_factor, "desc_stats_factor.csv", row.names = FALSE)
 
 
-### Change back for analysis 
-center_dat$high_school_greater = ifelse(center_dat$high_school_greater == 0,0,1)
-### Get rid black and another race and reverse white to non-white
-center_dat$another_race = NULL
-center_dat$black = NULL
-center_dat$non_white = ifelse(center_dat$white == 1, 0,1)
 
 library(naniar)
 miss_var_summary(center_dat)
-install.packages("psych")
 library(psych)
 ```
 Get age categories
@@ -902,19 +895,22 @@ summary(reg_suicide)
 Impute data
 ```{r}
 #head(center_dat)
-#library(Amelia)
+library(Amelia)
+
+### Change back for analysis 
+#center_dat$high_school_greater = ifelse(as.numeric(center_dat$high_school_greater) == 0,0,1)
+### Get rid black and another race and reverse white to non-white
+##center_dat$another_race = NULL
+#center_dat$black = NULL
 
 ### Get rid of the treat variables, because they crash R.
+### Run descriptives if you want to impute again
 #treat_vars  =  center_dat[,c(36:61)]
-#center_dat =  center_dat[,c(36:61)]
-#center_dat[,8:35]
-#dim(center_dat)
-### Create new names
-#colnames(center_dat)[36:48] = c("safe_plan", "meds", "ind_therapy", "group_therapy", "belonging", "coping_skills", "meaning", "difficult", "burden", "safe", "hope", "connection", "needs")
+#center_dat =  data.frame(center_dat[,-c(36:61),])
 head(center_dat)
 ### Create bounds for one var and see what happens
 ## INQ Post
-#center_dat[,8:35]
+dim(center_dat[,8:35])
 
 #range(center_dat$INQ_1_pre, na.rm = TRUE) 
 #range(center_dat$RAS_1_pre, na.rm = TRUE) 
@@ -924,28 +920,30 @@ head(center_dat)
 #center_dat
 #bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5, 30,1,4, 31,1,5, 32,1,5, 33,1,10, 34,1,10, 35,1,10),nrow = 28, ncol = 3, byrow = TRUE)
 #bounds
-
-#a.out = amelia(x = center_dat, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide", "female", "safe_plan", "meds", "ind_therapy", "group_therapy", "belonging", "coping_skills", "meaning", "difficult", "burden", "safe", "hope", "connection", "needs"), bounds = bounds)
-#compare.density(a.out, var = "RAS_1_post")
-#compare.density(a.out, var = "RAS_3_post")
-#compare.density(a.out, var = "RAS_5_post")
-#compare.density(a.out, var = "RCS_post")
-#compare.density(a.out, var = "ISLES_1_post")
-#compare.density(a.out, var = "ISLES_2_post")
-#compare.density(a.out, var = "INQ_1_post")
-#compare.density(a.out, var = "INQ_2_post")
-#compare.density(a.out, var = "MILQ_post")
-#compare.density(a.out, var = "SIS_1_post")
-#compare.density(a.out, var = "SIS_2_post")
+dim(center_dat)
+#a.out_florida = amelia(x = center_dat, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "white", "high_school_greater", "employed", "suicide", "female"), bounds = bounds)
+#saveRDS(a.out_florida, file = "a.out_florida.rds")
+a.out_florida = readRDS(file = "a.out_florida.rds")
+compare.density(a.out_florida, var = "RAS_1_post")
+compare.density(a.out_florida, var = "RAS_3_post")
+compare.density(a.out_florida, var = "RAS_5_post")
+compare.density(a.out_florida, var = "RCS_post")
+compare.density(a.out_florida, var = "ISLES_1_post")
+compare.density(a.out_florida, var = "ISLES_2_post")
+compare.density(a.out_florida, var = "INQ_1_post")
+compare.density(a.out_florida, var = "INQ_2_post")
+compare.density(a.out_florida, var = "MILQ_post")
+compare.density(a.out_florida, var = "SIS_1_post")
+compare.density(a.out_florida, var = "SIS_2_post")
 #overimpute(a.out, var = "SIS_1_post")
 #overimpute(a.out, var = "SIS_2_post")
 #impute_dat_loop = a.out$imputations
 #describe(impute_dat_loop$imp1)
-
+a.out_florida$imputations$imp2
 
 #apply(impute_dat_loop$imp1, 2, range)
 #range(impute_dat_loop$imp1$INQ_1_post)
-
+saveRDS(a.out_florida, file = "a.out_florida.rds")
 #saveRDS(impute_dat_loop, file = "impute_dat_loop.rds")
 #impute_dat_loop = readRDS(file = "impute_dat_loop.rds")
 #impute_dat_loop
