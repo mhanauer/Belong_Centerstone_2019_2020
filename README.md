@@ -18,7 +18,6 @@ head(center_dat)
 #install.packages("psych")
 #library(psych)
 library(prettyR)
-
 ```
 Create total scores for INQ and RAS
 ```{r}
@@ -177,30 +176,31 @@ center_dat$X5_CSE.a
 ### TSE_bin
 
 ## TSE
-
 ### Demos
-demos = center_dat[,c(75:78,80,92,97:98)]
+demos = center_dat[,c(75:78,80, 90,92,97:98)]
 demos_fac = data.frame(apply(demos, 2, as.factor))
 describe(demos_fac)
 female = ifelse(demos$X10_Sex == 2, 1, 0)
 demos
+demos$X12_SO[demos$X12_SO == 4] = NA 
 veteran = ifelse(demos$X11_Veteran == 2, 1,0)
 sexual_minority = ifelse(demos$X12_SO != 3, 1, 0)
 hispanic = ifelse(demos$X13_Hisp.Yes.No. == 1, 1, 0)
-non_white = ifelse(demos$X14_Race.e == 1, 0,1)
-
+white = ifelse(demos$X14_Race.e == 1, 1,0)
+black = ifelse(demos$X14_Race.c == 1, 1, 0)
+another_race = ifelse(demos$X14_Race.e == 0 & demos$X14_Race.c == 0,1, 0)
 
 high_school_greater = ifelse(demos$X16_Education < 3,0, ifelse(demos$X16_Education == 3,1,2))
 
 
 employed = ifelse(demos$X17_Employment == 2 | demos$X17_Employment == 3, 1, 0)
 
-demos = data.frame(age = demos$X9_Age, veteran, sexual_minority, hispanic, non_white, high_school_greater, employed)
+demos = data.frame(age = demos$X9_Age, veteran, sexual_minority, hispanic, white, black, another_race, high_school_greater, employed)
 
 
 ### SIS 1 
 # Resolved  = a, b, c, d, g, j, k 
-# Planned = e, f, h, i
+# Suicidal ideation = e, f, h, i
 head(center_dat[,c(49:50,52:53)])
 SIS_1_pre = center_dat[,c(49:50,52:53)]
 SIS_1_pre_des = data.frame(apply(SIS_1_pre, 2, as.factor))
@@ -266,17 +266,16 @@ treat_needs_post = center_dat[,170:195]
 suicide = center_dat$X4_AttemptedSuic
 
 center_psycho = center_dat 
-center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, CSQ, BID, WAI, CSE_1, CSE_2, CSE_3, treat_needs_post, suicide)
-
-high_school_greater = ifelse(demos$X16_Education < 3,0, ifelse(demos$X16_Education == 3,1,2))
+center_dat = data.frame(demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, CSQ, BID, WAI, CSE_1, CSE_2, CSE_3, treat_needs_post, suicide, female)
 
 
+demos
 ```
 Psychometrics for BID
 ```{r}
 library(psych)
 BID_psycho =  center_psycho[,201:206]
-#summary(omega(BID_psycho))
+summary(omega(BID_psycho))
 
 efa3 = fa(r = BID_psycho, nfactors = 3, fm = "gls", cor = "poly")
 efa3
@@ -305,7 +304,7 @@ paran(BID_psycho_Complete, centile = 95, iterations = 1000, graph = TRUE, cfa = 
 ```
 Get omegas for all non-BID constructs at pre and only post if only collected at post
 ```{r}
-
+############### Pre
 INQ_1_pre_psycho = center_psycho[,5:9]
 INQ_2_pre_psycho = center_psycho[,10:14]
 RAS_1_pre_psycho = center_psycho[,20:27]
@@ -314,30 +313,104 @@ RAS_5_pre_psycho = center_psycho[,28:30]
 ISLES_1_pre_psycho = center_psycho[,34:36]
 ISLES_2_pre_psycho = center_psycho[,37:39]
 MILQ_pre_psycho = center_psycho[,40:44]
-RCS_pre_psycho = center_psycho[,56:59]
 SIS_1_pre_psycho = center_psycho[,c(49:50,52:53)]
 SIS_2_pre_psycho = center_psycho[,c(45:48, 51, 54:55)]
-CSQ_psycho = data.frame(X12_CSQ.a = center_psycho$X12_CSQ.a,X12_CSQ.b = center_psycho$X12_CSQ.b, X12_CSQ.c = center_psycho$X12_CSQ.c) 
-WAI_psycho = center_psycho[,166:169]
-CSE_1_psycho = center_psycho[,138:143]
-CSE_2_psycho = center_psycho[,144:147]
-CSE_3_psycho = center_psycho[,148:150]
 
-library(MBESS)
+library(psych)
+uninstall.packages("coefficientalpha")
+alpha_pre_list = list(INQ_1_pre_psycho, INQ_2_pre_psycho, RAS_1_pre_psycho, RAS_3_pre_psycho, RAS_5_pre_psycho, ISLES_1_pre_psycho, ISLES_2_pre_psycho, MILQ_pre_psycho, RCS_pre_psycho, SIS_1_pre_psycho, SIS_2_pre_psycho)
+alpha_list
 
-ci.reliability(INQ_1_pre_psycho)
 
-omega_list = list(INQ_1_pre_psycho, INQ_2_pre_psycho, RAS_1_pre_psycho, RAS_3_pre_psycho, RAS_5_pre_psycho, ISLES_1_pre_psycho, ISLES_2_pre_psycho, MILQ_pre_psycho, RCS_pre_psycho, CSQ_psycho, WAI_psycho, CSE_1_psycho, CSE_2_psycho, CSE_3_psycho)
-omega_list
-test_omega = list()
-for(i in 1:length(omega_list)){
-  test_omega[[i]] = ci.reliability(omega_list[[i]])
-  #test_omega[[i]] = summary(test_omega[[i]])
+alpha_pre = list()
+for(i in 1:length(alpha_pre_list)){
+  alpha_pre[[i]] = omega(alpha_pre_list[[i]], poly = TRUE)
+  alpha_pre[[i]] = alpha_pre[[i]]$alpha
 }
-test_omega
+alpha_pre
+
+############ Post
+INQ_1_post_psycho = center_psycho[,100:104]
+INQ_2_post_psycho = center_psycho[,105:109]
+RAS_1_post_psycho = center_psycho[,115:122]
+RAS_3_post_psycho = center_psycho[,110:114]
+RAS_5_post_psycho = center_psycho[,123:125]
+ISLES_1_post_psycho = center_psycho[,132:134]
+ISLES_2_post_psycho = center_psycho[,135:137]
+MILQ_post_psycho = center_psycho[,127:131]
+RCS_post_psycho = center_psycho[,151:154]
+RCS_post_psycho[RCS_post_psycho == 10] = NA
+SIS_1_post_psycho = center_psycho[,c(159:160, 162:163)]
+SIS_2_post_psycho =center_psycho[,c(155:158, 161, 164:165)]
+
+alpha_post_list = list(INQ_1_post_psycho, INQ_2_post_psycho, RAS_1_post_psycho, RAS_3_post_psycho, RAS_5_post_psycho, ISLES_1_post_psycho, ISLES_2_post_psycho, MILQ_post_psycho, RCS_post_psycho, SIS_1_post_psycho, SIS_2_post_psycho)
+
+range_out = list()
+for(i in 1:length(alpha_post_list)){
+  range_out[[i]] = apply(alpha_post_list[[i]], 2, range, na.rm = TRUE)
+}
+range_out
+
+alpha_post = list()
+for(i in 1:length(alpha_post_list)){
+  alpha_post[[i]] = omega(alpha_post_list[[i]], poly = TRUE)
+  alpha_post[[i]] = alpha_post[[i]]$alpha
+}
+alpha_post
+
+########## MAP and paran for pre
+
+vss_pre = list()
+for(i in 1:length(alpha_pre_list)){
+  vss_pre[[i]] = vss(alpha_pre_list[[i]], n = 3, cor = "poly")
+  vss_pre[[i]] = vss_pre[[i]]$map
+}
+vss_pre
+
+vss_post = list()
+for(i in 1:length(alpha_post_list)){
+  vss_post[[i]] = vss(alpha_post_list[[i]], n = 3, cor = "poly")
+  vss_post[[i]] = vss_post[[i]]$map
+}
+vss_post
+
+### Need complete data for paran
+library(paran)
+alpha_pre_list_complete = list()
+for(i in 1:length(alpha_pre_list)){
+ alpha_pre_list_complete[[i]] = na.omit(alpha_pre_list[[i]])
+}
+alpha_pre_list_complete
+
+paran_pre = list()
+for(i in 1:length(alpha_pre_list_complete)){
+  paran_pre[[i]] = paran(alpha_pre_list_complete[[1]], centile = 95, iterations = 1000, graph = TRUE, cfa = TRUE)
+  paran_pre[[i]] = paran_pre[[i]]$Retained
+}
+paran_pre
+
+alpha_post_list_complete = list()
+for(i in 1:length(alpha_post_list)){
+  alpha_post_list_complete[[i]] = na.omit(alpha_post_list[[i]])
+}
+alpha_post_list_complete
+paran_post = list()
+for(i in 1:length(alpha_post_list_complete)){
+  paran_post[[i]] = paran(alpha_post_list_complete[[1]], centile = 95, iterations = 1000, graph = TRUE, cfa = TRUE)
+  paran_post[[i]] = paran_post[[i]]$Retained
+}
+paran_post
+
 ```
-
-
+Psycho results
+```{r}
+alpha_pre
+alpha_post
+vss_pre
+vss_post
+paran_pre
+paran_post
+```
 
 
 Assess missing 
@@ -345,48 +418,41 @@ Assess missing
 head(center_dat)
 library(naniar)
 miss_var_summary(center_dat)
-
-dim(center_dat)
-####### Only dropping one persn not worth it.
-
-#center_dat_complete = na.omit(center_dat)
-#dim(center_dat_complete)
-
-#quasi_itt =  apply(center_dat[,-c(34:59)], 1, function(x)(sum(is.na(x))))
-#quasi_itt_dat = data.frame(center_dat,quasi_itt)
-#describe.factor(quasi_itt_dat$quasi_itt)
-
-
-
-####Need to ignore the treatment received yes or no variables
-#quasi_itt_dat = subset(quasi_itt_dat, quasi_itt < dim(quasi_itt_dat[,-c(34:59)])[2]/2)
-#dim(center_dat)
-#dim(quasi_itt_dat)
-#quasi_itt_dat$quasi_itt = NULL
-#dim(quasi_itt_dat)
-
-#center_dat = quasi_itt_dat
-#dim(center_dat)
-
+prop_complete_case(center_dat)
+### Attrition is the percentage of all the data divided by those completed at 50% of the follow-up
+center_dat
+head(center_dat[,c(19:35, 62:63)])
+### Not included treatment provided or score, because score is planned missing
+## If treatment provided is included in later analyses add it back here, but that is a extra analysis
+attrition = center_dat[,c(19:35, 62:63)]
+attrition$drop= apply(attrition, 1, function(x)(sum(is.na(x))))
+describe.factor(attrition$drop)
+### -1 because you don't count the drop variable
+attrition$drop= ifelse(attrition$drop > (dim(attrition)[2]-1)/2, 1, 0)
+attrition = subset(attrition, drop == 1)
+attrition_n = dim(attrition)[1]
+attrition_rate = round(attrition_n / dim(center_dat)[1],2)
+attrition_n
+attrition_rate
 ```
 
 
 Descriptives with complete data
-Uninstall psych
+
+
 ```{r}
-#library(psych)
-#library(prettyR)
 library(installr)
-#uninstall.packages("Hmisc")
+library(prettyR)
+library(Hmisc)
 dim(center_dat)
 describe.factor(center_dat$X9_TREAT.a.Received)
-center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)] = data.frame(apply(center_dat[,c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)],2, as.factor))
-
-center_dat[,c(35,37,39,41,43,45,47,49,51,53,55,57,59)] = data.frame(apply(center_dat[,c(35,37,39,41,43,45,47,49,51,53,55,57,59)],2, as.numeric))
+center_dat$female = as.factor(center_dat$female)
+center_dat[,c(2:9,38,40,42,44,46,48,50,52,54,56,58,60, 62, 64, 65)] = data.frame(apply(center_dat[,c(2:9,38,40,42,44,46,48,50,52,54,56,58,60, 62, 64, 65)],2, as.factor))
+center_dat[,c(39,41,43,45,47,49,51,53,55,57,59, 61, 63)] = data.frame(apply(center_dat[,c(39,41,43,45,47,49,51,53,55,57,59, 61, 63)],2, as.numeric))
 describe.factor(center_dat$X9_TREAT.a.Received)
+center_dat
+desc_stats = prettyR::describe(center_dat)
 
-desc_stats = describe(center_dat)
-desc_stats$sexual_minority$values
 desc_stats_numeric = data.frame(desc_stats$Numeric)
 desc_stats_numeric = desc_stats_numeric[c(1,4,5),]
 desc_stats_numeric
@@ -397,7 +463,7 @@ colnames(desc_stats_numeric)[1] = "variable"
 desc_stats_numeric$percent_missing = 1-(as.numeric(desc_stats_numeric$valid.n) / 118)
 desc_stats_numeric[,2:5] = format(round(desc_stats_numeric[,2:5], digits=2), nsmall = 2)
 desc_stats_numeric
-desc_range= center_dat[,-c(2:7,62,36,38,40,42,44,46,48,50,52,54,56,58,60)]
+desc_range= center_dat[,-c(2:9,38,40,42,44,46,48,50,52,54,56,58,60, 62, 64, 65)]
 desc_range = apply(desc_range, 2, range, na.rm = TRUE)
 desc_range = t(desc_range)
 desc_range = round(desc_range,2)
@@ -416,29 +482,47 @@ desc_stats_factor$Percent = desc_stats_factor$Percent/100
 write.csv(desc_stats_factor, "desc_stats_factor.csv", row.names = FALSE)
 
 
-### Change back for analysis 
-center_dat$high_school_greater = ifelse(center_dat$high_school_greater == 0,0,1)
+
+library(naniar)
+miss_var_summary(center_dat)
+library(psych)
+```
+Get age categories
+15-24
+25-34
+35-44
+45-54
+55-64
+There are four clients with missing data.
+```{r}
+age_dat = na.omit(center_dat$age)
+length(age_dat)
+age_cat = ifelse(age_dat <= 24, "15-24", ifelse(age_dat > 24 & age_dat <=  34, "25-34",ifelse(age_dat > 34 & age_dat <= 44, "35-44", ifelse(age_dat > 44 & age_dat <= 54, "45-54", ifelse(age_dat > 54, "55-64","wrong")))))
+range(age_dat, na.rm = TRUE)
+age_cat
+age_test = data.frame(age_dat, age_cat)
+age_test
+describe.factor(age_cat)
 
 
 ```
+
+
 Treat variable
 Number and percentage who said yes
 Mean and sd for the rating
 ```{r}
-treat_all =  center_psycho[,170:195]
-saftey_plan = treat_all[,c(1:2)] 
 
-dim(treat_all)
+
+treat_all =  center_psycho[,170:195]
+
+### Change treatment med to NA
+library(psych)
+describe.factor(treat_all$X9_TREAT.b.Received)
+treat_all$X9_TREAT.b.Received[treat_all$X9_TREAT.b.Received == 2] = NA
+describe.factor(treat_all$X9_TREAT.b.Received)
 treat_receive = treat_all[,c(1,3,5,7,9,11,13,15,17,19,21,23,25)]
 treat_receive = data.frame(apply(treat_receive, 2, as.factor))
-treat_receive = describe(treat_receive)
-treat_receive_factor = data.frame(treat_receive$Factor) 
-treat_receive_factor = t(treat_receive_factor)
-treat_receive_factor = format(round(treat_receive_factor, digits=2), nsmall = 2)
-write.csv(treat_receive_factor, "treat_receive_factor.csv", row.names = TRUE)
-treat_receive_factor = read.csv("treat_receive_factor.csv", header = TRUE)
-colnames(treat_receive_factor)[1] = "variable"
-treat_receive_factor
 
 
 ### Have to get the mean and sd for each one, because the data set will be different
@@ -448,7 +532,14 @@ dim(saftey_plan_yes)
 saftey_plan_yes_mean = mean(saftey_plan_yes$X9_TREAT.a.Score, na.rm = TRUE)
 saftey_plan_yes_sd = sd(saftey_plan_yes$X9_TREAT.a.Score, na.rm = TRUE)
 saftey_plan_yes_range = range(saftey_plan_yes$X9_TREAT.a.Score, na.rm = TRUE)
-
+saftey_plan_percent= na.omit(saftey_plan$X9_TREAT.a.Received)
+saftey_plan_percent = describe.factor(saftey_plan_percent)
+saftey_plan_percent = round(saftey_plan_percent, 0)
+saftey_plan_percent
+saftey_plan_percent_yes = paste0(saftey_plan_percent[1],"(",saftey_plan_percent[2], "%", ")") 
+saftey_plan_percent_yes
+saftey_plan_percent_no = paste0(saftey_plan_percent[3],"(",saftey_plan_percent[4], "%", ")") 
+saftey_plan_percent_no
 
 medication =  treat_all[,3:4]
 medication_yes = subset(medication, X9_TREAT.b.Received == 1)
@@ -456,6 +547,15 @@ dim(medication_yes)
 medication_yes_mean = mean(medication_yes$X9_TREAT.b.Score, na.rm = TRUE)
 medication_yes_sd = sd(medication_yes$X9_TREAT.b.Score, na.rm = TRUE)
 medication_yes_range = range(medication$X9_TREAT.b.Score, na.rm = TRUE)
+medication_percent= na.omit(medication$X9_TREAT.b.Received)
+medication_percent = describe.factor(medication_percent)
+medication_percent = round(medication_percent, 0)
+medication_percent
+medication_percent_yes = paste0(medication_percent[1],"(",medication_percent[2], "%", ")")
+medication_percent_yes
+medication_percent_no = paste0(medication_percent[3],"(",medication_percent[4], "%", ")") 
+medication_percent_no
+
 
 ind_therapy =  treat_all[,5:6]
 ind_therapy_yes = subset(ind_therapy, X9_TREAT.c.Received == 1)
@@ -463,6 +563,14 @@ dim(ind_therapy_yes)
 ind_therapy_yes_mean = mean(ind_therapy_yes$X9_TREAT.c.Score, na.rm = TRUE)
 ind_therapy_yes_sd = sd(ind_therapy_yes$X9_TREAT.c.Score, na.rm = TRUE)
 ind_therapy_yes_range = range(ind_therapy$X9_TREAT.c.Score, na.rm = TRUE)
+ind_therapy_percent= na.omit(ind_therapy$X9_TREAT.c.Received)
+ind_therapy_percent = describe.factor(ind_therapy_percent)
+ind_therapy_percent = round(ind_therapy_percent, 0)
+ind_therapy_percent
+ind_therapy_percent_yes = paste0(ind_therapy_percent[1],"(",ind_therapy_percent[2], "%", ")") 
+ind_therapy_percent_yes
+ind_therapy_percent_no = paste0(ind_therapy_percent[3],"(",ind_therapy_percent[4], "%", ")") 
+ind_therapy_percent_no
 
 
 group_therapy =  treat_all[,7:8]
@@ -471,6 +579,14 @@ dim(group_therapy_yes)
 group_therapy_yes_mean = mean(group_therapy_yes$X9_Treat.d.Score, na.rm = TRUE)
 group_therapy_yes_sd = sd(group_therapy_yes$X9_Treat.d.Score, na.rm = TRUE)
 group_therapy_yes_range = range(group_therapy$X9_Treat.d.Score, na.rm = TRUE)
+group_therapy_percent= na.omit(group_therapy$X9_TREAT.d.Received)
+group_therapy_percent = describe.factor(group_therapy_percent)
+group_therapy_percent = round(group_therapy_percent, 0)
+group_therapy_percent
+group_therapy_percent_yes = paste0(group_therapy_percent[1],"(",group_therapy_percent[2], "%", ")") 
+group_therapy_percent_yes
+group_therapy_percent_no = paste0(group_therapy_percent[3],"(",group_therapy_percent[4], "%", ")") 
+group_therapy_percent_no
 
 
 belong =  treat_all[,9:10]
@@ -479,6 +595,14 @@ dim(belong_yes)
 belong_yes_mean = mean(belong_yes$X9_Treat.e.Score, na.rm = TRUE)
 belong_yes_sd = sd(belong_yes$X9_Treat.e.Score, na.rm = TRUE)
 belong_yes_range = range(belong$X9_Treat.e.Score, na.rm = TRUE)
+belong_percent= na.omit(belong$X9_Treat.e.Received)
+belong_percent = describe.factor(belong_percent)
+belong_percent = round(belong_percent, 0)
+belong_percent
+belong_percent_yes = paste0(belong_percent[1],"(",belong_percent[2], "%", ")") 
+belong_percent_yes
+belong_percent_no = paste0(belong_percent[3],"(",belong_percent[4], "%", ")") 
+belong_percent_no
 
 
 coping_skills =  treat_all[,11:12]
@@ -487,6 +611,14 @@ dim(coping_skills_yes)
 coping_skills_yes_mean = mean(coping_skills_yes$X9_Treat.f.Score, na.rm = TRUE)
 coping_skills_yes_sd = sd(coping_skills_yes$X9_Treat.f.Score, na.rm = TRUE)
 coping_skills_yes_range = range(coping_skills$X9_Treat.f.Score, na.rm = TRUE)
+coping_skills_percent= na.omit(coping_skills$X9_Treat.f.Received)
+coping_skills_percent = describe.factor(coping_skills_percent)
+coping_skills_percent = round(coping_skills_percent, 0)
+coping_skills_percent
+coping_skills_percent_yes = paste0(coping_skills_percent[1],"(",coping_skills_percent[2], "%", ")") 
+coping_skills_percent_yes
+coping_skills_percent_no = paste0(coping_skills_percent[3],"(",coping_skills_percent[4], "%", ")") 
+coping_skills_percent_no
 
 meaning =  treat_all[,13:14]
 meaning_yes = subset(meaning, X9_Treat.g.Received == 1)
@@ -494,6 +626,14 @@ dim(meaning_yes)
 meaning_yes_mean = mean(meaning_yes$X9_Treat.g.Score, na.rm = TRUE)
 meaning_yes_sd = sd(meaning_yes$X9_Treat.g.Score, na.rm = TRUE)
 meaning_yes_range = range(meaning$X9_Treat.g.Score, na.rm = TRUE)
+meaning_percent= na.omit(meaning$X9_Treat.g.Received)
+meaning_percent = describe.factor(meaning_percent)
+meaning_percent = round(meaning_percent, 0)
+meaning_percent
+meaning_percent_yes = paste0(meaning_percent[1],"(",meaning_percent[2], "%", ")") 
+meaning_percent_yes
+meaning_percent_no = paste0(meaning_percent[3],"(",meaning_percent[4], "%", ")") 
+meaning_percent_no
 
 sense =  treat_all[,15:16]
 sense_yes = subset(sense, X9_Treat.h.Received == 1)
@@ -501,6 +641,14 @@ dim(sense_yes)
 sense_yes_mean = mean(sense_yes$X9_Treat.h.Score, na.rm = TRUE)
 sense_yes_sd = sd(sense_yes$X9_Treat.h.Score, na.rm = TRUE)
 sense_yes_range = range(sense$X9_Treat.h.Score, na.rm = TRUE)
+sense_percent= na.omit(sense$X9_Treat.h.Received)
+sense_percent = describe.factor(sense_percent)
+sense_percent = round(sense_percent, 0)
+sense_percent
+sense_percent_yes = paste0(sense_percent[1],"(",sense_percent[2], "%", ")") 
+sense_percent_yes
+sense_percent_no = paste0(sense_percent[3],"(",sense_percent[4], "%", ")") 
+sense_percent_no
 
 burden =  treat_all[,17:18]
 burden_yes = subset(burden, X9_Treat.I.Received == 1)
@@ -508,12 +656,28 @@ dim(burden_yes)
 burden_yes_mean = mean(burden_yes$X9_Treat.I.Score, na.rm = TRUE)
 burden_yes_sd = sd(burden_yes$X9_Treat.I.Score, na.rm = TRUE)
 burden_yes_range = range(burden$X9_Treat.I.Score, na.rm = TRUE)
+burden_percent= na.omit(burden$X9_Treat.I.Received)
+burden_percent = describe.factor(burden_percent)
+burden_percent = round(burden_percent, 0)
+burden_percent
+burden_percent_yes = paste0(burden_percent[1],"(",burden_percent[2], "%", ")") 
+burden_percent_yes
+burden_percent_no = paste0(burden_percent[3],"(",burden_percent[4], "%", ")") 
+burden_percent_no
 
 safe =  treat_all[,19:20]
 safe_yes = subset(safe, X9_Treat.j.Received == 1)
 safe_yes_mean = mean(safe_yes$X9_Treat.j.Score, na.rm = TRUE)
 safe_yes_sd = sd(safe_yes$X9_Treat.j.Score, na.rm = TRUE)
 safe_yes_range = range(safe$X9_Treat.j.Score, na.rm = TRUE)
+safe_percent= na.omit(safe$X9_Treat.j.Received)
+safe_percent = describe.factor(safe_percent)
+safe_percent = round(safe_percent, 0)
+safe_percent
+safe_percent_yes = paste0(safe_percent[1],"(",safe_percent[2], "%", ")") 
+safe_percent_yes
+safe_percent_no = paste0(safe_percent[3],"(",safe_percent[4], "%", ")") 
+safe_percent_no
 
 hope =  treat_all[,21:22]
 hope_yes = subset(hope, X9_Treat..k.Received == 1)
@@ -521,6 +685,14 @@ dim(hope_yes)
 hope_yes_mean = mean(hope_yes$X9_Treat.k.Score, na.rm = TRUE)
 hope_yes_sd = sd(hope_yes$X9_Treat.k.Score, na.rm = TRUE)
 hope_yes_range = range(hope$X9_Treat.k.Score, na.rm = TRUE)
+hope_percent= na.omit(hope$X9_Treat..k.Received)
+hope_percent = describe.factor(hope_percent)
+hope_percent = round(hope_percent, 0)
+hope_percent
+hope_percent_yes = paste0(hope_percent[1],"(",hope_percent[2], "%", ")") 
+hope_percent_yes
+hope_percent_no = paste0(hope_percent[3],"(",hope_percent[4], "%", ")") 
+hope_percent_no
 
 connect =  treat_all[,23:24]
 connect_yes = subset(connect, X9_Treat.L.Received == 1)
@@ -528,6 +700,14 @@ dim(connect_yes)
 connect_yes_mean = mean(connect_yes$X9_Treat.L.Score, na.rm = TRUE)
 connect_yes_sd = sd(connect_yes$X9_Treat.L.Score, na.rm = TRUE)
 connect_yes_range = range(connect$X9_Treat.L.Score, na.rm = TRUE)
+connect_percent= na.omit(connect$X9_Treat.L.Received)
+connect_percent = describe.factor(connect_percent)
+connect_percent = round(connect_percent, 0)
+connect_percent
+connect_percent_yes = paste0(connect_percent[1],"(",connect_percent[2], "%", ")") 
+connect_percent_yes
+connect_percent_no = paste0(connect_percent[3],"(",connect_percent[4], "%", ")") 
+connect_percent_no
 
 needs =  treat_all[,25:26]
 needs_yes = subset(needs, X9_Treat.m.Received == 1)
@@ -535,29 +715,41 @@ dim(needs_yes)
 needs_yes_mean = mean(needs_yes$X9_Treat.m.Score, na.rm = TRUE)
 needs_yes_sd = sd(needs_yes$X9_Treat.m.Score, na.rm = TRUE)
 needs_yes_range = range(needs$X9_Treat.m.Score, na.rm = TRUE)
+needs_percent= na.omit(needs$X9_Treat.m.Received)
+needs_percent = describe.factor(needs_percent)
+needs_percent = round(needs_percent, 0)
+needs_percent
+needs_percent_yes = paste0(needs_percent[1],"(",needs_percent[2], "%", ")") 
+needs_percent_yes
+needs_percent_no = paste0(needs_percent[3],"(",needs_percent[4], "%", ")") 
+needs_percent_no
 
 treat_range = data.frame(saftey_plan_yes_range, medication_yes_range, ind_therapy_yes_range, group_therapy_yes_range, belong_yes_range, coping_skills_yes_range, meaning_yes_range, sense_yes_range, burden_yes_range, safe_yes_range, hope_yes_range, connect_yes_range, needs_yes_range)
 
+
 # treat_range not needed all from 1 to 7 scale make note in table
 
-treat_results = data.frame(saftey_plan_yes_mean, medication_yes_mean, ind_therapy_yes_mean, group_therapy_yes_mean, belong_yes_mean, coping_skills_yes_mean, meaning_yes_mean,sense_yes_mean, burden_yes_mean, safe_yes_mean, hope_yes_mean, connect_yes_mean, needs_yes_mean, saftey_plan_yes_sd, medication_yes_sd, ind_therapy_yes_sd , group_therapy_yes_sd, belong_yes_sd, coping_skills_yes_sd, meaning_yes_sd, sense_yes_sd, burden_yes_sd, safe_yes_sd, hope_yes_sd, connect_yes_sd, needs_yes_sd)
+treat_results = data.frame(saftey_plan_yes_mean, medication_yes_mean, ind_therapy_yes_mean, group_therapy_yes_mean, belong_yes_mean, coping_skills_yes_mean, meaning_yes_mean,sense_yes_mean, burden_yes_mean, safe_yes_mean, hope_yes_mean, connect_yes_mean, needs_yes_mean, saftey_plan_yes_sd, medication_yes_sd, ind_therapy_yes_sd , group_therapy_yes_sd, belong_yes_sd, coping_skills_yes_sd, meaning_yes_sd, sense_yes_sd, burden_yes_sd, safe_yes_sd, hope_yes_sd, connect_yes_sd, needs_yes_sd, saftey_plan_percent_yes, medication_percent_yes, ind_therapy_percent_yes, group_therapy_percent_yes, belong_percent_yes, coping_skills_percent_yes, meaning_percent_yes, sense_percent_yes, burden_percent_yes, safe_percent_yes, hope_percent_yes, connect_percent_yes, needs_percent_yes, saftey_plan_percent_no, medication_percent_no, ind_therapy_percent_no, group_therapy_percent_no, belong_percent_no, coping_skills_percent_no, meaning_percent_no, sense_percent_no, burden_percent_no, safe_percent_no, hope_percent_no, connect_percent_no, needs_percent_no)
+treat_results[,1:26] = round(treat_results[,1:26], 2)
 treat_results = t(treat_results)
+treat_results
 treat_results_mean = treat_results[1:13,]
 treat_results_sd = treat_results[14:26,]
-treat_results = data.frame(treat_results_mean, treat_results_sd)
-treat_results = round(treat_results, 2)
+treat_results_p_yes = treat_results[27:39,]
+treat_results_p_no = treat_results[40:52,]
+
+treat_results = data.frame(treat_results_mean, treat_results_sd, treat_results_p_yes, treat_results_p_no)
 treat_results
 write.csv(treat_results, "treat_results.csv")
 ```
 Effect on suicidal ideation for ind therapy, group therapy, safety plan, burden, meaning, difficultly with life events
-
+Not imputting, because planned missing data (if you did not select anything you selected no)
 Difference in standardized average differnece (post-pre) score for suicide for receicing treatment versus not receiving treatment
 
 ```{r}
 head(center_dat)
-library(effsize)
-
-center_dat$SIS_1_diff_extra = scale(center_dat$SIS_1_post-center_dat$SIS_1_pre)
+center_dat$X9_TREAT.b.Received[center_dat$X9_TREAT.b.Received == 2] = NA
+center_dat$SIS_1_diff_extra = center_dat$SIS_1_post-center_dat$SIS_1_pre
 center_dat$SIS_1_diff_extra = as.numeric(center_dat$SIS_1_diff_extra)
 hist(center_dat$SIS_1_diff_extra)
 
@@ -566,42 +758,105 @@ treatments = data.frame(saftey_plan =center_dat$X9_TREAT.a.Received,  ind_therap
 write.csv(treatments, "treatments.csv", row.names = FALSE)
 treatments = read.csv("treatments.csv", header = TRUE)
 treatments
+
+## Mean for yes and no of SIS 
+mean_sd_list = list()
+mean_sd_n_1 = list()
+mean_sd_n_0 = list()
+mean_sd_list_test = list()
+
+for(i in 1:length(treatments)){
+  mean_sd_list[[i]] =  compmeans(center_dat$SIS_1_diff_extra, treatments[[i]])
+  mean_sd_list_test[[i]] = mean_sd_list
+  mean_sd_list[[i]] = mean_sd_list[[i]][c(1:2,4:5,7:8)]
+  #Reorder to mean 1, sd 1, n 1
+  mean_sd_list[[i]] = round(mean_sd_list[[i]],2)
+  mean_sd_n_1[[i]] = mean_sd_list[[i]][c(2,6,4)]
+  mean_sd_n_0[[i]] = mean_sd_list[[i]][c(1,5,3)]
+}
+mean_sd_list
+mean_sd_list_test
+mean_sd_n_1[[1]]
+mean_sd_n_1 = unlist(mean_sd_n_1)
+mean_sd_n_1 = matrix(mean_sd_n_1, ncol= 3, byrow = TRUE)
+write.csv(mean_sd_n_1, "mean_sd_n_1.csv", row.names = FALSE)
+
+mean_sd_n_0 = unlist(mean_sd_n_0)
+mean_sd_n_0 = matrix(mean_sd_n_0, ncol= 3, byrow = TRUE)
+write.csv(mean_sd_n_0, "mean_sd_n_0.csv", row.names = FALSE)
+
+
 results_list = list()
 library(descr)
 compmeans(center_dat$SIS_1_diff_extra, center_dat$X9_TREAT.a.Received)
 for(i in 1:length(treatments)){
-  results_list[[i]] = cohen.d(center_dat$SIS_1_diff_extra, treatments[[i]], na.rm = TRUE)
-  results_list[[i]] = results_list[[i]][c(3,5)]
+  results_list[[i]] = cohen.d(center_dat$SIS_1_diff_extra, treatments[[i]])
+  results_list[[i]] = results_list[[i]]$cohen.d[2]
   
 }
-results_list
+results_list[[1]][2]
 results_list = unlist(results_list)
-results_list = matrix(results_list, ncol = 3, byrow = TRUE)
+results_list = matrix(results_list, ncol = 1, byrow = TRUE)
 results_list = data.frame(results_list)
 results_list = round(results_list, 3)
 results_list
-colnames(results_list) = c("cohen_d", "lower", "upper")
-results_list
+colnames(results_list) = c("cohen_d")
+results_list = round(results_list,2)
 
 outcomes = c("Safety Plan", "Individual Therapy", "Group Therapy", "Meaning", "Burden", "Difficult")
 
 results_list = data.frame(outcomes, results_list)
-results_list[,2:4] = round(results_list[,2:4],2)
-results_list
 
-results_list$outcomes = ifelse(results_list$upper > 0 & results_list$lower < 0, results_list$outcomes, paste0(results_list$outcomes, "*"))
+#results_list = results_list[order(abs(results_list$cohen_d), decreasing = TRUE),]
 
-results_list$ci_95 = paste0(results_list$lower, sep = ",", results_list$upper)
-results_list[,3:4] = NULL
-results_list
-
-results_list$cohen_d = as.numeric(results_list$cohen_d)
-results_list = results_list[order(abs(results_list$cohen_d), decreasing = TRUE),]
-
-center_dat$SIS_1_diff_extra = NULL
+#center_dat$SIS_1_diff_extra = NULL
 results_list
 write.csv(results_list, "results_list.csv", row.names = FALSE)
 
+### Now t-tests for table five
+results_list_t = list()
+library(descr)
+for(i in 1:length(treatments)){
+  results_list_t[[i]] = t.test(center_dat$SIS_1_diff_extra~ treatments[[i]], na.rm = TRUE)
+  results_list_t[[i]] = results_list_t[[i]][c(1,3,4)]
+}
+results_list_t
+results_list_t = unlist(results_list_t)
+results_list_t = matrix(results_list_t, ncol = 4, byrow = TRUE)
+results_list_t = data.frame(results_list_t)
+results_list_t = round(results_list_t, 4)
+results_list_t
+colnames(results_list_t) = c("t_value", "p_value", "lower", "upper")
+results_list_t
+
+outcomes = c("Safety Plan", "Individual Therapy", "Group Therapy", "Meaning", "Burden", "Difficult")
+
+results_list_t = data.frame(outcomes, results_list_t)
+results_list_t[,2:5] = round(results_list_t[,2:5],2)
+results_list_t
+
+results_list_t$outcomes = ifelse(results_list_t$upper > 0 & results_list_t$lower < 0, results_list_t$outcomes, paste0(results_list_t$outcomes, "*"))
+
+results_list_t$ci_95 = paste0(results_list_t$lower, sep = ",", results_list_t$upper)
+results_list_t[,4:5] = NULL
+results_list_t$p_value = ifelse(results_list_t$p_value <= 0, "<.001", results_list_t$p_value)
+
+#results_list_t$cohen_d = as.numeric(results_list_t$cohen_d)
+#results_list_t = results_list_t[order(abs(results_list_t$cohen_d), decreasing = TRUE),]
+
+
+results_list_t
+write.csv(results_list_t, "results_list_t.csv", row.names = FALSE)
+
+describe.factor(treatments$ind_therapy)
+compmeans(center_dat$SIS_1_diff_extra, treatments$ind_therapy)
+test_diff = data.frame(SIS_1_diff_extra = center_dat$SIS_1_diff_extra, group_therapy = treatments$group_therapy)
+
+test_diff_in = data.frame(SIS_1_diff_extra = center_dat$SIS_1_diff_extra, ind_therapy = treatments$ind_therapy)
+### N's are different 
+test_diff_in
+test_diff
+center_dat$SIS_1_diff_extra = NULL
 ```
 Try statistical correction
 
@@ -637,100 +892,72 @@ summary(reg_suicide)
 ```
 
 
-
 Impute data
 ```{r}
-head(center_dat)
+#head(center_dat)
 library(Amelia)
 
-### Get rid of the treat variables, I don't them imputted, because they are missing on purpose.
-treat_vars  =  center_dat[,c(36:61)]
-center_dat = center_dat[,-c(36:61)]
-center_dat
+### Change back for analysis 
+center_dat$high_school_greater = ifelse(as.numeric(center_dat$high_school_greater) == 0,0,1)
+### Get rid black and another race and reverse white to non-white
+center_dat$another_race = NULL
+center_dat$black = NULL
+center_dat$non_white = ifelse(as.numeric(center_dat$white) == 1, 0,1)
 
+### Get rid of the treat variables, because they crash R.
+### Run descriptives if you want to impute again
+treat_vars  =  center_dat[,c(36:61)]
+center_dat =  data.frame(center_dat[,-c(36:61),])
+head(center_dat)
 ### Create bounds for one var and see what happens
 ## INQ Post
-center_dat[,8:35]
+dim(center_dat[,8:35])
 
-range(center_dat$INQ_1_pre, na.rm = TRUE) 
-range(center_dat$RAS_1_pre, na.rm = TRUE) 
-range(center_dat$ISLES_1_post, na.rm = TRUE)
-range(center_dat$MILQ_post, na.rm = TRUE) 
-range(center_dat$RCS_post, na.rm = TRUE) 
-
+#range(center_dat$INQ_1_pre, na.rm = TRUE) 
+#range(center_dat$RAS_1_pre, na.rm = TRUE) 
+#range(center_dat$ISLES_1_post, na.rm = TRUE)
+#range(center_dat$MILQ_post, na.rm = TRUE) 
+#range(center_dat$RCS_post, na.rm = TRUE) 
+#center_dat
 bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5, 30,1,4, 31,1,5, 32,1,5, 33,1,10, 34,1,10, 35,1,10),nrow = 28, ncol = 3, byrow = TRUE)
-bounds
+#bounds
+dim(center_dat)
+a.out_florida = amelia(x = center_dat, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "white", "high_school_greater", "employed", "suicide", "female"), bounds = bounds)
+compare.density(a.out_florida, var = "RAS_1_post")
+compare.density(a.out_florida, var = "RAS_3_post")
+compare.density(a.out_florida, var = "RAS_5_post")
+compare.density(a.out_florida, var = "RCS_post")
+compare.density(a.out_florida, var = "ISLES_1_post")
+compare.density(a.out_florida, var = "ISLES_2_post")
+compare.density(a.out_florida, var = "INQ_1_post")
+compare.density(a.out_florida, var = "INQ_2_post")
+compare.density(a.out_florida, var = "MILQ_post")
+compare.density(a.out_florida, var = "SIS_1_post")
+compare.density(a.out_florida, var = "SIS_2_post")
+#overimpute(a.out, var = "SIS_1_post")
+#overimpute(a.out, var = "SIS_2_post")
+#impute_dat_loop = a.out$imputations
+#describe(impute_dat_loop$imp1)
+a.out_florida$imputations$imp2
 
-a.out = amelia(x = center_dat, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide"), bounds = bounds)
-compare.density(a.out, var = "RAS_1_post")
-compare.density(a.out, var = "RAS_3_post")
-compare.density(a.out, var = "RAS_5_post")
-compare.density(a.out, var = "RCS_post")
-compare.density(a.out, var = "ISLES_1_post")
-compare.density(a.out, var = "ISLES_2_post")
-compare.density(a.out, var = "INQ_1_post")
-compare.density(a.out, var = "INQ_2_post")
-compare.density(a.out, var = "MILQ_post")
-compare.density(a.out, var = "SIS_1_post")
-compare.density(a.out, var = "SIS_2_post")
-overimpute(a.out, var = "SIS_1_post")
-overimpute(a.out, var = "SIS_2_post")
-impute_dat_loop = a.out$imputations
-describe(impute_dat_loop$imp1)
+#apply(impute_dat_loop$imp1, 2, range)
+#range(impute_dat_loop$imp1$INQ_1_post)
+saveRDS(a.out_florida, file = "a.out_florida.rds")
+#saveRDS(impute_dat_loop, file = "impute_dat_loop.rds")
+#impute_dat_loop = readRDS(file = "impute_dat_loop.rds")
+#impute_dat_loop
+
+#dim(impute_dat_loop[[1]])
 
 
-apply(impute_dat_loop$imp1, 2, range)
-range(impute_dat_loop$imp1$INQ_1_post)
-
-
-
-dim(impute_dat_loop[[1]])
 ```
-Get pre and post scores
+Load imputed data
 ```{r}
-
-mean_out_pre = list()
-sd_out_pre = list()
-head(impute_dat_loop[[1]][8:18])
-head(impute_dat_loop[[1]][19:29])
-
-for(i in 1:length(impute_dat_loop)){
-  mean_out_pre[[i]] = apply(impute_dat_loop[[i]][8:18],2,mean)
-  sd_out_pre[[i]] = apply(impute_dat_loop[[i]][8:18], 2, sd)
-}
-dim(impute_dat_loop[[1]][8:18])
-parsout_sis_1 = unlist(mean_out_pre) 
-parsout_sis_1 = matrix(parsout_sis_1, ncol = 11, byrow = TRUE)
-parsout_sis_1
-
-sesout_sis_1 = unlist(sd_out_pre)
-sesout_sis_1 = matrix(sesout_sis_1, ncol = 11, byrow = TRUE)
-sesout_sis_1
-
-pars_sesout_sis_1 = mi.meld(parsout_sis_1, sesout_sis_1)
-pars_sesout_sis_1
-
-
-for(i in 1:length(impute_dat_loop)){
-  mean_out_pre[[i]] = apply(impute_dat_loop[[i]][19:29],2,mean)
-  sd_out_pre[[i]] = apply(impute_dat_loop[[i]][19:29], 2, sd)
-}
-dim(impute_dat_loop[[1]][8:18])
-parsout_sis_1 = unlist(mean_out_pre) 
-parsout_sis_1 = matrix(parsout_sis_1, ncol = 11, byrow = TRUE)
-parsout_sis_1
-
-sesout_sis_1 = unlist(sd_out_pre)
-sesout_sis_1 = matrix(sesout_sis_1, ncol = 11, byrow = TRUE)
-sesout_sis_1
-
-pars_sesout_sis_1 = mi.meld(parsout_sis_1, sesout_sis_1)
-pars_sesout_sis_1
+library(Amelia)
+setwd("S:/Indiana Research & Evaluation/Matthew Hanauer/Centerstone_Study_2019_2020")
+impute_dat_loop = readRDS(file = "impute_dat_loop.rds")
+#impute_dat_loop
 ```
-
-
-
-
 Do diff scores with regression, because not random and want to account
 ```{r}
 dim(impute_dat_loop[[1]])
@@ -740,14 +967,14 @@ head(impute_dat_loop[[1]][19:29])
 head(impute_dat_loop[[1]])
 
 for(i in 1:length(impute_dat_loop)){
-  out_diff_dat[[i]] = impute_dat_loop[[i]][8:18]-impute_dat_loop[[1]][19:29]
+  out_diff_dat[[i]] =  impute_dat_loop[[i]][19:29] - impute_dat_loop[[i]][8:18]
   colnames(out_diff_dat[[i]]) = c("INQ_1_diff", "INQ_2_diff", "RAS_1_diff", "RAS_3_diff", "RAS_5_diff", "ISLES_1_diff", "ISLES_2_diff", "MILQ_diff", "RCS_diff", "SIS_1_diff", "SIS_2_diff")
   out_diff_dat[[i]] = scale(out_diff_dat[[i]])
   out_diff_dat[[i]] =cbind(impute_dat_loop[[i]], out_diff_dat[[i]])
 }
 out_diff_dat
 ### Evaluate normality
-out_diff_dat_norm = out_diff_dat[[1]][c(30:32,35,37:44)]
+out_diff_dat_norm = out_diff_dat[[1]][c(30:32,35,38:48)]
 hist_results = list() 
 qq_results = list()
 shap_results = list()
@@ -758,14 +985,20 @@ for(i in 1:length(out_diff_dat_norm)){
 }
 shap_results
 ```
-Correlations
+Pre convergent and divergent reliability
 ```{r}
-cor_dat = out_diff_dat[[1]]
-cor_dat = cor_dat[,c(30:35, 37:47)]
-install.packages("Hmisc")
-library(Hmisc)
+cor_dat_pre_1 = impute_dat_loop[[1]][c(8:18)]
+cor_dat_pre_1_results = rcorr(as.matrix(cor_dat_pre_1))
+cor_dat_pre_2 = impute_dat_loop[[2]][c(8:18)]
+cor_dat_pre_2_results = cor(cor_dat_pre_2)
+cor_dat_pre_3 = impute_dat_loop[[3]][c(8:18)]
+cor_dat_pre_3_results = cor(cor_dat_pre_3)
+cor_dat_pre_4 = impute_dat_loop[[4]][c(8:18)]
+cor_dat_pre_4_results = cor(cor_dat_pre_4)
+cor_dat_pre_5 = impute_dat_loop[[5]][c(8:18)]
+cor_dat_pre_5_results = cor(cor_dat_pre_5)
 
-cor_dat_results = rcorr(as.matrix(cor_dat))
+cor_dat_pre_1
 
 flattenCorrMatrix <- function(cormat, pmat) {
   ut <- upper.tri(cormat)
@@ -776,356 +1009,214 @@ flattenCorrMatrix <- function(cormat, pmat) {
     p = pmat[ut]
     )
 }
+cor_dat_pre_1
 
-cor_dat_results = flattenCorrMatrix(cor_dat_results$r, cor_dat_results$P)
-cor_dat_results[,3:4] = round(cor_dat_results[,3:4],3)
-cor_dat_results = cor_dat_results
-dim(cor_dat_results)
-cor_dat_results
-cor_dat_results=subset(cor_dat_results, abs(cor) > .4)
-write.csv(cor_dat_results, "cor_dat_results.csv", row.names = FALSE)
-library(installr)
-uninstall.packages("Hmisc")
+
+cor_dat_pre_1 = rcorr(as.matrix(cor_dat_pre_1))
+cor_dat_pre_1 = flattenCorrMatrix(cor_dat_pre_1$r, cor_dat_pre_1$P)
+var_names =  cor_dat_pre_1[,1:2]
+cor_dat_pre_1 = cor_dat_pre_1$cor
+cor_dat_pre_1
+
+
+cor_dat_pre_2 = rcorr(as.matrix(cor_dat_pre_2))
+cor_dat_pre_2 = flattenCorrMatrix(cor_dat_pre_2$r, cor_dat_pre_2$P)
+cor_dat_pre_2 = cor_dat_pre_2$cor
+cor_dat_pre_2
+
+cor_dat_pre_3 = rcorr(as.matrix(cor_dat_pre_3))
+cor_dat_pre_3 = flattenCorrMatrix(cor_dat_pre_3$r, cor_dat_pre_3$P)
+cor_dat_pre_3 = cor_dat_pre_3$cor
+cor_dat_pre_3
+
+cor_dat_pre_4 = rcorr(as.matrix(cor_dat_pre_4))
+cor_dat_pre_4 = flattenCorrMatrix(cor_dat_pre_4$r, cor_dat_pre_4$P)
+cor_dat_pre_4 = cor_dat_pre_4$cor
+cor_dat_pre_4
+
+cor_dat_pre_5 = rcorr(as.matrix(cor_dat_pre_5))
+cor_dat_pre_5 = flattenCorrMatrix(cor_dat_pre_5$r, cor_dat_pre_5$P)
+cor_dat_pre_5 = cor_dat_pre_5$cor
+cor_dat_pre_5
+
+cor_dat_pre_dat = data.frame(cor_dat_pre_1, cor_dat_pre_2, cor_dat_pre_3, cor_dat_pre_4, cor_dat_pre_5)
+
+cor_dat_pre_dat = apply(cor_dat_pre_dat, 1, mean)
+cor_dat_pre_dat = data.frame(var_names, cor_dat_pre_dat)
+cor_dat_pre_dat[,3] = round(cor_dat_pre_dat[,3], 2)
+cor_dat_pre_dat= cor_dat_pre_dat[order(cor_dat_pre_dat$row),]
+cor_dat_pre_dat
+#perceived burdensomeness, thwarted belongingness  
+#cor_dat_pre_dat$row = ifelse(cor_dat_pre_dat$row == "INQ_1_pre", "perceived burdensomeness", ifelse(cor_dat_pre_dat$row, "INQ_2_pre", "thwarted belongingness", ifelse(cor_dat_pre_dat$row == "ISLES_1_pre", "footing the world", ifelse(cor_dat_pre_dat$row == "ISLES_2_pre"))))
+#write.csv(cor_dat_pre_dat, "cor_dat_pre_dat.csv", row.names = FALSE)
+
 ```
-T-test code
+
+Correlations
 ```{r}
-center_results_d1 = list()
-for(i in 1:length(out_diff_dat_d1_post)){
-  center_results_d1[[i]]= t.test(out_diff_dat_d1_post[[i]], out_diff_dat_d1_pre[[i]], paired = TRUE)
-  center_results_d1[[i]] = center_results_d1[[i]][c(1,3,4)]
-}
+cor_dat_pre_1 = impute_dat_loop[[1]][c(8:18, 31)]
+cor_dat_pre_1_results = cor(cor_dat_pre_1)
+cor_dat_pre_1_results_bid = round(cor_dat_pre_1_results[,12],2)
+cor_dat_pre_2 = impute_dat_loop[[2]][c(8:18, 31)]
+cor_dat_pre_2_results = cor(cor_dat_pre_2)
+cor_dat_pre_2_results_bid = round(cor_dat_pre_2_results[,12],2)
+cor_dat_pre_3 = impute_dat_loop[[3]][c(8:18, 31)]
+cor_dat_pre_3_results = cor(cor_dat_pre_3)
+cor_dat_pre_3_results_bid = round(cor_dat_pre_3_results[,12],2)
+cor_dat_pre_4 = impute_dat_loop[[4]][c(8:18, 31)]
+cor_dat_pre_4_results = cor(cor_dat_pre_4)
+cor_dat_pre_4_results_bid = round(cor_dat_pre_4_results[,12],2)
+cor_dat_pre_5 = impute_dat_loop[[5]][c(8:18, 31)]
+cor_dat_pre_5_results = cor(cor_dat_pre_5)
+cor_dat_pre_5_results_bid = round(cor_dat_pre_5_results[,12],2)
 
-center_results_d1 = unlist(center_results_d1)
-center_results_d1 = matrix(center_results_d1, ncol = 4, byrow = TRUE)
-center_results_d1 = data.frame(center_results_d1)
-center_results_d1 = round(center_results_d1, 3)
-center_results_d1
-colnames(center_results_d1) = c("t_stat", "p_value", "lower", "upper")
-center_results_d1
+cor_dat_pre_1_results_bid
+cor_dat_pre = data.frame(cor_dat_pre_1_results_bid, cor_dat_pre_2_results_bid, cor_dat_pre_3_results_bid, cor_dat_pre_4_results_bid, cor_dat_pre_5_results_bid)
+cor_dat_pre = apply(cor_dat_pre, 1, mean)
+write.csv(cor_dat_pre, "cor_dat_pre.csv")
 
-center_results_d2 = list()
-for(i in 1:length(out_diff_dat_d2_post)){
-  center_results_d2[[i]]= t.test(out_diff_dat_d2_post[[i]], out_diff_dat_d2_pre[[i]], paired = TRUE)
-  center_results_d2[[i]] = center_results_d2[[i]][c(1,3,4)]
-}
+cor_dat_post_1 = impute_dat_loop[[1]][c(19:35)]
+cor_dat_post_1_results = cor(cor_dat_post_1)
+cor_dat_post_1_results_bid = round(cor_dat_post_1_results[,13],2)
+cor_dat_post_2 = impute_dat_loop[[2]][c(19:35)]
+cor_dat_post_2_results = cor(cor_dat_post_2)
+cor_dat_post_2_results_bid = round(cor_dat_post_2_results[,13],2)
+cor_dat_post_3 = impute_dat_loop[[3]][c(19:35)]
+cor_dat_post_3_results = cor(cor_dat_post_3)
+cor_dat_post_3_results_bid = round(cor_dat_post_3_results[,13],2)
+cor_dat_post_4 = impute_dat_loop[[4]][c(19:35)]
+cor_dat_post_4_results = cor(cor_dat_post_4)
+cor_dat_post_4_results_bid = round(cor_dat_post_4_results[,13],2)
+cor_dat_post_5 = impute_dat_loop[[5]][c(19:35)]
+cor_dat_post_5_results = cor(cor_dat_post_5)
+cor_dat_post_5_results_bid = round(cor_dat_post_5_results[,13],2)
 
-center_results_d2 = unlist(center_results_d2)
-center_results_d2 = matrix(center_results_d2, ncol = 4, byrow = TRUE)
-center_results_d2 = data.frame(center_results_d2)
-center_results_d2 = round(center_results_d2, 3)
-center_results_d2
-colnames(center_results_d2) = c("t_stat", "p_value", "lower", "upper")
-center_results_d2
-
-center_results_d3 = list()
-for(i in 1:length(out_diff_dat_d3_post)){
-  center_results_d3[[i]]= t.test(out_diff_dat_d3_post[[i]], out_diff_dat_d3_pre[[i]], paired = TRUE)
-  center_results_d3[[i]] = center_results_d3[[i]][c(1,3,4)]
-}
-
-center_results_d3 = unlist(center_results_d3)
-center_results_d3 = matrix(center_results_d3, ncol = 4, byrow = TRUE)
-center_results_d3 = data.frame(center_results_d3)
-center_results_d3 = round(center_results_d3, 3)
-center_results_d3
-colnames(center_results_d3) = c("t_stat", "p_value", "lower", "upper")
-center_results_d3
-
-center_results_d4 = list()
-for(i in 1:length(out_diff_dat_d4_post)){
-  center_results_d4[[i]]= t.test(out_diff_dat_d4_post[[i]], out_diff_dat_d4_pre[[i]], paired = TRUE)
-  center_results_d4[[i]] = center_results_d4[[i]][c(1,3,4)]
-}
-
-center_results_d4 = unlist(center_results_d4)
-center_results_d4 = matrix(center_results_d4, ncol = 4, byrow = TRUE)
-center_results_d4 = data.frame(center_results_d4)
-center_results_d4 = round(center_results_d4, 3)
-center_results_d4
-colnames(center_results_d4) = c("t_stat", "p_value", "lower", "upper")
-center_results_d4
-
-center_results_d5 = list()
-for(i in 1:length(out_diff_dat_d5_post)){
-  center_results_d5[[i]]= t.test(out_diff_dat_d5_post[[i]], out_diff_dat_d5_pre[[i]], paired = TRUE)
-  center_results_d5[[i]] = center_results_d5[[i]][c(1,3,4)]
-}
-
-center_results_d5 = unlist(center_results_d5)
-center_results_d5 = matrix(center_results_d5, ncol = 4, byrow = TRUE)
-center_results_d5 = data.frame(center_results_d5)
-center_results_d5 = round(center_results_d5, 3)
-center_results_d5
-colnames(center_results_d5) = c("t_stat", "p_value", "lower", "upper")
-center_results_d5
-
-center_results_t_stat = data.frame(t_test1 = center_results_d1$t_stat, t_test2 = center_results_d2$t_stat, t_test3 = center_results_d3$t_stat, t_test4 = center_results_d4$t_stat, t_test5 = center_results_d5$t_stat)
-center_results_t_stat = rowMeans(center_results_t_stat)
-center_results_t_stat
-
-center_results_p_value = data.frame(p_value1 = center_results_d1$p_value, p_value2 = center_results_d2$p_value, p_value3 = center_results_d3$p_value, p_value4 = center_results_d4$p_value, p_value5 = center_results_d5$p_value)
-center_results_p_value = rowMeans(center_results_p_value)
-center_results_p_value
-
-center_results_upper = data.frame(upper1 = center_results_d1$upper, upper2 = center_results_d2$upper, upper3 = center_results_d3$upper, upper4 = center_results_d4$upper, upper5 = center_results_d5$upper)
-center_results_upper = rowMeans(center_results_upper)
-center_results_upper
-
-center_results_lower = data.frame(lower1 = center_results_d1$lower, lower2 = center_results_d2$lower, lower3 = center_results_d3$lower, lower4 = center_results_d4$lower, lower5 = center_results_d5$lower)
-center_results_lower = rowMeans(center_results_lower)
-center_results_lower
-
-center_results_t_test = data.frame(t_stat = center_results_t_stat, p_value = center_results_p_value, upper = center_results_upper, lower = center_results_lower)
-center_results_t_test = round(center_results_t_test, 2)
-
-outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
-
-center_results_t_test = data.frame(outcomes, center_results_t_test)
-
-center_results_t_test$outcomes = ifelse(center_results_t_test$upper > 0 & center_results_t_test$lower < 0, center_results_t_test$outcomes, paste0(center_results_t_test$outcomes, "*"))
-center_results_t_test
-
-center_results_t_test$ci_95 = paste0(center_results_t_test$lower, sep = ",", center_results_t_test$upper)
-center_results_t_test[,4:5] = NULL
-center_results_t_test
-
-#center_results_t_test$t_stat = as.numeric(center_results_t_test$t_stat)
-#center_results_t_test = center_results_t_test[order(abs(center_results_t_test$t_stat), decreasing = TRUE),]
-
-write.csv(center_results_t_test, "center_results_t_test.csv", row.names = FALSE)
+cor_dat_post_1_results_bid
+cor_dat_post = data.frame(cor_dat_post_1_results_bid, cor_dat_post_2_results_bid, cor_dat_post_3_results_bid, cor_dat_post_4_results_bid, cor_dat_post_5_results_bid)
+cor_dat_post = apply(cor_dat_post, 1, mean)
+write.csv(cor_dat_post, "cor_dat_post.csv")
 
 ```
 
 
-
-
-Research Question #1: Are novel treatment targets (i.e., perceived burdensomeness, thwarted belongingness, meaning made of stress, goal orientation/hope, resilience-based coping) changing from pre-treatment to post-treatment during standard episodes of care? 
-
-Hypothesis 1: There will be no change in novel treatment target scores from the pre-treatment condition to the post-treatment condition. 
+Get pre and post scores
 ```{r}
- 
-out_diff_dat_d1 = out_diff_dat[[1]]
-out_diff_dat_d1_pre = out_diff_dat_d1[,8:18]
 
-out_diff_dat_d2 = out_diff_dat[[2]]
-out_diff_dat_d2_pre = out_diff_dat_d2[,8:18]
-
-out_diff_dat_d3 = out_diff_dat[[3]]
-out_diff_dat_d3_pre = out_diff_dat_d3[,8:18]
-
-out_diff_dat_d4 = out_diff_dat[[4]]
-out_diff_dat_d4_pre = out_diff_dat_d4[,8:18]
-
-out_diff_dat_d5 = out_diff_dat[[5]]
-out_diff_dat_d5_pre = out_diff_dat_d5[,8:18]
-
-out_diff_dat_d1 = out_diff_dat[[1]]
-out_diff_dat_d1_post = out_diff_dat_d1[,19:29]
-
-out_diff_dat_d2 = out_diff_dat[[2]]
-out_diff_dat_d2_post = out_diff_dat_d2[,19:29]
-
-out_diff_dat_d3 = out_diff_dat[[3]]
-out_diff_dat_d3_post = out_diff_dat_d3[,19:29]
-
-out_diff_dat_d4 = out_diff_dat[[4]]
-out_diff_dat_d4_post = out_diff_dat_d4[,19:29]
-
-out_diff_dat_d5 = out_diff_dat[[5]]
-out_diff_dat_d5_post = out_diff_dat_d5[,19:29]
-
-library(effsize)
-center_results_d1 = list()
-for(i in 1:length(out_diff_dat_d1_post)){
-  center_results_d1[[i]]= cohen.d(out_diff_dat_d1_post[[i]], out_diff_dat_d1_pre[[i]], paired = TRUE, conf.level = .95)
-  center_results_d1[[i]] = center_results_d1[[i]][c(3,5)]
-}
-center_results_d1
-center_results_d1 = unlist(center_results_d1)
-center_results_d1 = matrix(center_results_d1, ncol = 3, byrow = TRUE)
-center_results_d1 = data.frame(center_results_d1)
-center_results_d1 = round(center_results_d1, 3)
-center_results_d1
-colnames(center_results_d1) = c("cohen_d", "lower", "upper")
-center_results_d1
-
-center_results_d2 = list()
-for(i in 1:length(out_diff_dat_d1_post)){
-  center_results_d2[[i]]= cohen.d(out_diff_dat_d2_post[[i]], out_diff_dat_d2_pre[[i]], paired = TRUE, conf.level = .95)
-  center_results_d2[[i]] = center_results_d2[[i]][c(3,5)]
-}
-center_results_d2
-center_results_d2
-center_results_d2 = unlist(center_results_d2)
-center_results_d2 = matrix(center_results_d2, ncol = 3, byrow = TRUE)
-center_results_d2 = data.frame(center_results_d2)
-center_results_d2 = round(center_results_d2, 3)
-center_results_d2
-colnames(center_results_d2) = c("cohen_d", "lower", "upper")
-center_results_d2
-
-center_results_d3 = list()
-for(i in 1:length(out_diff_dat_d1_post)){
-  center_results_d3[[i]]= cohen.d(out_diff_dat_d3_post[[i]], out_diff_dat_d3_pre[[i]], paired = TRUE, conf.level = .95)
-  center_results_d3[[i]] = center_results_d3[[i]][c(3,5)]
-}
-center_results_d3
-center_results_d3
-center_results_d3 = unlist(center_results_d3)
-center_results_d3 = matrix(center_results_d3, ncol = 3, byrow = TRUE)
-center_results_d3 = data.frame(center_results_d3)
-center_results_d3 = round(center_results_d3, 3)
-center_results_d3
-colnames(center_results_d3) = c("cohen_d", "lower", "upper")
-center_results_d3
-
-center_results_d4 = list()
-for(i in 1:length(out_diff_dat_d1_post)){
-  center_results_d4[[i]]= cohen.d(out_diff_dat_d4_post[[i]], out_diff_dat_d4_pre[[i]], paired = TRUE, conf.level = .95)
-  center_results_d4[[i]] = center_results_d4[[i]][c(3,5)]
-}
-center_results_d4
-center_results_d4
-center_results_d4 = unlist(center_results_d4)
-center_results_d4 = matrix(center_results_d4, ncol = 3, byrow = TRUE)
-center_results_d4 = data.frame(center_results_d4)
-center_results_d4 = round(center_results_d4, 3)
-center_results_d4
-colnames(center_results_d4) = c("cohen_d", "lower", "upper")
-center_results_d4
-
-center_results_d5 = list()
-for(i in 1:length(out_diff_dat_d1_post)){
-  center_results_d5[[i]]= cohen.d(out_diff_dat_d5_post[[i]], out_diff_dat_d5_pre[[i]], paired = TRUE, conf.level = .95)
-  center_results_d5[[i]] = center_results_d5[[i]][c(3,5)]
-}
-center_results_d5
-center_results_d5
-center_results_d5 = unlist(center_results_d5)
-center_results_d5 = matrix(center_results_d5, ncol = 3, byrow = TRUE)
-center_results_d5 = data.frame(center_results_d5)
-center_results_d5 = round(center_results_d5, 3)
-center_results_d5
-colnames(center_results_d5) = c("cohen_d", "lower", "upper")
-center_results_d5
-
-
-center_results_cohen_d = data.frame(cohen_d1 = center_results_d1$cohen_d, cohen_d2 = center_results_d2$cohen_d, cohen_d3 = center_results_d3$cohen_d, cohen_d4 = center_results_d4$cohen_d, cohen_d5 = center_results_d5$cohen_d)
-center_results_cohen_d = rowMeans(center_results_cohen_d)
-center_results_cohen_d
-
-center_results_upper = data.frame(upper1 = center_results_d1$upper, upper2 = center_results_d2$upper, upper3 = center_results_d3$upper, upper4 = center_results_d4$upper, upper5 = center_results_d5$upper)
-center_results_upper = rowMeans(center_results_upper)
-center_results_upper
-
-center_results_lower = data.frame(lower1 = center_results_d1$lower, lower2 = center_results_d2$lower, lower3 = center_results_d3$lower, lower4 = center_results_d4$lower, lower5 = center_results_d5$lower)
-center_results_lower = rowMeans(center_results_lower)
-center_results_lower
-
-center_results = data.frame(cohen_d = center_results_cohen_d, upper = center_results_upper, lower = center_results_lower)
-center_results = round(center_results, 2)
-
-outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
-
-center_results = data.frame(outcomes, center_results)
-
-center_results$outcomes = ifelse(center_results$upper > 0 & center_results$lower < 0, center_results$outcomes, paste0(center_results$outcomes, "*"))
-
-center_results$ci_95 = paste0(center_results$lower, sep = ",", center_results$upper)
-center_results[,3:4] = NULL
-center_results
-
-center_results$cohen_d = as.numeric(center_results$cohen_d)
-center_results = center_results[order(abs(center_results$cohen_d), decreasing = TRUE),]
-
-write.csv(center_results, "center_results.csv", row.names = FALSE)
-
-```
-##########################################################
-Increase the number of data sets to reduce standard errors
-##########################################################
-Impute data
-```{r}
-head(center_dat)
-library(Amelia)
-
-### Get rid of the treat variables, I don't them imputted, because they are missing on purpose.
-center_dat
-
-### Create bounds for one var and see what happens
-## INQ Post
-center_dat[,8:35]
-
-range(center_dat$INQ_1_pre, na.rm = TRUE) 
-range(center_dat$RAS_1_pre, na.rm = TRUE) 
-range(center_dat$ISLES_1_post, na.rm = TRUE)
-range(center_dat$MILQ_post, na.rm = TRUE) 
-range(center_dat$RCS_post, na.rm = TRUE) 
-
-bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5, 30,1,4, 31,1,5, 32,1,5, 33,1,10, 34,1,10, 35,1,10),nrow = 28, ncol = 3, byrow = TRUE)
-bounds
-
-a.out = amelia(x = center_dat, m = 30, noms = c("veteran", "sexual_minority", "hispanic", "non_white", "high_school_greater", "employed", "suicide"), bounds = bounds)
-compare.density(a.out, var = "RAS_1_post")
-compare.density(a.out, var = "RAS_3_post")
-compare.density(a.out, var = "RAS_5_post")
-compare.density(a.out, var = "RCS_post")
-compare.density(a.out, var = "ISLES_1_post")
-compare.density(a.out, var = "ISLES_2_post")
-compare.density(a.out, var = "INQ_1_post")
-compare.density(a.out, var = "INQ_2_post")
-compare.density(a.out, var = "MILQ_post")
-compare.density(a.out, var = "SIS_1_post")
-compare.density(a.out, var = "SIS_2_post")
-overimpute(a.out, var = "SIS_1_post")
-overimpute(a.out, var = "SIS_2_post")
-impute_dat_loop = a.out$imputations
-describe(impute_dat_loop$imp1)
-
-
-apply(impute_dat_loop$imp1, 2, range)
-range(impute_dat_loop$imp1$INQ_1_post)
-
-
-dim(impute_dat_loop[[1]])
-```
-Do diff scores with regression, because not random and want to account
-```{r}
-dim(impute_dat_loop[[1]])
-out_diff_dat = list()
+mean_out_pre = list()
+sd_out_pre = list()
 head(impute_dat_loop[[1]][8:18])
-head(impute_dat_loop[[1]][19:29])
-head(impute_dat_loop[[1]])
+head(impute_dat_loop[[1]][19:35])
 
 for(i in 1:length(impute_dat_loop)){
-  out_diff_dat[[i]] = impute_dat_loop[[i]][8:18]-impute_dat_loop[[1]][19:29]
-  colnames(out_diff_dat[[i]]) = c("INQ_1_diff", "INQ_2_diff", "RAS_1_diff", "RAS_3_diff", "RAS_5_diff", "ISLES_1_diff", "ISLES_2_diff", "MILQ_diff", "RCS_diff", "SIS_1_diff", "SIS_2_diff")
-  out_diff_dat[[i]] = scale(out_diff_dat[[i]])
-  out_diff_dat[[i]] =cbind(impute_dat_loop[[i]], out_diff_dat[[i]])
+  mean_out_pre[[i]] = apply(impute_dat_loop[[i]][8:18],2,mean)
+  sd_out_pre[[i]] = apply(impute_dat_loop[[i]][8:18], 2, sd)
 }
-out_diff_dat
-### Evaluate normality
-out_diff_dat_norm = out_diff_dat[[1]][c(30:32,35,37:44)]
-hist_results = list() 
-qq_results = list()
-shap_results = list()
-for(i in 1:length(out_diff_dat_norm)){
-  hist_results[[i]]= hist(out_diff_dat_norm[[i]], main = paste("Histogram of" , names(out_diff_dat_norm)[[i]]))
-  qq_results[[i]] = qqnorm(out_diff_dat_norm[[i]], main = names(out_diff_dat_norm)[[i]])
-  shap_results[[i]] = shapiro.test(out_diff_dat_norm[[i]])
+dim(impute_dat_loop[[1]][8:18])
+
+parsout_pre = unlist(mean_out_pre) 
+parsout_pre = matrix(parsout_pre, ncol = 11, byrow = TRUE)
+parsout_pre
+write.csv(parsout_pre, "parsout_pre.csv", row.names = FALSE)
+
+sesout_pre = unlist(sd_out_pre)
+sesout_pre = matrix(sesout_pre, ncol = 11, byrow = TRUE)
+sesout_pre
+
+pars_sesout_pre = mi.meld(parsout_pre, sesout_pre)
+pars_sesout_pre
+mean_pre = t(pars_sesout_pre$q.mi)
+sd_pre = t(pars_sesout_pre$se.mi)
+mean_sd_pre = round(data.frame(mean_pre, sd_pre),2)
+mean_sd_pre$names = names(impute_dat_loop[[1]][8:18])           
+write.csv(mean_sd_pre, "mean_sd_pre.csv", row.names = TRUE)
+
+mean_out_post = list()
+sd_out_post = list()
+           
+for(i in 1:length(impute_dat_loop)){
+  mean_out_post[[i]] = apply(impute_dat_loop[[i]][19:35],2,mean)
+  sd_out_post[[i]] = apply(impute_dat_loop[[i]][19:35], 2, sd)
 }
-shap_results
+dim(impute_dat_loop[[1]][19:35])
+parsout_post = unlist(mean_out_post) 
+parsout_post = matrix(parsout_post, ncol = 17, byrow = TRUE)
+parsout_post
+write.csv(parsout_post, "parsout_post.csv", row.names = FALSE)
+sesout_post = unlist(sd_out_post)
+sesout_post = matrix(sesout_post, ncol = 17, byrow = TRUE)
+sesout_post
+
+pars_sesout_post = mi.meld(parsout_post, sesout_post)
+pars_sesout_post
+
+mean_post = t(pars_sesout_post$q.mi)
+sd_post = t(pars_sesout_post$se.mi)
+mean_sd_post = round(data.frame(mean_post, sd_post),2)
+mean_sd_post$names = names(impute_dat_loop[[1]][19:35])           
+write.csv(mean_sd_post, "mean_sd_post.csv", row.names = TRUE)
+mean_sd_post
+### Get the differnece scores for t-test and cohen's d
+## Need difference mean, differene sd
+out_dif_t = list()
+mean_out_diff = list()
+sd_out_diff = list()
+
+for(i in 1:length(impute_dat_loop)){
+  out_dif_t[[i]] = impute_dat_loop[[1]][19:29] - impute_dat_loop[[i]][8:18]
+  mean_out_diff[[i]] = apply(out_dif_t[[i]],2,mean)
+  sd_out_diff[[i]] = apply(out_dif_t[[i]], 2, sd)
+}
+parsout_diff = unlist(mean_out_diff) 
+parsout_diff = matrix(parsout_diff, ncol = 11, byrow = TRUE)
+parsout_diff
+write.csv(parsout_diff, "parsout_diff.csv", row.names = FALSE)
+
+sesout_diff = unlist(sd_out_diff)
+sesout_diff = matrix(sesout_diff, ncol = 11, byrow = TRUE)
+sesout_diff
+
+pars_sesout_diff = mi.meld(parsout_diff, sesout_diff)
+pars_sesout_diff
+mean_diff = t(pars_sesout_diff$q.mi)
+sd_diff = t(pars_sesout_diff$se.mi)
+mean_sd_diff = round(data.frame(mean_diff, sd_diff),2)
+mean_sd_diff$names = names(out_diff_dat[[i]][38:48]) 
+mean_sd_diff
+write.csv(mean_sd_diff, "mean_sd_diff.csv", row.names = TRUE)
+
 ```
 
-Research Question #2: Are novel treatment targets (i.e., perceived burdensomeness, thwarted belongingness, meaning made of stress, meaning in life, goal orientation/hope coping self-efficacy, treatment alliance, treatment satisfaction) associated with episode of care outcomes (i.e., suicide risk, willingness to seek help, intentions to follow-through on discharge plans) at discharge? (Changed to change scores related to each other) 
 
-Hypothesis 1: Perceived burdensomeness and thwarted belongingness will be positively and uniquely associated with suicide risk (i.e., ideation, resolved plans/preparation) at discharge. 
+Overall effect board member table for T-test and Cohen's D
+T-test code
+One sample cohen's D is just diff_score / diff_sd
+http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/SAS/SAS4-OneSampleTtest/SAS4-OneSampleTtest7.html
+https://ncss-wpengine.netdna-ssl.com/wp-content/themes/ncss/pdf/Procedures/PASS/One-Sample_T-Tests_using_Effect_Size.pdf
+standard error: https://www.bmj.com/about-bmj/resources-readers/publications/statistics-square-one/7-t-tests
+P-value: https://www.cyclismo.org/tutorial/R/pValues.html
+```{r}
+mean_sd_diff = round(mean_sd_diff[,1:2],2)
+mean_sd_diff 
+## sd_diff / sqrt(n) 
+se_diff = mean_sd_diff$sd_diff / sqrt(dim(center_dat)[1])
+se_diff
+t_stat = round(mean_sd_diff$mean_diff / se_diff,2)
+t_stat
+p_values_t = round(2*pt(-abs(t_stat), df = dim(out_diff_dat[[1]])[1]-1),3)
+p_values_t = ifelse(p_values_t <= 0, "<.001", p_values_t)
+p_values_t
+critical_t = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-1))
 
-Hypothesis 2: Meaning made of stress, meaning in life, coping self-efficacy, goal orientation/hope, alliance, and treatment satisfaction will be negatively and uniquely associated with suicide risk (i.e., ideation, resolved plans and preparation) at discharge. 
+upper_reg_t = mean_sd_diff$mean_diff +(critical_t*se_diff)
+lower_reg_t =  mean_sd_diff$mean_diff -(critical_t*se_diff)
 
-(Add new vars above to global data set)
-
-
+ci_95_t = paste0(round(upper_reg_t,2), sep = ",", round(lower_reg_t,2))
+cohen_d_t = round(mean_sd_diff$mean_diff / mean_sd_diff$sd_diff,2)
+outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
+t_test_results = data.frame(outcomes, t_stat, p_values_t, ci_95_t, cohen_d_t)
+write.csv(t_test_results, "t_test_results.csv", row.names = FALSE)
+t_test_results
+```
 Sucidial Ideation regression
 ```{r}
 library(car)
@@ -1183,7 +1274,7 @@ import_sis_1
 reg_results_sis_1 = data.frame(par_est = t(pars_sesout_sis_1$q.mi), se = t(pars_sesout_sis_1$se.mi), p_value = t(p_values_reg_sis_1), ci_95_sis_1)
 reg_results_sis_1
 reg_results_sis_1[,1:2] = format(round(reg_results_sis_1[,1:2], digits=2), nsmall = 2)
-reg_results_sis_1$var_names = c("Intercept", colnames(out_diff_dat[[1]])[37:45], "BID", "CSE_1", "CSE_2", "CSE_3")
+reg_results_sis_1$var_names = c("Intercept", colnames(out_diff_dat[[1]])[38:46], "BID", "CSE_1", "CSE_2", "CSE_3")
 reg_results_sis_1 = data.frame(var_names = reg_results_sis_1$var_names, reg_results_sis_1[,1:4])
 typeof(reg_results_sis_1$p_value)
 
@@ -1256,7 +1347,7 @@ import_sis_2
 reg_results_sis_2 = data.frame(par_est = t(pars_sesout_sis_2$q.mi), se = t(pars_sesout_sis_2$se.mi), p_value = t(p_values_reg_sis_2), ci_95_sis_2)
 reg_results_sis_2
 reg_results_sis_2[,1:2] = format(round(reg_results_sis_2[,1:2], digits=2), nsmall = 2)
-reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat[[1]])[37:45], "BID", "CSE_1", "CSE_2", "CSE_3")
+reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat[[1]])[38:46], "BID", "CSE_1", "CSE_2", "CSE_3")
 reg_results_sis_2 = data.frame(var_names = reg_results_sis_2$var_names, reg_results_sis_2[,1:4])
 typeof(reg_results_sis_2$p_value)
 
@@ -1367,7 +1458,7 @@ import_r3_hyp_1 = list()
 vif_r3_hyp_1 = list()
 
 for(i in 1:length(out_diff_dat)){
-  regout_r3_hyp_1[[i]] = glm(suicide ~ INQ_1_diff + INQ_2_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + SIS_2_diff + SIS_1_diff + BID+ CSE_1 + CSE_2 + CSE_3 , data = out_diff_dat[[i]], family = binomial()) 
+  regout_r3_hyp_1[[i]] = glm(suicide ~ INQ_1_diff + INQ_2_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + SIS_1_diff+SIS_2_diff  + BID+ CSE_1 + CSE_2 + CSE_3 , data = out_diff_dat[[i]], family = binomial()) 
   regout_r3_hyp_1_sum[[i]] = summary(regout_r3_hyp_1[[i]])
   #import_r3_hyp_1[[i]] = calc.relimp(regout_r3_hyp_1[[i]])
   #import_r3_hyp_1[[i]] = import_r3_hyp_1[[i]]@lmg
@@ -1551,7 +1642,7 @@ import_BID
 reg_results_BID = data.frame(par_est = t(pars_sesout_BID$q.mi), se = t(pars_sesout_BID$se.mi), p_value = t(p_values_reg_BID), ci_95_BID)
 reg_results_BID[,1:2] = format(round(reg_results_BID[,1:2], digits=2), nsmall = 2)
 
-reg_results_BID$var_names = c("Intercept" ,colnames(out_diff_dat[[1]])[37:47])
+reg_results_BID$var_names = c("Intercept" ,colnames(out_diff_dat[[1]])[38:48])
 reg_results_BID = data.frame(var_names = reg_results_BID$var_names, reg_results_BID[,1:4])
 reg_results_BID
 
@@ -1568,7 +1659,7 @@ reg_results_BID
 reg_results_BID$import_BID = import_BID
 reg_results_BID$import_BID = format(round(reg_results_BID$import_BID, digits=2), nsmall = 2)
 reg_results_BID = reg_results_BID[order(abs(as.numeric(reg_results_BID$par_est)), decreasing = TRUE),]
-
+reg_results_BID
 write.csv(reg_results_BID, "reg_results_BID.csv", row.names = FALSE)
 ```
 
