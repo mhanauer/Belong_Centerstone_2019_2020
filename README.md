@@ -413,7 +413,7 @@ Percentage missing with post assessment
 ```{r}
 
 library(naniar)
-center_dat_missing = center_dat[1:31]
+center_dat_missing = center_dat[c(1:31, 64:65)]
 
 miss_var_summary(center_dat_missing)
 
@@ -912,7 +912,7 @@ library(Amelia)
 head(center_dat)
 ### Create bounds for one var and see what happens
 ## INQ Post
-dim(center_dat[,8:35])
+#dim(center_dat[,8:35])
 
 #range(center_dat$INQ_1_pre, na.rm = TRUE) 
 #range(center_dat$RAS_1_pre, na.rm = TRUE) 
@@ -920,13 +920,20 @@ dim(center_dat[,8:35])
 #range(center_dat$MILQ_post, na.rm = TRUE) 
 #range(center_dat$RCS_post, na.rm = TRUE) 
 #center_dat
-#bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5, 30,1,4, 31,1,5, 32,1,5, 33,1,10, 34,1,10, 35,1,10),nrow = 28, ncol = 3, byrow = TRUE)
+bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5, 30,1,4, 31,1,5, 32,1,5, 33,1,10, 34,1,10, 35,1,10),nrow = 28, ncol = 3, byrow = TRUE)
 #bounds
 dim(center_dat)
-#a.out_florida = amelia(x = center_dat, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "white", "high_school_greater", "employed", "suicide", "female"), bounds = bounds)
+
+a.out_florida = amelia(x = center_dat_test, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "white", "high_school_greater", "employed", "suicide", "female"), bounds = bounds)
 #saveRDS(a.out_florida, file = "a.out_florida.rds")
 a.out_florida = readRDS(file = "a.out_florida.rds")
+
 compare.density(a.out_florida, var = "RAS_1_post")
+compare.density(a.out_florida, var = "RAS_3_post")
+library(gridExtra)
+res <- marrangeGrob(list(RAS_1_post_plot, dp, bp, sp), nrow = 1, ncol = 2)
+ggarrange(RAS_1_post_plot, RAS_3_post_plot, ncol = 2, nrow= 2)
+
 compare.density(a.out_florida, var = "RAS_3_post")
 compare.density(a.out_florida, var = "RAS_5_post")
 compare.density(a.out_florida, var = "RCS_post")
@@ -945,7 +952,7 @@ a.out_florida$imputations$imp2
 
 #apply(impute_dat_loop$imp1, 2, range)
 #range(impute_dat_loop$imp1$INQ_1_post)
-saveRDS(a.out_florida, file = "a.out_florida.rds")
+#saveRDS(a.out_florida, file = "a.out_florida.rds")
 #saveRDS(impute_dat_loop, file = "impute_dat_loop.rds")
 #impute_dat_loop = readRDS(file = "impute_dat_loop.rds")
 #impute_dat_loop
@@ -1665,4 +1672,166 @@ reg_results_BID = reg_results_BID[order(abs(as.numeric(reg_results_BID$par_est))
 reg_results_BID
 write.csv(reg_results_BID, "reg_results_BID.csv", row.names = FALSE)
 ```
+############################################
+Imputted data for 75% or greater missing
+############################################
+Impute data
+Run the data diagnositics section prior for center_dat_missing_75
+```{r}
+center_dat_missing_75$high_school_greater = ifelse(as.numeric(center_dat_missing_75$high_school_greater) == 0,0,1)
+### Get rid black and another race and reverse white to non-white
+center_dat_missing_75$another_race = NULL
+center_dat_missing_75$black = NULL
 
+center_dat_missing_75
+
+dim(center_dat_missing_75)
+head(center_dat_missing_75)
+
+setwd("S:/Indiana Research & Evaluation/Matthew Hanauer/Centerstone_Study_2019_2020")
+impute_dat_loop = readRDS(file = "impute_dat_loop.rds")
+
+bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 16,1,5, 17,1,5, 18,1,5,   19,1,7, 20,1,7, 21,1,5, 22,1,5, 23,1,5, 24,1,5, 25,1,5, 26,1,7, 27,1,5, 28,1,5, 29,1,5),nrow = 22, ncol = 3, byrow = TRUE)
+#bounds
+dim(center_dat_missing_75)
+m = 5
+#a.out_florida_missing_75 = amelia(x = center_dat_missing_75, m = m, noms = c("veteran", "sexual_minority", "hispanic", "white", "high_school_greater", "employed", "suicide", "female"), bounds = bounds)
+#saveRDS(a.out_florida_missing_75, file = "a.out_florida_missing_75.rds")
+a.out_florida_missing_75 = readRDS(file = "a.out_florida_missing_75.rds")
+compare.density(a.out_florida_missing_75, var = "RAS_1_post")
+compare.density(a.out_florida_missing_75, var = "RAS_3_post")
+compare.density(a.out_florida_missing_75, var = "RAS_3_post")
+compare.density(a.out_florida_missing_75, var = "RAS_5_post")
+compare.density(a.out_florida_missing_75, var = "RCS_post")
+compare.density(a.out_florida_missing_75, var = "ISLES_1_post")
+compare.density(a.out_florida_missing_75, var = "ISLES_2_post")
+compare.density(a.out_florida_missing_75, var = "INQ_1_post")
+compare.density(a.out_florida_missing_75, var = "INQ_2_post")
+compare.density(a.out_florida_missing_75, var = "MILQ_post")
+compare.density(a.out_florida_missing_75, var = "SIS_1_post")
+compare.density(a.out_florida_missing_75, var = "SIS_2_post")
+
+impute_dat_loop_missing_75 = list()
+for(i in 1:m){
+  impute_dat_loop_missing_75[[i]] = a.out_florida_missing_75$imputations[[i]]
+}
+impute_dat_loop_missing_75
+```
+Get pre and post scores for missing 75
+```{r}
+
+mean_out_pre = list()
+sd_out_pre = list()
+head(impute_dat_loop_missing_75[[1]][8:18])
+head(impute_dat_loop_missing_75[[1]][19:29])
+
+for(i in 1:length(impute_dat_loop_missing_75)){
+  mean_out_pre[[i]] = apply(impute_dat_loop_missing_75[[i]][8:18],2,mean)
+  sd_out_pre[[i]] = apply(impute_dat_loop_missing_75[[i]][8:18], 2, sd)
+}
+dim(impute_dat_loop_missing_75[[1]][8:18])
+
+parsout_pre = unlist(mean_out_pre) 
+parsout_pre = matrix(parsout_pre, ncol = 11, byrow = TRUE)
+parsout_pre
+write.csv(parsout_pre, "parsout_pre.csv", row.names = FALSE)
+
+sesout_pre = unlist(sd_out_pre)
+sesout_pre = matrix(sesout_pre, ncol = 11, byrow = TRUE)
+sesout_pre
+
+pars_sesout_pre = mi.meld(parsout_pre, sesout_pre)
+pars_sesout_pre
+mean_pre = t(pars_sesout_pre$q.mi)
+sd_pre = t(pars_sesout_pre$se.mi)
+mean_sd_pre = round(data.frame(mean_pre, sd_pre),2)
+mean_sd_pre$names = names(impute_dat_loop_missing_75[[1]][8:18])           
+write.csv(mean_sd_pre, "mean_sd_pre_75.csv", row.names = TRUE)
+
+mean_out_post = list()
+sd_out_post = list()
+
+for(i in 1:length(impute_dat_loop_missing_75)){
+  mean_out_post[[i]] = apply(impute_dat_loop_missing_75[[i]][19:29],2,mean)
+  sd_out_post[[i]] = apply(impute_dat_loop_missing_75[[i]][19:29], 2, sd)
+}
+dim(impute_dat_loop_missing_75[[1]][19:29])
+parsout_post = unlist(mean_out_post) 
+parsout_post = matrix(parsout_post, ncol = 11, byrow = TRUE)
+parsout_post
+write.csv(parsout_post, "parsout_post.csv", row.names = FALSE)
+sesout_post = unlist(sd_out_post)
+sesout_post = matrix(sesout_post, ncol = 11, byrow = TRUE)
+sesout_post
+
+pars_sesout_post = mi.meld(parsout_post, sesout_post)
+pars_sesout_post
+
+mean_post = t(pars_sesout_post$q.mi)
+sd_post = t(pars_sesout_post$se.mi)
+mean_sd_post = round(data.frame(mean_post, sd_post),2)
+mean_sd_post$names = names(impute_dat_loop_missing_75[[1]][19:29])           
+write.csv(mean_sd_post, "mean_sd_post_75.csv", row.names = TRUE)
+mean_sd_post
+### Get the differnece scores for t-test and cohen's d
+## Need difference mean, differene sd
+out_dif_t = list()
+mean_out_diff = list()
+sd_out_diff = list()
+
+for(i in 1:length(impute_dat_loop_missing_75)){
+  out_dif_t[[i]] = impute_dat_loop_missing_75[[1]][19:29] - impute_dat_loop_missing_75[[i]][8:18]
+  mean_out_diff[[i]] = apply(out_dif_t[[i]],2,mean)
+  sd_out_diff[[i]] = apply(out_dif_t[[i]], 2, sd)
+}
+parsout_diff = unlist(mean_out_diff) 
+parsout_diff = matrix(parsout_diff, ncol = 11, byrow = TRUE)
+parsout_diff
+write.csv(parsout_diff, "parsout_diff.csv", row.names = FALSE)
+
+sesout_diff = unlist(sd_out_diff)
+sesout_diff = matrix(sesout_diff, ncol = 11, byrow = TRUE)
+sesout_diff
+
+pars_sesout_diff = mi.meld(parsout_diff, sesout_diff)
+pars_sesout_diff
+mean_diff = t(pars_sesout_diff$q.mi)
+sd_diff = t(pars_sesout_diff$se.mi)
+mean_sd_diff = round(data.frame(mean_diff, sd_diff),2)
+mean_sd_diff$names = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
+mean_sd_diff
+write.csv(mean_sd_diff, "mean_sd_diff_75.csv", row.names = TRUE)
+
+```
+
+
+Overall effect board member table for T-test and Cohen's D
+T-test code
+One sample cohen's D is just diff_score / diff_sd
+http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/SAS/SAS4-OneSampleTtest/SAS4-OneSampleTtest7.html
+https://ncss-wpengine.netdna-ssl.com/wp-content/themes/ncss/pdf/Procedures/PASS/One-Sample_T-Tests_using_Effect_Size.pdf
+standard error: https://www.bmj.com/about-bmj/resources-readers/publications/statistics-square-one/7-t-tests
+P-value: https://www.cyclismo.org/tutorial/R/pValues.html
+```{r}
+mean_sd_diff = round(mean_sd_diff[,1:2],2)
+mean_sd_diff 
+## sd_diff / sqrt(n) 
+se_diff = mean_sd_diff$sd_diff / sqrt(dim(impute_dat_loop_missing_75[[1]])[1])
+se_diff
+t_stat = round(mean_sd_diff$mean_diff / se_diff,2)
+t_stat
+p_values_t = round(2*pt(-abs(t_stat), df = dim(impute_dat_loop_missing_75[[1]])[1]-1),3)
+p_values_t = ifelse(p_values_t <= 0, "<.001", p_values_t)
+p_values_t
+critical_t = abs(qt(0.05/2, dim(impute_dat_loop_missing_75[[1]])[1]-1))
+
+upper_reg_t = mean_sd_diff$mean_diff +(critical_t*se_diff)
+lower_reg_t =  mean_sd_diff$mean_diff -(critical_t*se_diff)
+
+ci_95_t = paste0(round(upper_reg_t,2), sep = ",", round(lower_reg_t,2))
+cohen_d_t = round(mean_sd_diff$mean_diff / mean_sd_diff$sd_diff,2)
+outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
+t_test_results = data.frame(outcomes, t_stat, p_values_t, ci_95_t, cohen_d_t)
+write.csv(t_test_results, "t_test_results_75.csv", row.names = FALSE)
+t_test_results
+```
