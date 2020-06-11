@@ -425,7 +425,21 @@ for(i in 1:length(missing_post_list)){
 }
 
 attrition$drop= apply(attrition, 1, function(x)(sum(is.na(x))))
+missing_person_var = data.frame(missing_person_var)
+colnames(missing_person_var) = c("INQ_1_post", "INQ_2_post", "RAS_1_post", "RAS_3_post", "RAS_5_post", "ISLES_1_post", "ISLES_2_post", "MILQ_post", "RCS_post", "SIS_1_post", "SIS_2_post")
+### Get n if you drop those with 75 missing on any post assessment 
+missing_person_var= data.frame(missing_person_var)
 
+drop_75= filter_all(missing_person_var, any_vars(. == 1))
+drop_75
+n_drop_75 =dim(drop_75)[1]
+n_drop_75
+missing_post_list = data.frame(missing_post_list)
+head(center_dat)
+library(naniar)
+miss_var_summary(center_dat[21:31])
+florida_missing_post_assessments= miss_case_summary(center_dat[21:31])
+florida_missing_post_assessments
 
 ```
 
