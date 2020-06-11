@@ -409,66 +409,36 @@ vss_post
 paran_pre
 paran_post
 ```
-Need the percentage missing for each variable by each person just doing it for post, because most people completed 
+Percentage missing with post assessment
 ```{r}
 
-missing_post_list = list(INQ_1_post_psycho, INQ_2_post_psycho, RAS_1_post_psycho, RAS_3_post_psycho, RAS_5_post_psycho, ISLES_1_post_psycho, ISLES_2_post_psycho, MILQ_post_psycho, RCS_post_psycho, SIS_1_post_psycho, SIS_2_post_psycho)
-
-missing_post_list
-missing_post_fill = list()
-dim_missing_post_fill = list()
-missing_person_var = list()
-for(i in 1:length(missing_post_list)){
-  dim_missing_post_fill[[i]] = dim(missing_post_list[[i]])[2]
-  missing_post_fill[[i]] = apply(missing_post_list[[i]], 1, function(x){sum(is.na(x))})
-  missing_person_var[[i]] = round(missing_post_fill[[i]] / dim_missing_post_fill[[i]],2)
-}
-
-attrition$drop= apply(attrition, 1, function(x)(sum(is.na(x))))
-missing_person_var = data.frame(missing_person_var)
-colnames(missing_person_var) = c("INQ_1_post", "INQ_2_post", "RAS_1_post", "RAS_3_post", "RAS_5_post", "ISLES_1_post", "ISLES_2_post", "MILQ_post", "RCS_post", "SIS_1_post", "SIS_2_post")
-### Get n if you drop those with 75 missing on any post assessment 
-missing_person_var= data.frame(missing_person_var)
-
-drop_75= filter_all(missing_person_var, any_vars(. == 1))
-drop_75
-n_drop_75 =dim(drop_75)[1]
-n_drop_75
-missing_post_list = data.frame(missing_post_list)
-head(center_dat)
 library(naniar)
-miss_var_summary(center_dat[21:31])
-florida_missing_post_assessments= miss_case_summary(center_dat[21:31])
+center_dat_missing = center_dat[1:31]
+
+miss_var_summary(center_dat_missing)
+
+
+n_total_cases = dim(center_dat_missing)[1]
+n_complete_cases = dim(na.omit(center_dat_missing))[1]
+p_complete = round(n_complete_cases / n_total_cases,3) 
+
+florida_missing_post_assessments= miss_case_summary(center_dat_missing[21:31])
+florida_missing_post_assessments = subset(florida_missing_post_assessments, pct_miss >= 75)
 florida_missing_post_assessments
+florida_missing_post_assessments$case
+remove_75_cases =  paste(florida_missing_post_assessments$case,sep="", collapse=",")
+### Copy from remove_75_cases
+center_dat_missing_75 = center_dat_missing[-c(3,8,14,18,26,31,49,50,52,55,60,66,71,74,77,81,86,91,97,98,100,101,105,107,108,109,110,115),]
+
+n_total_cases_75 = dim(center_dat_missing_75)[1]
+n_complete_cases_75 = dim(na.omit(center_dat_missing_75))[1]
+p_complete_75 = round(n_complete_cases_75 / n_total_cases_75,3)
+
+p_complete_v_75 = round(n_total_cases_75/n_total_cases,3)
+p_complete_v_75
+
 
 ```
-
-
-
-Assess missing 
-```{r}
-head(center_dat)
-library(naniar)
-miss_var_summary(center_dat)
-prop_complete_case(center_dat)
-### Attrition is the percentage of all the data divided by those completed at 50% of the follow-up
-center_dat
-head(center_dat[,c(19:35, 62:63)])
-### Not included treatment provided or score, because score is planned missing
-## If treatment provided is included in later analyses add it back here, but that is a extra analysis
-attrition = center_dat[,c(19:35, 62:63)]
-attrition$drop= apply(attrition, 1, function(x)(sum(is.na(x))))
-describe.factor(attrition$drop)
-### -1 because you don't count the drop variable
-attrition$drop= ifelse(attrition$drop > (dim(attrition)[2]-1)/2, 1, 0)
-attrition = subset(attrition, drop == 1)
-attrition_n = dim(attrition)[1]
-attrition_rate = round(attrition_n / dim(center_dat)[1],2)
-attrition_n
-attrition_rate
-```
-
-
 Descriptives with complete data
 
 
