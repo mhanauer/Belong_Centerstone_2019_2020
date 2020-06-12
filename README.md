@@ -1220,7 +1220,7 @@ critical_t = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-1))
 upper_reg_t = mean_sd_diff$mean_diff +(critical_t*se_diff)
 lower_reg_t =  mean_sd_diff$mean_diff -(critical_t*se_diff)
 
-ci_95_t = paste0(round(upper_reg_t,2), sep = ",", round(lower_reg_t,2))
+ci_95_t = paste0(round(lower_reg_t,2), sep = ",", round(upper_reg_t,2))
 cohen_d_t = round(mean_sd_diff$mean_diff / mean_sd_diff$sd_diff,2)
 outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
 t_test_results = data.frame(outcomes, t_stat, p_values_t, ci_95_t, cohen_d_t)
@@ -1679,7 +1679,6 @@ Impute data
 Run the data diagnositics section prior for center_dat_missing_75
 ```{r}
 center_dat_missing_75$high_school_greater = ifelse(as.numeric(center_dat_missing_75$high_school_greater) == 0,0,1)
-### Get rid black and another race and reverse white to non-white
 center_dat_missing_75$another_race = NULL
 center_dat_missing_75$black = NULL
 
@@ -1697,6 +1696,7 @@ dim(center_dat_missing_75)
 m = 5
 #a.out_florida_missing_75 = amelia(x = center_dat_missing_75, m = m, noms = c("veteran", "sexual_minority", "hispanic", "white", "high_school_greater", "employed", "suicide", "female"), bounds = bounds)
 #saveRDS(a.out_florida_missing_75, file = "a.out_florida_missing_75.rds")
+setwd("S:/Indiana Research & Evaluation/Matthew Hanauer/Centerstone_Study_2019_2020")
 a.out_florida_missing_75 = readRDS(file = "a.out_florida_missing_75.rds")
 compare.density(a.out_florida_missing_75, var = "RAS_1_post")
 compare.density(a.out_florida_missing_75, var = "RAS_3_post")
@@ -1807,7 +1807,7 @@ write.csv(mean_sd_diff, "mean_sd_diff_75.csv", row.names = TRUE)
 
 Overall effect board member table for T-test and Cohen's D
 T-test code
-One sample cohen's D is just diff_score / diff_sd
+One sample cohen's D is just diff_score / diff_sd (Cohen, 1988, p. 48)
 http://sphweb.bumc.bu.edu/otlt/MPH-Modules/BS/SAS/SAS4-OneSampleTtest/SAS4-OneSampleTtest7.html
 https://ncss-wpengine.netdna-ssl.com/wp-content/themes/ncss/pdf/Procedures/PASS/One-Sample_T-Tests_using_Effect_Size.pdf
 standard error: https://www.bmj.com/about-bmj/resources-readers/publications/statistics-square-one/7-t-tests
@@ -1835,3 +1835,68 @@ t_test_results = data.frame(outcomes, t_stat, p_values_t, ci_95_t, cohen_d_t)
 write.csv(t_test_results, "t_test_results_75.csv", row.names = FALSE)
 t_test_results
 ```
+#################################################
+Results for complete data
+#################################################
+```{r}
+center_dat_missing = center_dat[c(1:31, 64:65)]
+center_dat_complete_analysis = na.omit(center_dat_missing)
+head(center_dat)
+dim(center_dat_complete_analysis)
+center_dat_complete_analysis$black = NULL
+center_dat_complete_analysis$another_race = NULL
+mean_pre_complete =  apply(center_dat_complete_analysis[8:18], 2, mean)
+sd_pre_complete = apply(center_dat_complete_analysis[8:18], 2, sd)
+mean_post_complete = apply(center_dat_complete_analysis[19:29], 2, mean)
+sd_post_complete = apply(center_dat_complete_analysis[19:29], 2, sd)
+mean_sd_complete = cbind(mean_pre_complete, sd_pre_complete, mean_post_complete, sd_post_complete)
+mean_sd_complete = data.frame(mean_sd_complete)
+mean_sd_complete = round(mean_sd_complete,2)
+mean_sd_complete
+write.csv(mean_sd_complete, "mean_sd_pre_complete.csv")
+```
+Compare differences between the TOT and ITT findings
+```{r}
+mean_diff_complete = mean_sd_pre_complete$mean_post_complete-mean_sd_pre_complete$mean_pre_complete
+se_diff_complete = sd(mean_diff_complete) /sqrt(dim(center_dat_complete_analysis)[1])
+
+
+t_stat_diff_complete = round(mean_diff_complete / se_diff_complete,2)
+t_stat_diff_complete
+p_values_t_complete = round(2*pt(-abs(t_stat_diff_complete), df =dim(center_dat_complete_analysis)[1]-1),3)
+
+p_values_t_complete = ifelse(p_values_t_complete <= 0, "<.001", p_values_t_complete)
+p_values_t_complete
+
+critical_t_complete = abs(qt(0.05/2, dim(center_dat_complete_analysis)[1]-1))
+
+upper_reg_t_complete = mean_diff_complete +(critical_t_complete*se_diff_complete)
+lower_reg_t_complete =  mean_diff_complete -(critical_t_complete*se_diff_complete)
+
+ci_95_t_complete = paste0(round(lower_reg_t_complete,2), sep = ",", round(upper_reg_t_complete,2))
+cohen_d_t_complete = round(mean_diff_complete / sd(mean_diff_complete),2)
+
+outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
+t_test_results_complete = data.frame(outcomes, t_stat_diff_complete, p_values_t_complete, ci_95_t_complete, cohen_d_t_complete)
+write.csv(t_test_results_complete, "t_test_results_complete.csv", row.names = FALSE)
+t_test_results_complete
+```
+Difference in Cohen's D because standardized measure on complete and imputted
+
+```{r}
+### Run the full imputted results to get this data set
+t_test_results
+t_test_results_complete
+
+mean(abs(t_test_results_complete$cohen_d_t_complete)-abs(t_test_results$cohen_d_t))
+
+
+range(abs(t_test_results_complete$cohen_d_t_complete)-abs(t_test_results$cohen_d_t))
+
+ds_impute_complete = data.frame(outcomes = t_test_results_complete$outcomes, cohen_d_t_complete = t_test_results_complete$cohen_d_t_complete, cohen_d_t = t_test_results$cohen_d_t, abs_diff_complete_minus_imputed = abs(t_test_results_complete$cohen_d_t_complete)-abs(t_test_results$cohen_d_t))
+ds_impute_complete
+```
+
+
+
+
