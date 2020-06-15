@@ -429,7 +429,7 @@ florida_missing_post_assessments$case
 remove_75_cases =  paste(florida_missing_post_assessments$case,sep="", collapse=",")
 ### Copy from remove_75_cases
 center_dat_missing_75 = center_dat_missing[-c(3,8,14,18,26,31,49,50,52,55,60,66,71,74,77,81,86,91,97,98,100,101,105,107,108,109,110,115),]
-
+miss_case_summary(center_dat_missing_75)
 n_total_cases_75 = dim(center_dat_missing_75)[1]
 n_complete_cases_75 = dim(na.omit(center_dat_missing_75))[1]
 p_complete_75 = round(n_complete_cases_75 / n_total_cases_75,3)
@@ -924,16 +924,13 @@ bounds = matrix(c(8,1,7, 9,1,7, 10,1,5, 11,1,5, 12,1,5, 13,1,5, 14,1,5, 15,1,7, 
 #bounds
 dim(center_dat)
 
-a.out_florida = amelia(x = center_dat_test, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "white", "high_school_greater", "employed", "suicide", "female"), bounds = bounds)
+#a.out_florida = amelia(x = center_dat_test, m = 5, noms = c("veteran", "sexual_minority", "hispanic", "white", "high_school_greater", "employed", "suicide", "female"), bounds = bounds)
 #saveRDS(a.out_florida, file = "a.out_florida.rds")
+setwd("S:/Indiana Research & Evaluation/Matthew Hanauer/Centerstone_Study_2019_2020")
 a.out_florida = readRDS(file = "a.out_florida.rds")
 
 compare.density(a.out_florida, var = "RAS_1_post")
 compare.density(a.out_florida, var = "RAS_3_post")
-library(gridExtra)
-res <- marrangeGrob(list(RAS_1_post_plot, dp, bp, sp), nrow = 1, ncol = 2)
-ggarrange(RAS_1_post_plot, RAS_3_post_plot, ncol = 2, nrow= 2)
-
 compare.density(a.out_florida, var = "RAS_3_post")
 compare.density(a.out_florida, var = "RAS_5_post")
 compare.density(a.out_florida, var = "RCS_post")
@@ -1831,9 +1828,9 @@ lower_reg_t =  mean_sd_diff$mean_diff -(critical_t*se_diff)
 ci_95_t = paste0(round(upper_reg_t,2), sep = ",", round(lower_reg_t,2))
 cohen_d_t = round(mean_sd_diff$mean_diff / mean_sd_diff$sd_diff,2)
 outcomes = c("Perceived Burdensomeness", "Thwarted Belongingness", "Personal confidence and hope", "Goal and Success Orientation", "No domination by symptoms", "Comprehensibility", "Footing in the world", "MILQ", "RCS", "Suicidal Ideation", "Resolved plans and preparations")
-t_test_results = data.frame(outcomes, t_stat, p_values_t, ci_95_t, cohen_d_t)
-write.csv(t_test_results, "t_test_results_75.csv", row.names = FALSE)
-t_test_results
+t_test_results_75 = data.frame(outcomes, t_stat, p_values_t, ci_95_t, cohen_d_t)
+write.csv(t_test_results_75, "t_test_results_75.csv", row.names = FALSE)
+t_test_results_75
 ```
 #################################################
 Results for complete data
