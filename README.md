@@ -1881,7 +1881,129 @@ range(abs(t_test_results_complete$cohen_d_t_complete)-abs(t_test_results$cohen_d
 ds_impute_complete = data.frame(outcomes = t_test_results_complete$outcomes, cohen_d_t_complete = t_test_results_complete$cohen_d_t_complete, cohen_d_t = t_test_results$cohen_d_t, abs_diff_complete_minus_imputed = abs(t_test_results_complete$cohen_d_t_complete)-abs(t_test_results$cohen_d_t))
 ds_impute_complete
 ```
+#############################
+Discharge data Pre
+#############################
+```{r}
+setwd("P:/Evaluation/TN Lives Count_Writing/florida_results")
+discharge_dat = read.csv("Deidentified Lockman data project.csv", header = TRUE, na.strings = c("", " "))
+center_dat_discharge = data.frame(CID = center_psycho$CID, demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, suicide, female)
+head(center_dat)
+dim(discharge_dat)
+discharge_center_dat = merge(center_dat_discharge, discharge_dat, by = "CID", all.y = TRUE)
+dim(discharge_center_dat)
+head(discharge_center_dat)
+### Change NAs for months, because those are zeros
+discharge_center_dat[,37:42][is.na(discharge_center_dat[,37:42])] = 0
+
+### Just keep pre measures
+discharge_center_dat = discharge_center_dat[,c(1:19, 33:34,37:42)]
+miss_var_summary(discharge_center_dat)
+discharge_center_dat_complete = na.omit(discharge_center_dat)
+n_discharge = dim(discharge_center_dat_complete)[1]
+n_discharge
+
+### Crate a total discharge
+discharge_center_dat_complete$total_discharge =  apply(discharge_center_dat_complete[,20:25], 1, sum)
+discharge_center_dat_complete
+describe.factor(discharge_center_dat_complete$total_discharge)
+```
+Participant characteristics
+```{r}
 
 
+fac_des=apply(discharge_center_dat_complete[,c(3:10, 26)], 2, function(x){describe.factor(x)})
+fac_des = data.frame(fac_des)
+fac_des = t(fac_des)
+fac_des
+mean_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, mean)
+mean_con
+sd_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, mean)
+sd_con
+range_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, range)
+range_con
+```
+Try the hurdle model
+```{r}
+library(pscl)
+discharge_center_dat_complete
+cor(discharge_center_dat_complete[,11:19])
+
+discharge_hurdle = hurdle(total_discharge ~ INQ_1_pre  +INQ_2_pre +RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre, data = discharge_center_dat_complete, dist = "negbin", zero.dist = "binomial")
+summary(discharge_hurdle)
+
+
+
+```
+Sensitivity (get rid of outlier at 16 discharges)
+```{r}
+outlier_dat = subset(discharge_center_dat_complete, total_discharge < 10)
+dim(outlier_dat)
+dim(discharge_center_dat_complete)
+
+discharge_hurdle_outlier = hurdle(total_discharge ~ INQ_1_pre  +INQ_2_pre +RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre, data = outlier_dat, dist = "negbin", zero.dist = "binomial")
+summary(discharge_hurdle_outlier)
+
+```
+One by one with all data
+```{r}
+
+list_vars = as.list(discharge_center_dat_complete[,11:19])
+dis_results_out = list()
+for(i in 1:length(list_vars)){
+  dis_results_out[[i]] = hurdle(total_discharge ~ list_vars[[i]], data = discharge_center_dat_complete, dist = "negbin", zero.dist = "binomial")
+  dis_results_out[[i]] = summary(dis_results_out[[i]])
+}
+dis_results_out
+
+### ISLES_1_pre is significant try this variable with some others
+list_vars_no_ISLES_1_pre = as.list(discharge_center_dat_complete[,c(11:15, 17:19)])
+dis_results_out = list()
+for(i in 1:length(list_vars_no_ISLES_1_pre)){
+  dis_results_out[[i]] = hurdle(total_discharge ~ list_vars_no_ISLES_1_pre[[i]] +ISLES_1_pre, data = discharge_center_dat_complete, dist = "negbin", zero.dist = "binomial")
+  dis_results_out[[i]] = summary(dis_results_out[[i]])
+}
+dis_results_out
+```
+#############################
+Discharge data Post
+#############################
+```{r}
+setwd("P:/Evaluation/TN Lives Count_Writing/florida_results")
+discharge_dat = read.csv("Deidentified Lockman data project.csv", header = TRUE, na.strings = c("", " "))
+center_dat_discharge = data.frame(CID = center_psycho$CID, demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, suicide, female)
+head(center_dat)
+dim(discharge_dat)
+discharge_center_dat = merge(center_dat_discharge, discharge_dat, by = "CID", all.y = TRUE)
+dim(discharge_center_dat)
+head(discharge_center_dat)
+### Change NAs for months, because those are zeros
+discharge_center_dat[,37:42][is.na(discharge_center_dat[,37:42])] = 0
+discharge_center_dat
+### Just keep post measures
+discharge_center_dat = discharge_center_dat[,c(2:10,22:29, 33:34,37:42)]
+miss_var_summary(discharge_center_dat)
+discharge_center_dat_complete = na.omit(discharge_center_dat)
+n_discharge = dim(discharge_center_dat_complete)[1]
+n_discharge
+
+### Crate a total discharge
+discharge_center_dat_complete$total_discharge =  apply(discharge_center_dat_complete[,18:23], 1, sum)
+discharge_center_dat_complete
+describe.factor(discharge_center_dat_complete$total_discharge)
+```
+Participant characteristics
+```{r}
+fac_des=apply(discharge_center_dat_complete[,c(2:10, 24)], 2, function(x){describe.factor(x)})
+fac_des = data.frame(fac_des)
+fac_des = t(fac_des)
+fac_des
+mean_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, mean)
+mean_con
+sd_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, mean)
+sd_con
+range_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, range)
+range_con
+```
 
 
