@@ -1904,31 +1904,35 @@ n_discharge = dim(discharge_center_dat_complete)[1]
 n_discharge
 
 ### Crate a total discharge
-discharge_center_dat_complete$total_discharge =  apply(discharge_center_dat_complete[,20:25], 1, sum)
+discharge_center_dat_complete$total_discharge =  apply(discharge_center_dat_complete[,22:27], 1, sum)
 discharge_center_dat_complete
 describe.factor(discharge_center_dat_complete$total_discharge)
+
 ```
 Participant characteristics
 ```{r}
 
 
-fac_des=apply(discharge_center_dat_complete[,c(3:10, 26)], 2, function(x){describe.factor(x)})
+fac_des=apply(discharge_center_dat_complete[,c(3:10, 20:21)], 2, function(x){describe.factor(x)})
 fac_des = data.frame(fac_des)
 fac_des = t(fac_des)
-fac_des
+write.csv(fac_des, "fac_dec.csv")
 mean_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, mean)
 mean_con
 sd_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, mean)
 sd_con
 range_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, range)
 range_con
+con_des = rbind(mean_con, sd_con, range_con)
+write.csv(con_des,"con_des.csv")
 ```
 Try the hurdle model
 ```{r}
 library(pscl)
+library(caret)
 discharge_center_dat_complete
-cor(discharge_center_dat_complete[,11:19])
-
+cor_dat_pre = cor(discharge_center_dat_complete[,c(11:19,28)])
+findCorrelation(cor_dat_pre, cutoff = .75)
 discharge_hurdle = hurdle(total_discharge ~ INQ_1_pre  +INQ_2_pre +RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre, data = discharge_center_dat_complete, dist = "negbin", zero.dist = "binomial")
 summary(discharge_hurdle)
 
@@ -1981,29 +1985,85 @@ head(discharge_center_dat)
 discharge_center_dat[,37:42][is.na(discharge_center_dat[,37:42])] = 0
 discharge_center_dat
 ### Just keep post measures
-discharge_center_dat = discharge_center_dat[,c(2:10,22:29, 33:34,37:42)]
+discharge_center_dat = discharge_center_dat[,c(2:10,22:30, 33:34,37:42)]
 miss_var_summary(discharge_center_dat)
 discharge_center_dat_complete = na.omit(discharge_center_dat)
 n_discharge = dim(discharge_center_dat_complete)[1]
 n_discharge
 
 ### Crate a total discharge
-discharge_center_dat_complete$total_discharge =  apply(discharge_center_dat_complete[,18:23], 1, sum)
+discharge_center_dat_complete$total_discharge =  apply(discharge_center_dat_complete[,20:25], 1, sum)
 discharge_center_dat_complete
 describe.factor(discharge_center_dat_complete$total_discharge)
 ```
 Participant characteristics
 ```{r}
-fac_des=apply(discharge_center_dat_complete[,c(2:10, 24)], 2, function(x){describe.factor(x)})
+fac_des=apply(discharge_center_dat_complete[,c(2:9, 19:20)], 2, function(x){describe.factor(x)})
 fac_des = data.frame(fac_des)
 fac_des = t(fac_des)
-fac_des
-mean_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, mean)
+write.csv(fac_des, "fac_des.csv")
+mean_con = apply(discharge_center_dat_complete[,c(1, 10:18)], 2, mean)
 mean_con
-sd_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, mean)
+sd_con = apply(discharge_center_dat_complete[,c(1, 10:18)], 2, mean)
 sd_con
-range_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, range)
+range_con = apply(discharge_center_dat_complete[,c(1, 10:18)], 2, range)
 range_con
+con_des = rbind(mean_con, sd_con, range_con)
+write.csv(con_des, "con_des.csv")
 ```
+
+Try the hurdle model
+```{r}
+library(pscl)
+discharge_center_dat_complete
+
+cor_discharge_post =  cor(discharge_center_dat_complete[,c(10:18,27)])
+findCorrelation(cor_discharge_post, cutoff = .75, names = TRUE, verbose = TRUE)
+
+discharge_hurdle = hurdle(total_discharge ~ INQ_1_post  +INQ_2_post +RAS_1_post + RAS_3_post + RAS_5_post  + ISLES_1_post +ISLES_2_post + MILQ_post + RCS_post, data = discharge_center_dat_complete, dist = "negbin", zero.dist = "binomial")
+summary(discharge_hurdle)
+exp(1.42287)
+```
+Try without outlier
+```{r}
+library(pscl)
+
+outlier_discharge_dat =  subset(discharge_center_dat_complete, total_discharge < 10)
+dim(discharge_center_dat_complete)
+dim(outlier_discharge_dat)
+cor(discharge_center_dat_complete[,c(10:18,27)])
+
+discharge_hurdle = hurdle(total_discharge ~ INQ_1_post  +INQ_2_post +RAS_1_post + RAS_3_post + RAS_5_post  + ISLES_1_post +ISLES_2_post + MILQ_post + RCS_post, data = outlier_discharge_dat, dist = "negbin", zero.dist = "binomial")
+summary(discharge_hurdle)
+
+discharge_hurdle = hurdle(total_discharge ~ INQ_1_post  +INQ_2_post  + RAS_3_post + RAS_5_post  + ISLES_1_post +ISLES_2_post + MILQ_post + RCS_post, data = outlier_discharge_dat, dist = "negbin", zero.dist = "binomial")
+summary(discharge_hurdle)
+
+discharge_hurdle = hurdle(total_discharge ~ INQ_1_post  +INQ_2_post +RAS_1_post   + RAS_5_post  + ISLES_1_post +ISLES_2_post + MILQ_post + RCS_post, data = outlier_discharge_dat, dist = "negbin", zero.dist = "binomial")
+summary(discharge_hurdle)
+
+```
+One by one with all data
+```{r}
+
+list_vars = as.list(discharge_center_dat_complete[,11:19])
+dis_results_out = list()
+for(i in 1:length(list_vars)){
+  dis_results_out[[i]] = hurdle(total_discharge ~ list_vars[[i]], data = discharge_center_dat_complete, dist = "negbin", zero.dist = "binomial")
+  dis_results_out[[i]] = summary(dis_results_out[[i]])
+}
+dis_results_out
+
+### ISLES_1_pre is significant try this variable with some others
+list_vars_no_ISLES_1_pre = as.list(discharge_center_dat_complete[,c(11:15, 17:19)])
+dis_results_out = list()
+for(i in 1:length(list_vars_no_ISLES_1_pre)){
+  dis_results_out[[i]] = hurdle(total_discharge ~ list_vars_no_ISLES_1_pre[[i]] +ISLES_1_pre, data = discharge_center_dat_complete, dist = "negbin", zero.dist = "binomial")
+  dis_results_out[[i]] = summary(dis_results_out[[i]])
+}
+dis_results_out
+```
+
+
 
 
