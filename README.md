@@ -2208,7 +2208,7 @@ describe.factor(discharge_center_dat_complete$total_discharge)
 Participant characteristics
 ```{r}
 dim(discharge_center_dat_complete)
-fac_des=apply(discharge_center_dat_complete[,c(3:10, 20)], 2, function(x){describe.factor(x)})
+fac_des=apply(discharge_center_dat_complete[,c(3:10, 20:21, 28)], 2, function(x){describe.factor(x)})
 fac_des = data.frame(fac_des)
 fac_des = t(fac_des)
 write.csv(fac_des, "fac_dec.csv")
@@ -2230,8 +2230,7 @@ cor_dat_pre = cor(discharge_center_dat_complete[,c(11:19,28)])
 findCorrelation(cor_dat_pre, cutoff = .75)
 discharge_hurdle = hurdle(total_discharge ~ INQ_1_pre  +INQ_2_pre +RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre, data = discharge_center_dat_complete, dist = "negbin", zero.dist = "binomial")
 summary(discharge_hurdle)
-discharge_hurdle_sum = summary(discharge_hurdle)
-discharge_hurdle_sum$coefficients$count[,c(1,2)]
+
 
 
 ```
@@ -2304,7 +2303,7 @@ describe.factor(discharge_center_dat_complete$total_discharge)
 ```
 Participant characteristics
 ```{r}
-fac_des=apply(discharge_center_dat_complete[,c(2:9, 19:20)], 2, function(x){describe.factor(x)})
+fac_des=apply(discharge_center_dat_complete[,c(2:9, 19:20, 27)], 2, function(x){describe.factor(x)})
 fac_des = data.frame(fac_des)
 fac_des = t(fac_des)
 write.csv(fac_des, "fac_des.csv")
