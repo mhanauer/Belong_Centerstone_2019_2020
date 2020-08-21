@@ -2231,12 +2231,10 @@ findCorrelation(cor_dat_pre, cutoff = .75)
 discharge_hurdle = hurdle(total_discharge ~ INQ_1_pre  +INQ_2_pre +RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre, data = discharge_center_dat_complete, dist = "negbin", zero.dist = "binomial")
 summary(discharge_hurdle)
 
-
-
 ```
 Sensitivity (get rid of outlier at 16 discharges)
 ```{r}
-outlier_dat = subset(discharge_center_dat_complete, total_discharge < 10)
+outlier_dat = subset(discharge_center_dat_complete, total_discharge < 15)
 dim(outlier_dat)
 dim(discharge_center_dat_complete)
 
@@ -2257,10 +2255,10 @@ for(i in 1:length(list_vars)){
 dis_results_out
 
 ### Try without outlier
-list_vars = as.list(outlier_discharge_dat[,11:19])
+list_vars = as.list(discharge_center_dat_complete[,11:19])
 dis_results_out = list()
 for(i in 1:length(list_vars)){
-  dis_results_out[[i]] = hurdle(total_discharge ~ list_vars[[i]], data = outlier_discharge_dat, dist = "negbin", zero.dist = "binomial")
+  dis_results_out[[i]] = hurdle(total_discharge ~ list_vars[[i]], data = discharge_center_dat_complete, dist = "negbin", zero.dist = "binomial")
   dis_results_out[[i]] = summary(dis_results_out[[i]])
 }
 dis_results_out
