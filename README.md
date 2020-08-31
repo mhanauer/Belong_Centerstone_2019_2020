@@ -2484,7 +2484,8 @@ summary(discharge_hurdle)
 ```
 Simple replication for example
 ```{r}
-discharge_hurdle = zeroinfl(formula = total_discharge ~ RAS_1_pre, data = outlier_dat, dist = "negbin")
+dim(outlier_dat)
+discharge_hurdle = zeroinfl(formula = total_discharge ~ RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre | RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre, data = outlier_dat, dist = "negbin")
 summary(discharge_hurdle)
 ```
 
@@ -2492,12 +2493,21 @@ This replicates
 ```{r}
 set.seed(7)
 n = 100
-RAS_ISLES_MILQ_pre = sample(c(1:5),size = n, replace = TRUE)
+RAS_1_pre  = sample(c(1:5),size = n, replace = TRUE)
+RAS_3_pre= sample(c(1:5),size = n, replace = TRUE)
+RAS_5_pre= sample(c(1:5),size = n, replace = TRUE)
+ISLES_1_pre= sample(c(1:5),size = n, replace = TRUE)
+ISLES_2_pre= sample(c(1:5),size = n, replace = TRUE)
+MILQ_pre = sample(c(1:5),size = n, replace = TRUE)
+RCS_pre  = sample(c(1:7),size = n, replace = TRUE)    
 
-z <- rbinom(n = n, size = 1, prob = 1/(1 + exp((1.7572 + -0.7440 * (RAS_ISLES_MILQ_pre))))) 
-y_sim <- ifelse(z == 0, 0, rnbinom(n = n,  mu = exp(-0.31093 + 0.01703 * (RAS_ISLES_MILQ_pre)), size = 0.8523))
 
-discharge_hurdle = zeroinfl(formula = y_sim ~ RAS_ISLES_MILQ_pre, dist = "negbin")
+
+RCS_pre = sample(c(1:7),size = n, replace = TRUE)
+z <- rbinom(n = n, size = 1, prob = 1/(1 + exp((0.6465 + -2.2895 * (RAS_1_pre) +-0.1523* (RAS_3_pre) + 0.8030*(RAS_5_pre)+ -0.1993*(ISLES_1_pre)+ -0.1353*(ISLES_2_pre)+0.7051*(MILQ_pre)+0.6645*(RCS_pre))))) 
+y_sim <- ifelse(z == 0, 0, rnbinom(n = n,  mu = exp(0.22739 + -0.49252 * (RAS_1_pre) + -0.32546* (RAS_3_pre)+ 0.32722* (RAS_5_pre)+ -0.22358* (ISLES_1_pre)+ 0.16369*(ISLES_2_pre)+ 0.50411*(MILQ_pre)+ 0.07625*(RCS_pre)), size = 1.9818))
+
+discharge_hurdle = zeroinfl(formula = y_sim ~ RAS_1_pre + RAS_3_pre + RAS_5_pre + ISLES_1_pre + ISLES_2_pre + MILQ_pre + RCS_pre, dist = "negbin")
 summary(discharge_hurdle)
 ```
 This replicates: https://uvastatlab.github.io/2019/08/29/simulating-data-for-count-models/#fnref1
