@@ -2488,15 +2488,14 @@ discharge_hurdle = zeroinfl(formula = total_discharge ~ RAS_1_pre, data = outlie
 summary(discharge_hurdle)
 ```
 
-
 This replicates
 ```{r}
 set.seed(7)
 n = 100
 RAS_ISLES_MILQ_pre = sample(c(1:5),size = n, replace = TRUE)
 
-z <- rbinom(n = n, size = 1, prob = 1/(1 + exp((1 + 0.5 * (RAS_ISLES_MILQ_pre))))) 
-y_sim <- ifelse(z == 0, 0, rnbinom(n = n,  mu = exp(2 + .75 * (RAS_ISLES_MILQ_pre)), size = 2))
+z <- rbinom(n = n, size = 1, prob = 1/(1 + exp((1.7572 + -0.7440 * (RAS_ISLES_MILQ_pre))))) 
+y_sim <- ifelse(z == 0, 0, rnbinom(n = n,  mu = exp(-0.31093 + 0.01703 * (RAS_ISLES_MILQ_pre)), size = 0.8523))
 
 discharge_hurdle = zeroinfl(formula = y_sim ~ RAS_ISLES_MILQ_pre, dist = "negbin")
 summary(discharge_hurdle)
