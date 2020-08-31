@@ -2488,27 +2488,61 @@ dim(outlier_dat)
 discharge_hurdle = zeroinfl(formula = total_discharge ~ RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre | RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre, data = outlier_dat, dist = "negbin")
 summary(discharge_hurdle)
 ```
+Get the distributions of each variable
+```{r}
+dat_hist = as.list(outlier_dat[13:19])
+names = as.list(colnames(outlier_dat[13:19]))
+for(i in 1:length(dat_hist)){
+  hist(dat_hist[[i]], main = paste("Histogram of" ,names[[i]]))
+}
+
+```
+
 
 This replicates
 ```{r}
-set.seed(7)
-n = 100
-RAS_1_pre  = sample(c(1:5),size = n, replace = TRUE)
-RAS_3_pre= sample(c(1:5),size = n, replace = TRUE)
-RAS_5_pre= sample(c(1:5),size = n, replace = TRUE)
-ISLES_1_pre= sample(c(1:5),size = n, replace = TRUE)
-ISLES_2_pre= sample(c(1:5),size = n, replace = TRUE)
-MILQ_pre = sample(c(1:5),size = n, replace = TRUE)
-RCS_pre  = sample(c(1:7),size = n, replace = TRUE)    
+power_zero_inflat = function(){
+
+n = list(90, 100)
+RAS_1_pre = list()
+RAS_3_pre = list()
+RAS_5_pre = list()
+ISLES_1_pre = list()
+ISLES_2_pre = list()
+MILQ_pre = list()
+RCS_pre = list()
+
+RAS_1_pre[[i]]  = rnorm(n = n[[i]], mean = mean(outlier_dat$RAS_1_pre), sd= sd(outlier_dat$RAS_1_pre))
+RAS_1_pre[[i]] = ifelse(RAS_1_pre[[i]]> 5, 5, ifelse(RAS_1_pre[[i]]  < 1, 1, RAS_1_pre[[i]]))
+
+RAS_3_pre[[i]]  = rnorm(n = n[[i]], mean = mean(outlier_dat$RAS_3_pre), sd= sd(outlier_dat$RAS_3_pre))
+RAS_3_pre[[i]]  = ifelse(RAS_3_pre[[i]] > 5, 5, ifelse(RAS_3_pre[[i]]  < 1, 1, RAS_3_pre[[i]] ))
+
+RAS_5_pre[[i]] = rnorm(n = n[[i]] , mean = mean(outlier_dat$RAS_5_pre), sd= sd(outlier_dat$RAS_5_pre))
+RAS_5_pre[[i]]  = ifelse(RAS_5_pre[[i]] > 5, 5, ifelse(RAS_5_pre[[i]]  < 1, 1, RAS_5_pre[[i]]))
+
+ISLES_1_pre=  rnorm(n = n, mean = mean(outlier_dat$ISLES_1_pre), sd= sd(outlier_dat$ISLES_1_pre))
+ISLES_1_pre = ifelse(ISLES_1_pre> 5, 5, ifelse(ISLES_1_pre < 1, 1, ISLES_1_pre))
+
+ISLES_2_pre= rnorm(n = n, mean = mean(outlier_dat$ISLES_2_pre), sd= sd(outlier_dat$ISLES_2_pre))
+ISLES_2_pre = ifelse(ISLES_2_pre> 5, 5, ifelse(ISLES_2_pre < 1, 1, ISLES_2_pre))
+
+MILQ_pre = rnorm(n = n, mean = mean(outlier_dat$MILQ_pre), sd= sd(outlier_dat$MILQ_pre))
+MILQ_pre = ifelse(MILQ_pre> 5, 5, ifelse(MILQ_pre < 1, 1, MILQ_pre))
+
+RCS_pre  =rnorm(n = n, mean = mean(outlier_dat$RCS_pre), sd= sd(outlier_dat$RCS_pre))   
+RCS_pre = ifelse(RCS_pre> 7, 7, ifelse(RCS_pre < 1, 1, RCS_pre))
 
 
-
-RCS_pre = sample(c(1:7),size = n, replace = TRUE)
 z <- rbinom(n = n, size = 1, prob = 1/(1 + exp((0.6465 + -2.2895 * (RAS_1_pre) +-0.1523* (RAS_3_pre) + 0.8030*(RAS_5_pre)+ -0.1993*(ISLES_1_pre)+ -0.1353*(ISLES_2_pre)+0.7051*(MILQ_pre)+0.6645*(RCS_pre))))) 
+
 y_sim <- ifelse(z == 0, 0, rnbinom(n = n,  mu = exp(0.22739 + -0.49252 * (RAS_1_pre) + -0.32546* (RAS_3_pre)+ 0.32722* (RAS_5_pre)+ -0.22358* (ISLES_1_pre)+ 0.16369*(ISLES_2_pre)+ 0.50411*(MILQ_pre)+ 0.07625*(RCS_pre)), size = 1.9818))
 
 discharge_hurdle = zeroinfl(formula = y_sim ~ RAS_1_pre + RAS_3_pre + RAS_5_pre + ISLES_1_pre + ISLES_2_pre + MILQ_pre + RCS_pre, dist = "negbin")
 summary(discharge_hurdle)
+}
+
+
 ```
 This replicates: https://uvastatlab.github.io/2019/08/29/simulating-data-for-count-models/#fnref1
 ```{r}
@@ -2524,6 +2558,14 @@ y_sim <- ifelse(z == 0, 0,
 
 m6 <- zeroinfl(y_sim ~ male | male, dist = "negbin")
 summary(m6)
+```
+Look at beta function
+```{r}
+b1 <- seq(0, 1, by = 0.02)    
+b1
+by1 <- round(dbeta(b1, shape1 = 5, shape2 = 20),2) 
+by1
+plot(by1)
 ```
 
 
