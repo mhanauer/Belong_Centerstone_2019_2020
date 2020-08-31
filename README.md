@@ -2363,6 +2363,96 @@ dis_results_out
 
 
 ```
+###########################################
+Simulating pre discharge scores
+###########################################
+Run first two lines of code to get Florida data
+To simulate use: https://uvastatlab.github.io/2019/08/29/simulating-data-for-count-models/
+```{r}
+setwd("P:/Evaluation/TN Lives Count_Writing/florida_results")
+discharge_dat = read.csv("Deidentified Lockman data project.csv", header = TRUE, na.strings = c("", " "))
+center_dat_discharge = data.frame(CID = center_psycho$CID, demos, INQ_1_pre, INQ_2_pre, RAS_1_pre, RAS_3_pre, RAS_5_pre, ISLES_1_pre, ISLES_2_pre, MILQ_pre, RCS_pre, SIS_1_pre, SIS_2_pre, INQ_1_post, INQ_2_post, RAS_1_post, RAS_3_post, RAS_5_post, ISLES_1_post, ISLES_2_post, MILQ_post, RCS_post, SIS_1_post, SIS_2_post, suicide, female)
+head(center_dat)
+dim(discharge_dat)
+discharge_center_dat = merge(center_dat_discharge, discharge_dat, by = "CID", all.y = TRUE)
+dim(discharge_center_dat)
+head(discharge_center_dat)
+### Change NAs for months, because those are zeros
+discharge_center_dat[,37:42][is.na(discharge_center_dat[,37:42])] = 0
+
+### Just keep pre measures
+discharge_center_dat = discharge_center_dat[,c(1:19, 33,34,37:42)]
+discharge_center_dat_complete = na.omit(discharge_center_dat)
+n_discharge = dim(discharge_center_dat_complete)[1]
+n_discharge
+
+### Crate a total discharge
+discharge_center_dat_complete$total_discharge =  apply(discharge_center_dat_complete[,22:27], 1, sum)
+discharge_center_dat_complete
+describe.factor(discharge_center_dat_complete$total_discharge)
+
+```
+Participant characteristics
+```{r}
+dim(discharge_center_dat_complete)
+fac_des=apply(discharge_center_dat_complete[,c(3:10, 20:21, 28)], 2, function(x){describe.factor(x)})
+fac_des = data.frame(fac_des)
+fac_des = t(fac_des)
+write.csv(fac_des, "fac_dec.csv")
+mean_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, mean)
+mean_con
+sd_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, sd)
+sd_con
+range_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, range)
+range_con
+con_des = rbind(mean_con, sd_con, range_con)
+write.csv(con_des,"con_des.csv")
+```
+Simulate zero inflated model, which should work for hurdle model
+```{r}
+set.seed(6)
+n <- 1000
+male <- sample(c(0,1), size = n, replace = TRUE)
+z <- rbinom(n = n, size = 1, prob = 0.9) 
+# mean(z == 0)
+y_sim <- ifelse(z == 0, 0, 
+                rnbinom(n = n, 
+                        mu = exp(1.3 + 1.5 * (male == 1)), 
+                        size = 2))
+
+
+set.seed(7)
+n <- 1000
+male <- sample(c(0,1), size = n, replace = TRUE)
+z <- rbinom(n = n, size = 1, 
+            prob = 1/(1 + exp(-(-0.8 + 1.8 * (male == 1))))) 
+y_sim <- ifelse(z == 0, 0, 
+                rnbinom(n = n, 
+                        mu = exp(1.3 + 1.5 * (male == 1)), 
+                        size = 2))
+
+
+library(VGAM)
+zdata <- data.frame(x2 = runif(nn <- 2000))
+zdata <- transform(zdata, pobs0 = logitlink(-1 + 2*x2, inverse = TRUE))
+zdata <- transform(zdata,
+y1 = rzanegbin(nn, munb = exp(0+2*x2), size = exp(1), pobs0 = pobs0),
+y2 = rzanegbin(nn, munb = exp(1+2*x2), size = exp(1), pobs0 = pobs0))
+with(zdata, table(y1))
+with(zdata, table(y2))
+fit <- vglm(cbind(y1, y2) ~ x2, zanegbinomial, data = zdata, trace = TRUE)
+coef(fit, matrix = TRUE)
+
+```
+Get coefficients for hurdle 
+
+Try the hurdle model
+```{r}
+library(pscl)
+hurdle_model = hurdle(y_sim ~ male, dist = "negbin", zero.dist = "binomial")
+summary(hurdle_model)
+
+```
 
 
 
