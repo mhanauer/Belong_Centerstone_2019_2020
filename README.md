@@ -2467,14 +2467,54 @@ z <- rbinom(n = n, size = 1,
             prob = 1/(1 + exp(-(exp(1.7572) + exp(0.01703) * (RAS_1_pre))))) 
 y_sim <- ifelse(z == 0, 0, 
                 rnbinom(n = n, 
-                        mu = exp(-0.31093 + -0.01703 * (RAS_1_pre)), 
-                        size = 2))
+                        mu = exp(0.22739 + -0.49252* (RAS_ISLES_MILQ_pre) +-0.32546*(RAS_ISLES_MILQ_pre)                          + 0.32722*(RAS_ISLES_MILQ_pre) + -0.22358*(RAS_ISLES_MILQ_pre) +     -0.16369*(RAS_ISLES_MILQ_pre)+  0.50411*(RAS_ISLES_MILQ_pre), 
+                        size = 1.9818))
 
 y_sim
 
 discharge_hurdle = zeroinfl(formula = y_sim ~ RAS_1_pre, dist = "negbin")
 summary(discharge_hurdle)
 
+```
+```{r}
+library(pscl)
+dim(outlier_dat)
+discharge_hurdle = zeroinfl(formula = total_discharge ~ RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre | RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre, data = outlier_dat, dist = "negbin")
+summary(discharge_hurdle)
+```
+Simple replication for example
+```{r}
+discharge_hurdle = zeroinfl(formula = total_discharge ~ RAS_1_pre, data = outlier_dat, dist = "negbin")
+summary(discharge_hurdle)
+```
+
+
+This replicates
+```{r}
+set.seed(7)
+n = 100
+RAS_ISLES_MILQ_pre = sample(c(1:5),size = n, replace = TRUE)
+
+z <- rbinom(n = n, size = 1, prob = 1/(1 + exp((1 + 0.5 * (RAS_ISLES_MILQ_pre))))) 
+y_sim <- ifelse(z == 0, 0, rnbinom(n = n,  mu = exp(2 + .75 * (RAS_ISLES_MILQ_pre)), size = 2))
+
+discharge_hurdle = zeroinfl(formula = y_sim ~ RAS_ISLES_MILQ_pre, dist = "negbin")
+summary(discharge_hurdle)
+```
+This replicates: https://uvastatlab.github.io/2019/08/29/simulating-data-for-count-models/#fnref1
+```{r}
+set.seed(7)
+n <- 10000
+male <- sample(c(0,1), size = n, replace = TRUE)
+z <- rbinom(n = n, size = 1, 
+            prob = 1/(1 + exp((0.8 + 1.8 * (male))))) 
+y_sim <- ifelse(z == 0, 0, 
+                rnbinom(n = n, 
+                        mu = exp(1.3 + 1.5 * (male)), 
+                        size = 2))
+
+m6 <- zeroinfl(y_sim ~ male | male, dist = "negbin")
+summary(m6)
 ```
 
 
