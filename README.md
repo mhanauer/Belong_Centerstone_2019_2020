@@ -2203,6 +2203,8 @@ n_discharge
 discharge_center_dat_complete$total_discharge =  apply(discharge_center_dat_complete[,22:27], 1, sum)
 discharge_center_dat_complete
 describe.factor(discharge_center_dat_complete$total_discharge)
+### Create dataset without outlier
+outlier_dat = subset(discharge_center_dat_complete, total_discharge < 15)
 
 ```
 Participant characteristics
@@ -2220,6 +2222,14 @@ range_con = apply(discharge_center_dat_complete[,c(2, 11:19)], 2, range)
 range_con
 con_des = rbind(mean_con, sd_con, range_con)
 write.csv(con_des,"con_des.csv")
+```
+Get spearman correlations
+```{r}
+
+library(corrplot)
+cor_mat = cor(outlier_dat[,c(11:19, 28)], use = "pairwise.complete.obs", method = "spearman")
+corrplot(cor_mat, type = "upper", insig = "blank")
+
 ```
 Try the hurdle model
 ```{r}
@@ -2391,6 +2401,8 @@ discharge_center_dat_complete$total_discharge =  apply(discharge_center_dat_comp
 discharge_center_dat_complete
 describe.factor(discharge_center_dat_complete$total_discharge)
 
+outlier_dat = subset(discharge_center_dat_complete, total_discharge < 15)
+
 ```
 Participant characteristics
 ```{r}
@@ -2432,27 +2444,39 @@ y_sim <- ifelse(z == 0, 0,
                         size = 2))
 
 
-library(VGAM)
-zdata <- data.frame(x2 = runif(nn <- 2000))
-zdata <- transform(zdata, pobs0 = logitlink(-1 + 2*x2, inverse = TRUE))
-zdata <- transform(zdata,
-y1 = rzanegbin(nn, munb = exp(0+2*x2), size = exp(1), pobs0 = pobs0),
-y2 = rzanegbin(nn, munb = exp(1+2*x2), size = exp(1), pobs0 = pobs0))
-with(zdata, table(y1))
-with(zdata, table(y2))
-fit <- vglm(cbind(y1, y2) ~ x2, zanegbinomial, data = zdata, trace = TRUE)
-coef(fit, matrix = TRUE)
-
+results_zero = zeroinfl(formula = y_sim ~ male | male, dist = "negbin")
+summary(results_zero)
 ```
 Get coefficients for hurdle 
 
-Try the hurdle model
+Try the zero inflated
 ```{r}
 library(pscl)
-hurdle_model = hurdle(y_sim ~ male, dist = "negbin", zero.dist = "binomial")
-summary(hurdle_model)
+dim(outlier_dat)
+discharge_hurdle = zeroinfl(formula = total_discharge ~ RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre | RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre, data = outlier_dat, dist = "negbin")
+summary(discharge_hurdle)
+```
+Try with one parameter estimate instead of gender
+```{r}
+set.seed(7)
+n = 91
+RAS_ISLES_MILQ_pre = sample(c(1:5),size = n, replace = TRUE)
+RCS_pre = sample(c(1:7),size = n, replace = TRUE)
+
+z <- rbinom(n = n, size = 1, 
+            prob = 1/(1 + exp(-(exp(1.7572) + exp(0.01703) * (RAS_1_pre))))) 
+y_sim <- ifelse(z == 0, 0, 
+                rnbinom(n = n, 
+                        mu = exp(-0.31093 + -0.01703 * (RAS_1_pre)), 
+                        size = 2))
+
+y_sim
+
+discharge_hurdle = zeroinfl(formula = y_sim ~ RAS_1_pre, dist = "negbin")
+summary(discharge_hurdle)
 
 ```
+
 
 
 
