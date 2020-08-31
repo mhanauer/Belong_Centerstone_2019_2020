@@ -2420,52 +2420,14 @@ range_con
 con_des = rbind(mean_con, sd_con, range_con)
 write.csv(con_des,"con_des.csv")
 ```
-Simulate zero inflated model, which should work for hurdle model
-```{r}
-set.seed(6)
-n <- 1000
-male <- sample(c(0,1), size = n, replace = TRUE)
-z <- rbinom(n = n, size = 1, prob = 0.9) 
-# mean(z == 0)
-y_sim <- ifelse(z == 0, 0, 
-                rnbinom(n = n, 
-                        mu = exp(1.3 + 1.5 * (male == 1)), 
-                        size = 2))
 
 
-set.seed(7)
-n <- 1000
-male <- sample(c(0,1), size = n, replace = TRUE)
-z <- rbinom(n = n, size = 1, 
-            prob = 1/(1 + exp(-(-0.8 + 1.8 * (male == 1))))) 
-y_sim <- ifelse(z == 0, 0, 
-                rnbinom(n = n, 
-                        mu = exp(1.3 + 1.5 * (male == 1)), 
-                        size = 2))
 
 
-results_zero = zeroinfl(formula = y_sim ~ male | male, dist = "negbin")
-summary(results_zero)
-```
-Get coefficients for hurdle 
-
-Try the zero inflated
-```{r}
-library(pscl)
-dim(outlier_dat)
-discharge_hurdle = zeroinfl(formula = total_discharge ~ RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre | RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre, data = outlier_dat, dist = "negbin")
-summary(discharge_hurdle)
-```
-
-```{r}
-library(pscl)
-dim(outlier_dat)
-discharge_hurdle = zeroinfl(formula = total_discharge ~ RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre | RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre, data = outlier_dat, dist = "negbin")
-summary(discharge_hurdle)
-```
 Simple replication for example
 ```{r}
 dim(outlier_dat)
+library(pscl)
 discharge_hurdle = zeroinfl(formula = total_discharge ~ RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre | RAS_1_pre + RAS_3_pre + RAS_5_pre  + ISLES_1_pre +ISLES_2_pre + MILQ_pre + RCS_pre, data = outlier_dat, dist = "negbin")
 summary(discharge_hurdle)
 ```
@@ -2478,12 +2440,17 @@ for(i in 1:length(dat_hist)){
 }
 
 ```
+Demonstrating replication 
+```{r}
+
+```
 
 
 This replicates
 ```{r}
 power_zero_inflat = function(){
-n =rep(c(100, 110, 120, 130, 140), each =10)
+n = rep(c(seq(from = 200, to = 600, by =50)), each =10)
+#n = c(300, 400)
 n = as.list(n)
 RAS_1_pre = list()
 RAS_3_pre = list()
@@ -2537,44 +2504,52 @@ return(list(count_p, logit_p))
 
 
 ```
+
+
+
 Test out the function
 ```{r}
 power_rep = power_zero_inflat()
 
 power_unlist= unlist(power_rep)
-n = rep(c(100, 110, 120, 130, 140), each =10)
-n
-power_matrix = matrix(power_unlist, ncol = 7, nrow = length(n), byrow = TRUE)
+n = rep(c(seq(from = 200, to = 600, by =50)), each =10)
+#n = c(300, 400)
+#n = rep(c(seq(from = 200, to = 600, by =50)), each =100)
+power_matrix = matrix(power_unlist, ncol = 7*2, nrow = length(n), byrow = TRUE)
 power_matrix = data.frame(power_matrix)
-colnames(power_matrix) = colnames(outlier_dat[13:19])
+names = c(paste0(colnames(outlier_dat[13:19]),"_", "count"), paste0(colnames(outlier_dat[13:19]),"_", "binary"))
+colnames(power_matrix)= names
+power_matrix
 power_matrix$n = n 
+power_matrix$model = rep(c("count", "binary"), dim(power_matrix)[1]/2)
 power_matrix = na.omit(power_matrix)
 ### sum by n
 library(dplyr)
 sum_dat = power_matrix %>% 
-  group_by(n) %>% 
+  group_by(n, model) %>% 
   summarise_all(funs(sum))
 sum_dat
 
-count_dat =  power_matrix %>% group_by(n) %>% tally()
+count_dat =  power_matrix %>% group_by(n, model) %>% tally()
 
 power_dat = data.frame(sum_dat, count = count_dat$nn)
-power_dat[,2:8] =round(power_dat[,2:8] / power_dat$count,2)
+power_dat[,3:9] =round(power_dat[,3:9] / power_dat$count,2)
 power_dat$count = NULL
 power_dat
 library(reshape2)
 
-dat2b <- melt(power_dat, id.vars=c())
-dat2b
-
+power_long <- melt(power_dat, id.vars=c(1,2))
+colnames(power_long) = c("n", "model", "predictor", "power")
+power_long
 ```
 Then plot the power
 ```{r}
 library(ggplot2)
-
-don %>%
-  ggplot( aes(x=year, y=n, group=name, color=name)) +
-    geom_line()
+power_long %>%
+  ggplot( aes(x=n, y=power, group=predictor, color=predictor)) +
+    geom_line()+
+    geom_hline(yintercept=.8, linetype="dashed", color = "red")+
+  ggtitle("Figure 1: Power analysis for relapse count by predictor")
 
 ```
 
