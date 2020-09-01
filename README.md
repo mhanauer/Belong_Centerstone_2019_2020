@@ -5039,11 +5039,100 @@ for(i in 1:length(dat_hist)){
 ```
 Demonstrating replication 
 ```{r}
+power_zero_inflat_rep = function(){
+n = rep(1000, 10)
+n = as.list(n)
+RAS_1_pre = list()
+RAS_3_pre = list()
+RAS_5_pre = list()
+ISLES_1_pre = list()
+ISLES_2_pre = list()
+MILQ_pre = list()
+RCS_pre = list()
+z = list()
+y_sim = list()
+discharge_hurdle = list()
+discharge_hurdle_sum = list()
+count_p = list()
+logit_p = list()
+for(i in 1:length(n)){
 
+RAS_1_pre[[i]]  = rnorm(n = n[[i]], mean = mean(outlier_dat$RAS_1_pre), sd= sd(outlier_dat$RAS_1_pre))
+RAS_1_pre[[i]] = ifelse(RAS_1_pre[[i]]> 5, 5, ifelse(RAS_1_pre[[i]]  < 1, 1, RAS_1_pre[[i]]))
+
+RAS_3_pre[[i]]  = rnorm(n = n[[i]], mean = mean(outlier_dat$RAS_3_pre), sd= sd(outlier_dat$RAS_3_pre))
+RAS_3_pre[[i]]  = ifelse(RAS_3_pre[[i]] > 5, 5, ifelse(RAS_3_pre[[i]]  < 1, 1, RAS_3_pre[[i]] ))
+
+RAS_5_pre[[i]] = rnorm(n = n[[i]] , mean = mean(outlier_dat$RAS_5_pre), sd= sd(outlier_dat$RAS_5_pre))
+RAS_5_pre[[i]]  = ifelse(RAS_5_pre[[i]] > 5, 5, ifelse(RAS_5_pre[[i]]  < 1, 1, RAS_5_pre[[i]]))
+
+ISLES_1_pre[[i]] =  rnorm(n = n[[i]], mean = mean(outlier_dat$ISLES_1_pre), sd= sd(outlier_dat$ISLES_1_pre))
+ISLES_1_pre[[i]] = ifelse(ISLES_1_pre[[i]]> 5, 5, ifelse(ISLES_1_pre[[i]] < 1, 1, ISLES_1_pre[[i]]))
+
+ISLES_2_pre[[i]]= rnorm(n = n[[i]], mean = mean(outlier_dat$ISLES_2_pre), sd= sd(outlier_dat$ISLES_2_pre))
+ISLES_2_pre[[i]] = ifelse(ISLES_2_pre[[i]]> 5, 5, ifelse(ISLES_2_pre[[i]] < 1, 1, ISLES_2_pre[[i]]))
+
+MILQ_pre[[i]] = rnorm(n = n[[i]], mean = mean(outlier_dat$MILQ_pre), sd= sd(outlier_dat$MILQ_pre))
+MILQ_pre[[i]] = ifelse(MILQ_pre[[i]]> 5, 5, ifelse(MILQ_pre[[i]] < 1, 1, MILQ_pre[[i]]))
+
+RCS_pre[[i]]  =rnorm(n = n[[i]], mean = mean(outlier_dat$RCS_pre), sd= sd(outlier_dat$RCS_pre))   
+RCS_pre[[i]] = ifelse(RCS_pre[[i]]> 7, 7, ifelse(RCS_pre[[i]] < 1, 1, RCS_pre[[i]]))
+
+
+z[[i]] <- rbinom(n = n[[i]], size = 1, prob = 1/(1 + exp((0.6465 + -2.2895 * (RAS_1_pre[[i]]) +-0.1523* (RAS_3_pre[[i]]) + 0.8030*(RAS_5_pre[[i]])+ -0.1993*(ISLES_1_pre[[i]])+ -0.1353*(ISLES_2_pre[[i]])+0.7051*(MILQ_pre[[i]])+0.6645*(RCS_pre[[i]]))))) 
+
+y_sim[[i]] <- ifelse(z[[i]] == 0, 0, rnbinom(n = n[[i]],  mu = exp(0.22739 + -0.49252 * (RAS_1_pre[[i]]) + -0.32546* (RAS_3_pre[[i]])+ 0.32722* (RAS_5_pre[[i]])+ -0.22358* (ISLES_1_pre[[i]])+ 0.16369*(ISLES_2_pre[[i]])+ 0.50411*(MILQ_pre[[i]])+ 0.07625*(RCS_pre[[i]])), size = 1.9818))
+
+discharge_hurdle[[i]] = zeroinfl(formula = y_sim[[i]] ~ RAS_1_pre[[i]] + RAS_3_pre[[i]] + RAS_5_pre[[i]] + ISLES_1_pre[[i]] + ISLES_2_pre[[i]] + MILQ_pre[[i]] + RCS_pre[[i]], dist = "negbin")
+discharge_hurdle_sum[[i]] = summary(discharge_hurdle[[i]])
+count_p[[i]] = discharge_hurdle_sum[[i]]$coefficients$count[,1]
+logit_p[[i]] = discharge_hurdle_sum[[i]]$coefficients$zero[,1]
+
+}
+return(list(count_p, logit_p))
+}
+
+```
+Replication analysis results
+```{r}
+power_rep = power_zero_inflat_rep()
+power_rep
+power_rep[[1]]$coefficients$count[,1]
+
+power_unlist= unlist(power_rep)
+n = rep(1000, 10)
+#n = c(300, 400)
+#n = rep(c(seq(from = 200, to = 600, by =50)), each =100)
+power_matrix = matrix(power_unlist, ncol = 7, nrow = length(n), byrow = TRUE)
+power_matrix = data.frame(power_matrix)
+colnames(power_matrix)= colnames(outlier_dat[13:19])
+power_matrix
+power_matrix$n = n 
+power_matrix$model = rep(c("count", "binary"), dim(power_matrix)[1]/2)
+power_matrix = na.omit(power_matrix)
+### sum by n
+library(dplyr)
+sum_dat = power_matrix %>% 
+  group_by(n, model) %>% 
+  summarise_all(funs(sum))
+sum_dat
+
+count_dat =  power_matrix %>% group_by(n, model) %>% tally()
+
+power_dat = data.frame(sum_dat, count = count_dat$nn)
+power_dat[,3:9] =round(power_dat[,3:9]/ power_dat$count,2)
+power_dat$count = NULL
+power_dat
+library(reshape2)
+
+power_long <- melt(power_dat, id.vars=c(1,2))
+power_long
+colnames(power_long) = c("n", "model", "predictor", "power")
+power_long
 ```
 
 
-This replicates
+Power analysis function
 ```{r}
 power_zero_inflat = function(){
 n = rep(c(seq(from = 200, to = 600, by =50)), each =200)
@@ -5104,7 +5193,7 @@ return(list(count_p, logit_p))
 
 
 
-Test out the function
+Get power analysis results
 ```{r}
 power_rep = power_zero_inflat()
 
