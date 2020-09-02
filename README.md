@@ -5040,7 +5040,7 @@ for(i in 1:length(dat_hist)){
 Demonstrating replication 
 ```{r}
 power_zero_inflat_rep = function(){
-n = rep(10000, 1000)
+n = rep(10000, 10000)
 n = as.list(n)
 RAS_1_pre = list()
 RAS_3_pre = list()
@@ -5197,9 +5197,6 @@ return(list(count_p, logit_p))
 
 
 ```
-
-
-
 Get power analysis results
 Not right, the logistic results are in the second unlist
 ```{r}
@@ -5219,6 +5216,7 @@ power_matrix_count$n = n
 power_matrix_count$model = c(rep(c("count"), length(n)/2), rep(c("binary"), length(n)/2))
 power_matrix_count
 ### sum by n
+power_matrix_count = na.omit(power_matrix_count)
 library(dplyr)
 sum_dat = power_matrix_count %>% 
   group_by(n, model) %>% 
