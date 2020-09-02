@@ -5040,7 +5040,7 @@ for(i in 1:length(dat_hist)){
 Demonstrating replication 
 ```{r}
 power_zero_inflat_rep = function(){
-n = rep(1000, 10)
+n = rep(10000, 1000)
 n = as.list(n)
 RAS_1_pre = list()
 RAS_3_pre = list()
@@ -5087,7 +5087,7 @@ discharge_hurdle[[i]] = zeroinfl(formula = y_sim[[i]] ~ RAS_1_pre[[i]] + RAS_3_p
 discharge_hurdle_sum[[i]] = summary(discharge_hurdle[[i]])
 count_p[[i]] = discharge_hurdle_sum[[i]]$coefficients$count[,1]
 logit_p[[i]] = discharge_hurdle_sum[[i]]$coefficients$zero[,1]
-
+  
 }
 return(list(count_p, logit_p))
 }
@@ -5096,46 +5096,53 @@ return(list(count_p, logit_p))
 Replication analysis results
 ```{r}
 power_rep = power_zero_inflat_rep()
-power_rep
-power_rep[[1]]$coefficients$count[,1]
+power_rep_count= unlist(power_rep[[1]])
+power_rep_binary = unlist(power_rep[[2]])
 
-power_unlist= unlist(power_rep)
-n = rep(1000, 10)
 #n = c(300, 400)
 #n = rep(c(seq(from = 200, to = 600, by =50)), each =100)
-power_matrix = matrix(power_unlist, ncol = 7, nrow = length(n), byrow = TRUE)
-power_matrix = data.frame(power_matrix)
-colnames(power_matrix)= colnames(outlier_dat[13:19])
-power_matrix
-power_matrix$n = n 
-power_matrix$model = rep(c("count", "binary"), dim(power_matrix)[1]/2)
-power_matrix = na.omit(power_matrix)
-### sum by n
-library(dplyr)
-sum_dat = power_matrix %>% 
-  group_by(n, model) %>% 
-  summarise_all(funs(sum))
-sum_dat
+power_matrix_count = matrix(power_rep_count, ncol = 9, nrow = length(n), byrow = TRUE)
+power_matrix_count = data.frame(power_matrix_count)
+names = c("intercept_count", paste0(colnames(outlier_dat[13:19]), "_", "count"), "theta_count")
+colnames(power_matrix_count) = names
+power_matrix_count = apply(power_matrix_count, 2, mean)
+power_matrix_count = t(data.frame(t(power_matrix_count)))
+colnames(power_matrix_count) = "sim_par_ests"
+power_matrix_count
+## Actual estimates 0.22739 + -0.49252 * (RAS_1_pre[[i]]) + -0.32546* (RAS_3_pre[[i]])+ 0.32722* (RAS_5_pre[[i]])+ -0.22358* (ISLES_1_pre[[i]])+ 0.16369*(ISLES_2_pre[[i]])+ 0.50411*(MILQ_pre[[i]])+ 0.07625*(RCS_pre[[i]])), size = 1.9818
+count_pars = t(data.frame(t(c(discharge_hurdle$coefficients$count, discharge_hurdle$theta))))
+colnames(count_pars) = "actual_par_ests"
+power_matrix_count = cbind(power_matrix_count, count_pars)
+power_matrix_count = data.frame(power_matrix_count)
+power_matrix_count$abs_bias = abs(power_matrix_count$sim_par_ests-power_matrix_count$actual_par_ests)
+power_matrix_count$percent_abs_bias = abs((power_matrix_count$sim_par_ests-power_matrix_count$actual_par_ests)/power_matrix_count$actual_par_ests)
+power_matrix_count = round(power_matrix_count,2)
+power_matrix_count
 
-count_dat =  power_matrix %>% group_by(n, model) %>% tally()
+#### Binary##############################
+power_matrix_binary = matrix(power_rep_binary, ncol = 8, nrow = length(n), byrow = TRUE)
+power_matrix_binary = data.frame(power_matrix_binary)
+names = c("intercept_binary", paste0(colnames(outlier_dat[13:19]), "_", "binary"))
+colnames(power_matrix_binary) = names
+power_matrix_binary = apply(power_matrix_binary, 2, mean)
+power_matrix_binary = t(data.frame(t(power_matrix_binary)))
+colnames(power_matrix_binary) = "sim_par_ests"
+power_matrix_binary
+binary_pars = t(data.frame(t(c(discharge_hurdle$coefficients$zero))))
+colnames(binary_pars) = "actual_par_ests"
+power_matrix_binary = cbind(power_matrix_binary, binary_pars)
+power_matrix_binary = data.frame(power_matrix_binary)
+power_matrix_binary$abs_bias = abs(power_matrix_binary$sim_par_ests-power_matrix_binary$actual_par_ests)
+power_matrix_binary$percent_abs_bias = abs((power_matrix_binary$sim_par_ests-power_matrix_binary$actual_par_ests)/power_matrix_binary$actual_par_ests)
+power_matrix_binary = round(power_matrix_binary,2)
+power_matrix_binary
 
-power_dat = data.frame(sum_dat, count = count_dat$nn)
-power_dat[,3:9] =round(power_dat[,3:9]/ power_dat$count,2)
-power_dat$count = NULL
-power_dat
-library(reshape2)
 
-power_long <- melt(power_dat, id.vars=c(1,2))
-power_long
-colnames(power_long) = c("n", "model", "predictor", "power")
-power_long
 ```
-
-
 Power analysis function
 ```{r}
 power_zero_inflat = function(){
-n = rep(c(seq(from = 200, to = 600, by =50)), each =200)
+n = rep(c(seq(from = 200, to = 600, by =50)), each =100)
 #n = c(300, 400)
 n = as.list(n)
 RAS_1_pre = list()
@@ -5194,28 +5201,31 @@ return(list(count_p, logit_p))
 
 
 Get power analysis results
+Not right, the logistic results are in the second unlist
 ```{r}
 power_rep = power_zero_inflat()
-
-power_unlist= unlist(power_rep)
-n = rep(c(seq(from = 200, to = 600, by =50)), each =200)
-#n = c(300, 400)
-#n = rep(c(seq(from = 200, to = 600, by =50)), each =100)
-power_matrix = matrix(power_unlist, ncol = 7, nrow = length(n), byrow = TRUE)
-power_matrix = data.frame(power_matrix)
-colnames(power_matrix)= colnames(outlier_dat[13:19])
-power_matrix
-power_matrix$n = n 
-power_matrix$model = rep(c("count", "binary"), dim(power_matrix)[1]/2)
-power_matrix = na.omit(power_matrix)
+power_matrix_count = power_rep
+power_matrix_count= unlist(power_matrix_count)
+length(power_matrix_count)/7
+n = rep(c(seq(from = 200, to = 600, by =50)), each =100)
+n = rep(n, 2)
+length(n)
+power_matrix_count = matrix(power_matrix_count, ncol = 7, nrow = length(n), byrow = TRUE)
+power_matrix_count
+power_matrix_count = data.frame(power_matrix_count)
+colnames(power_matrix_count)= colnames(outlier_dat[13:19])
+power_matrix_count
+power_matrix_count$n = n 
+power_matrix_count$model = c(rep(c("count"), length(n)/2), rep(c("binary"), length(n)/2))
+power_matrix_count
 ### sum by n
 library(dplyr)
-sum_dat = power_matrix %>% 
+sum_dat = power_matrix_count %>% 
   group_by(n, model) %>% 
   summarise_all(funs(sum))
 sum_dat
 
-count_dat =  power_matrix %>% group_by(n, model) %>% tally()
+count_dat =  power_matrix_count %>% group_by(n, model) %>% tally()
 
 power_dat = data.frame(sum_dat, count = count_dat$nn)
 power_dat[,3:9] =round(power_dat[,3:9]/ power_dat$count,2)
