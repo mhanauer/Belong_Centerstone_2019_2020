@@ -5040,7 +5040,7 @@ for(i in 1:length(dat_hist)){
 Demonstrating replication 
 ```{r}
 power_zero_inflat_rep = function(){
-n = rep(10000, 10000)
+n = rep(10000, 1000)
 n = as.list(n)
 RAS_1_pre = list()
 RAS_3_pre = list()
