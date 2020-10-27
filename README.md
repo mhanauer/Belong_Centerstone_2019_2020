@@ -1230,7 +1230,7 @@ head(out_diff_dat[[1]][,35:45])
 head(out_diff_dat[[1]])
 
 for(i in 1:length(out_diff_dat)){
-  regout_sis_1[[i]] = lm(SIS_1_diff ~ INQ_1_diff + INQ_2_diff + RAS_1_diff + RAS_3_diff+ RAS_5_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + RCS_diff, data = out_diff_dat[[i]])
+  regout_sis_1[[i]] = lm(SIS_1_diff ~ + RAS_1_diff + RAS_3_diff+ RAS_5_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + RCS_diff, data = out_diff_dat[[i]])
   regout_sis_1_sum[[i]] = summary(regout_sis_1[[i]])
   import_sis_1[[i]] = calc.relimp(regout_sis_1[[i]])
   import_sis_1[[i]] = import_sis_1[[i]]@lmg
@@ -1241,20 +1241,20 @@ for(i in 1:length(out_diff_dat)){
 vif_sis_1
 #10 cols
 parsout_sis_1 = unlist(parsout_sis_1) 
-parsout_sis_1 = matrix(parsout_sis_1, ncol = 10, byrow = TRUE)
+parsout_sis_1 = matrix(parsout_sis_1, ncol = 8, byrow = TRUE)
 parsout_sis_1
 
 sesout_sis_1 = unlist(sesout_sis_1)
-sesout_sis_1 = matrix(sesout_sis_1, ncol = 10, byrow = TRUE)
+sesout_sis_1 = matrix(sesout_sis_1, ncol = 8, byrow = TRUE)
 sesout_sis_1
 
 pars_sesout_sis_1 = mi.meld(parsout_sis_1, sesout_sis_1)
 t_stat_reg_sis_1 =  pars_sesout_sis_1$q.mi / pars_sesout_sis_1$se.mi
-p_values_reg_sis_1 = 2*pt(-abs(t_stat_reg_sis_1), df = dim(out_diff_dat[[1]])[1]-10)
+p_values_reg_sis_1 = 2*pt(-abs(t_stat_reg_sis_1), df = dim(out_diff_dat[[1]])[1]-8)
 p_values_reg_sis_1 = format(round(p_values_reg_sis_1, digits=3), nsmall = 2)
 p_values_reg_sis_1
 p_values_reg_sis_1
-critical_t_reg_sis_1 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-10))
+critical_t_reg_sis_1 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-8))
 critical_t_reg_sis_1
 upper_reg_sis_1 = pars_sesout_sis_1$q.mi +(critical_t_reg_sis_1*pars_sesout_sis_1$se.mi)
 upper_reg_sis_1 = format(round(upper_reg_sis_1, digits=2), nsmall = 2)
@@ -1264,14 +1264,14 @@ lower_reg_sis_1 = format(round(lower_reg_sis_1, digits=2), nsmall = 2)
 ci_95_sis_1 = paste0(upper_reg_sis_1, sep = ",", lower_reg_sis_1)
 ci_95_sis_1
 import_sis_1 = unlist(import_sis_1)
-import_sis_1 = matrix(import_sis_1, ncol = 9, byrow = TRUE)
+import_sis_1 = matrix(import_sis_1, ncol = 7, byrow = TRUE)
 import_sis_1 = colMeans(import_sis_1)
 import_sis_1 
 
 reg_results_sis_1 = data.frame(par_est = t(pars_sesout_sis_1$q.mi), se = t(pars_sesout_sis_1$se.mi), p_value = t(p_values_reg_sis_1), ci_95_sis_1)
 reg_results_sis_1
 reg_results_sis_1[,1:2] = format(round(reg_results_sis_1[,1:2], digits=2), nsmall = 2)
-reg_results_sis_1$var_names = c("Intercept", colnames(out_diff_dat[[1]])[38:46])
+reg_results_sis_1$var_names = c("Intercept", colnames(out_diff_dat[[1]])[40:46])
 reg_results_sis_1 = data.frame(var_names = reg_results_sis_1$var_names, reg_results_sis_1[,1:4])
 typeof(reg_results_sis_1$p_value)
 
@@ -1302,7 +1302,7 @@ vif_sis_1 = list()
 library(relaimpo)
 
 for(i in 1:length(out_diff_dat)){
-  regout_sis_1[[i]] = lm(SIS_1_pre ~ INQ_1_pre + INQ_2_pre + RAS_1_pre + RAS_3_pre+ RAS_5_pre + ISLES_1_pre + ISLES_2_pre + MILQ_pre + RCS_pre, data = out_diff_dat[[i]])
+  regout_sis_1[[i]] = lm(SIS_1_pre ~  RAS_1_pre + RAS_3_pre+ RAS_5_pre + ISLES_1_pre + ISLES_2_pre + MILQ_pre + RCS_pre, data = out_diff_dat[[i]])
   regout_sis_1_sum[[i]] = summary(regout_sis_1[[i]])
   import_sis_1[[i]] = calc.relimp(regout_sis_1[[i]])
   import_sis_1[[i]] = import_sis_1[[i]]@lmg
@@ -1313,20 +1313,20 @@ for(i in 1:length(out_diff_dat)){
 vif_sis_1
 #10 cols
 parsout_sis_1 = unlist(parsout_sis_1) 
-parsout_sis_1 = matrix(parsout_sis_1, ncol = 10, byrow = TRUE)
+parsout_sis_1 = matrix(parsout_sis_1, ncol = 8, byrow = TRUE)
 parsout_sis_1
 
 sesout_sis_1 = unlist(sesout_sis_1)
-sesout_sis_1 = matrix(sesout_sis_1, ncol = 10, byrow = TRUE)
+sesout_sis_1 = matrix(sesout_sis_1, ncol = 8, byrow = TRUE)
 sesout_sis_1
 
 pars_sesout_sis_1 = mi.meld(parsout_sis_1, sesout_sis_1)
 t_stat_reg_sis_1 =  pars_sesout_sis_1$q.mi / pars_sesout_sis_1$se.mi
-p_values_reg_sis_1 = 2*pt(-abs(t_stat_reg_sis_1), df = dim(out_diff_dat[[1]])[1]-10)
+p_values_reg_sis_1 = 2*pt(-abs(t_stat_reg_sis_1), df = dim(out_diff_dat[[1]])[1]-8)
 p_values_reg_sis_1 = format(round(p_values_reg_sis_1, digits=3), nsmall = 2)
 p_values_reg_sis_1
 p_values_reg_sis_1
-critical_t_reg_sis_1 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-10))
+critical_t_reg_sis_1 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-8))
 critical_t_reg_sis_1
 upper_reg_sis_1 = pars_sesout_sis_1$q.mi +(critical_t_reg_sis_1*pars_sesout_sis_1$se.mi)
 upper_reg_sis_1 = format(round(upper_reg_sis_1, digits=2), nsmall = 2)
@@ -1336,14 +1336,14 @@ lower_reg_sis_1 = format(round(lower_reg_sis_1, digits=2), nsmall = 2)
 ci_95_sis_1 = paste0(upper_reg_sis_1, sep = ",", lower_reg_sis_1)
 ci_95_sis_1
 import_sis_1 = unlist(import_sis_1)
-import_sis_1 = matrix(import_sis_1, ncol = 9, byrow = TRUE)
+import_sis_1 = matrix(import_sis_1, ncol = 7, byrow = TRUE)
 import_sis_1 = colMeans(import_sis_1)
 import_sis_1 
 
 reg_results_sis_1 = data.frame(par_est = t(pars_sesout_sis_1$q.mi), se = t(pars_sesout_sis_1$se.mi), p_value = t(p_values_reg_sis_1), ci_95_sis_1)
 reg_results_sis_1
 reg_results_sis_1[,1:2] = format(round(reg_results_sis_1[,1:2], digits=2), nsmall = 2)
-reg_results_sis_1$var_names = c("Intercept", colnames(out_diff_dat[[1]])[38:46])
+reg_results_sis_1$var_names = c("Intercept", colnames(out_diff_dat[[1]])[40:46])
 reg_results_sis_1 = data.frame(var_names = reg_results_sis_1$var_names, reg_results_sis_1[,1:4])
 typeof(reg_results_sis_1$p_value)
 
@@ -1375,7 +1375,7 @@ vif_sis_1 = list()
 library(relaimpo)
 
 for(i in 1:length(out_diff_dat)){
-  regout_sis_1[[i]] = lm(SIS_1_pre ~ INQ_1_post + INQ_2_post + RAS_1_post + RAS_3_post+ RAS_5_post + ISLES_1_post + ISLES_2_post + MILQ_post + RCS_post, data = out_diff_dat[[i]])
+  regout_sis_1[[i]] = lm(SIS_1_pre ~ RAS_1_post + RAS_3_post+ RAS_5_post + ISLES_1_post + ISLES_2_post + MILQ_post + RCS_post, data = out_diff_dat[[i]])
   regout_sis_1_sum[[i]] = summary(regout_sis_1[[i]])
   import_sis_1[[i]] = calc.relimp(regout_sis_1[[i]])
   import_sis_1[[i]] = import_sis_1[[i]]@lmg
@@ -1386,20 +1386,20 @@ for(i in 1:length(out_diff_dat)){
 vif_sis_1
 #10 cols
 parsout_sis_1 = unlist(parsout_sis_1) 
-parsout_sis_1 = matrix(parsout_sis_1, ncol = 10, byrow = TRUE)
+parsout_sis_1 = matrix(parsout_sis_1, ncol = 8, byrow = TRUE)
 parsout_sis_1
 
 sesout_sis_1 = unlist(sesout_sis_1)
-sesout_sis_1 = matrix(sesout_sis_1, ncol = 10, byrow = TRUE)
+sesout_sis_1 = matrix(sesout_sis_1, ncol = 8, byrow = TRUE)
 sesout_sis_1
 
 pars_sesout_sis_1 = mi.meld(parsout_sis_1, sesout_sis_1)
 t_stat_reg_sis_1 =  pars_sesout_sis_1$q.mi / pars_sesout_sis_1$se.mi
-p_values_reg_sis_1 = 2*pt(-abs(t_stat_reg_sis_1), df = dim(out_diff_dat[[1]])[1]-10)
+p_values_reg_sis_1 = 2*pt(-abs(t_stat_reg_sis_1), df = dim(out_diff_dat[[1]])[1]-8)
 p_values_reg_sis_1 = format(round(p_values_reg_sis_1, digits=3), nsmall = 2)
 p_values_reg_sis_1
 p_values_reg_sis_1
-critical_t_reg_sis_1 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-10))
+critical_t_reg_sis_1 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-8))
 critical_t_reg_sis_1
 upper_reg_sis_1 = pars_sesout_sis_1$q.mi +(critical_t_reg_sis_1*pars_sesout_sis_1$se.mi)
 upper_reg_sis_1 = format(round(upper_reg_sis_1, digits=2), nsmall = 2)
@@ -1409,14 +1409,14 @@ lower_reg_sis_1 = format(round(lower_reg_sis_1, digits=2), nsmall = 2)
 ci_95_sis_1 = paste0(upper_reg_sis_1, sep = ",", lower_reg_sis_1)
 ci_95_sis_1
 import_sis_1 = unlist(import_sis_1)
-import_sis_1 = matrix(import_sis_1, ncol = 9, byrow = TRUE)
+import_sis_1 = matrix(import_sis_1, ncol = 7, byrow = TRUE)
 import_sis_1 = colMeans(import_sis_1)
 import_sis_1 
 
 reg_results_sis_1 = data.frame(par_est = t(pars_sesout_sis_1$q.mi), se = t(pars_sesout_sis_1$se.mi), p_value = t(p_values_reg_sis_1), ci_95_sis_1)
 reg_results_sis_1
 reg_results_sis_1[,1:2] = format(round(reg_results_sis_1[,1:2], digits=2), nsmall = 2)
-reg_results_sis_1$var_names = c("Intercept", colnames(out_diff_dat[[1]])[38:46])
+reg_results_sis_1$var_names = c("Intercept", colnames(out_diff_dat[[1]])[40:46])
 reg_results_sis_1 = data.frame(var_names = reg_results_sis_1$var_names, reg_results_sis_1[,1:4])
 typeof(reg_results_sis_1$p_value)
 
@@ -1450,7 +1450,7 @@ head(out_diff_dat[[1]][,35:45])
 
 
 for(i in 1:length(out_diff_dat)){
-  regout_sis_2[[i]] = lm(SIS_2_diff ~ INQ_1_diff + INQ_2_diff + RAS_1_diff + RAS_3_diff+ RAS_5_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + RCS_diff, data = out_diff_dat[[i]])
+  regout_sis_2[[i]] = lm(SIS_2_diff ~ RAS_1_diff + RAS_3_diff+ RAS_5_diff + ISLES_1_diff + ISLES_2_diff + MILQ_diff + RCS_diff, data = out_diff_dat[[i]])
   regout_sis_2_sum[[i]] = summary(regout_sis_2[[i]])
   import_sis_2[[i]] = calc.relimp(regout_sis_2[[i]])
   import_sis_2[[i]] = import_sis_2[[i]]@lmg
@@ -1461,20 +1461,20 @@ for(i in 1:length(out_diff_dat)){
 vif_sis_2
 #10 cols
 parsout_sis_2 = unlist(parsout_sis_2) 
-parsout_sis_2 = matrix(parsout_sis_2, ncol = 10, byrow = TRUE)
+parsout_sis_2 = matrix(parsout_sis_2, ncol = 8, byrow = TRUE)
 parsout_sis_2
 
 sesout_sis_2 = unlist(sesout_sis_2)
-sesout_sis_2 = matrix(sesout_sis_2, ncol = 10, byrow = TRUE)
+sesout_sis_2 = matrix(sesout_sis_2, ncol = 8, byrow = TRUE)
 sesout_sis_2
 
 pars_sesout_sis_2 = mi.meld(parsout_sis_2, sesout_sis_2)
 t_stat_reg_sis_2 =  pars_sesout_sis_2$q.mi / pars_sesout_sis_2$se.mi
-p_values_reg_sis_2 = 2*pt(-abs(t_stat_reg_sis_2), df = dim(out_diff_dat[[1]])[1]-10)
+p_values_reg_sis_2 = 2*pt(-abs(t_stat_reg_sis_2), df = dim(out_diff_dat[[1]])[1]-8)
 p_values_reg_sis_2 = format(round(p_values_reg_sis_2, digits=3), nsmall = 2)
 p_values_reg_sis_2
 p_values_reg_sis_2
-critical_t_reg_sis_2 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-10))
+critical_t_reg_sis_2 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-8))
 critical_t_reg_sis_2
 upper_reg_sis_2 = pars_sesout_sis_2$q.mi +(critical_t_reg_sis_2*pars_sesout_sis_2$se.mi)
 upper_reg_sis_2 = format(round(upper_reg_sis_2, digits=2), nsmall = 2)
@@ -1484,14 +1484,14 @@ lower_reg_sis_2 = format(round(lower_reg_sis_2, digits=2), nsmall = 2)
 ci_95_sis_2 = paste0(upper_reg_sis_2, sep = ",", lower_reg_sis_2)
 ci_95_sis_2
 import_sis_2 = unlist(import_sis_2)
-import_sis_2 = matrix(import_sis_2, ncol = 9, byrow = TRUE)
+import_sis_2 = matrix(import_sis_2, ncol = 7, byrow = TRUE)
 import_sis_2 = colMeans(import_sis_2)
 import_sis_2 
 
 reg_results_sis_2 = data.frame(par_est = t(pars_sesout_sis_2$q.mi), se = t(pars_sesout_sis_2$se.mi), p_value = t(p_values_reg_sis_2), ci_95_sis_2)
 reg_results_sis_2
 reg_results_sis_2[,1:2] = format(round(reg_results_sis_2[,1:2], digits=2), nsmall = 2)
-reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat[[1]])[38:46])
+reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat[[1]])[40:46])
 reg_results_sis_2 = data.frame(var_names = reg_results_sis_2$var_names, reg_results_sis_2[,1:4])
 typeof(reg_results_sis_2$p_value)
 
@@ -1522,7 +1522,7 @@ head(out_diff_dat[[1]][,35:45])
 
 
 for(i in 1:length(out_diff_dat)){
-  regout_sis_2[[i]] = lm(SIS_2_diff ~ INQ_1_pre + INQ_2_pre + RAS_1_pre + RAS_3_pre+ RAS_5_pre + ISLES_1_pre + ISLES_2_pre + MILQ_pre + RCS_pre, data = out_diff_dat[[i]])
+  regout_sis_2[[i]] = lm(SIS_2_diff ~  RAS_1_pre + RAS_3_pre+ RAS_5_pre + ISLES_1_pre + ISLES_2_pre + MILQ_pre + RCS_pre, data = out_diff_dat[[i]])
   regout_sis_2_sum[[i]] = summary(regout_sis_2[[i]])
   import_sis_2[[i]] = calc.relimp(regout_sis_2[[i]])
   import_sis_2[[i]] = import_sis_2[[i]]@lmg
@@ -1533,16 +1533,16 @@ for(i in 1:length(out_diff_dat)){
 vif_sis_2
 #10 cols
 parsout_sis_2 = unlist(parsout_sis_2) 
-parsout_sis_2 = matrix(parsout_sis_2, ncol = 10, byrow = TRUE)
+parsout_sis_2 = matrix(parsout_sis_2, ncol = 8, byrow = TRUE)
 parsout_sis_2
 
 sesout_sis_2 = unlist(sesout_sis_2)
-sesout_sis_2 = matrix(sesout_sis_2, ncol = 10, byrow = TRUE)
+sesout_sis_2 = matrix(sesout_sis_2, ncol = 8, byrow = TRUE)
 sesout_sis_2
 
 pars_sesout_sis_2 = mi.meld(parsout_sis_2, sesout_sis_2)
 t_stat_reg_sis_2 =  pars_sesout_sis_2$q.mi / pars_sesout_sis_2$se.mi
-p_values_reg_sis_2 = 2*pt(-abs(t_stat_reg_sis_2), df = dim(out_diff_dat[[1]])[1]-10)
+p_values_reg_sis_2 = 2*pt(-abs(t_stat_reg_sis_2), df = dim(out_diff_dat[[1]])[1]-8)
 p_values_reg_sis_2 = format(round(p_values_reg_sis_2, digits=3), nsmall = 2)
 p_values_reg_sis_2
 p_values_reg_sis_2
@@ -1556,14 +1556,14 @@ lower_reg_sis_2 = format(round(lower_reg_sis_2, digits=2), nsmall = 2)
 ci_95_sis_2 = paste0(upper_reg_sis_2, sep = ",", lower_reg_sis_2)
 ci_95_sis_2
 import_sis_2 = unlist(import_sis_2)
-import_sis_2 = matrix(import_sis_2, ncol = 9, byrow = TRUE)
+import_sis_2 = matrix(import_sis_2, ncol = 7, byrow = TRUE)
 import_sis_2 = colMeans(import_sis_2)
 import_sis_2 
 
 reg_results_sis_2 = data.frame(par_est = t(pars_sesout_sis_2$q.mi), se = t(pars_sesout_sis_2$se.mi), p_value = t(p_values_reg_sis_2), ci_95_sis_2)
 reg_results_sis_2
 reg_results_sis_2[,1:2] = format(round(reg_results_sis_2[,1:2], digits=2), nsmall = 2)
-reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat[[1]])[38:46])
+reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat[[1]])[40:46])
 reg_results_sis_2 = data.frame(var_names = reg_results_sis_2$var_names, reg_results_sis_2[,1:4])
 typeof(reg_results_sis_2$p_value)
 
@@ -1594,7 +1594,7 @@ head(out_diff_dat[[1]][,35:45])
 
 
 for(i in 1:length(out_diff_dat)){
-  regout_sis_2[[i]] = lm(SIS_2_diff ~ INQ_1_post + INQ_2_post + RAS_1_post + RAS_3_post+ RAS_5_post + ISLES_1_post + ISLES_2_post + MILQ_post + RCS_post, data = out_diff_dat[[i]])
+  regout_sis_2[[i]] = lm(SIS_2_diff ~ RAS_1_post + RAS_3_post+ RAS_5_post + ISLES_1_post + ISLES_2_post + MILQ_post + RCS_post, data = out_diff_dat[[i]])
   regout_sis_2_sum[[i]] = summary(regout_sis_2[[i]])
   import_sis_2[[i]] = calc.relimp(regout_sis_2[[i]])
   import_sis_2[[i]] = import_sis_2[[i]]@lmg
@@ -1605,20 +1605,20 @@ for(i in 1:length(out_diff_dat)){
 vif_sis_2
 #10 cols
 parsout_sis_2 = unlist(parsout_sis_2) 
-parsout_sis_2 = matrix(parsout_sis_2, ncol = 10, byrow = TRUE)
+parsout_sis_2 = matrix(parsout_sis_2, ncol = 8, byrow = TRUE)
 parsout_sis_2
 
 sesout_sis_2 = unlist(sesout_sis_2)
-sesout_sis_2 = matrix(sesout_sis_2, ncol = 10, byrow = TRUE)
+sesout_sis_2 = matrix(sesout_sis_2, ncol = 8, byrow = TRUE)
 sesout_sis_2
 
 pars_sesout_sis_2 = mi.meld(parsout_sis_2, sesout_sis_2)
 t_stat_reg_sis_2 =  pars_sesout_sis_2$q.mi / pars_sesout_sis_2$se.mi
-p_values_reg_sis_2 = 2*pt(-abs(t_stat_reg_sis_2), df = dim(out_diff_dat[[1]])[1]-10)
+p_values_reg_sis_2 = 2*pt(-abs(t_stat_reg_sis_2), df = dim(out_diff_dat[[1]])[1]-8)
 p_values_reg_sis_2 = format(round(p_values_reg_sis_2, digits=3), nsmall = 2)
 p_values_reg_sis_2
 p_values_reg_sis_2
-critical_t_reg_sis_2 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-10))
+critical_t_reg_sis_2 = abs(qt(0.05/2, dim(out_diff_dat[[1]])[1]-8))
 critical_t_reg_sis_2
 upper_reg_sis_2 = pars_sesout_sis_2$q.mi +(critical_t_reg_sis_2*pars_sesout_sis_2$se.mi)
 upper_reg_sis_2 = format(round(upper_reg_sis_2, digits=2), nsmall = 2)
@@ -1628,14 +1628,14 @@ lower_reg_sis_2 = format(round(lower_reg_sis_2, digits=2), nsmall = 2)
 ci_95_sis_2 = paste0(upper_reg_sis_2, sep = ",", lower_reg_sis_2)
 ci_95_sis_2
 import_sis_2 = unlist(import_sis_2)
-import_sis_2 = matrix(import_sis_2, ncol = 9, byrow = TRUE)
+import_sis_2 = matrix(import_sis_2, ncol = 7, byrow = TRUE)
 import_sis_2 = colMeans(import_sis_2)
 import_sis_2 
 
 reg_results_sis_2 = data.frame(par_est = t(pars_sesout_sis_2$q.mi), se = t(pars_sesout_sis_2$se.mi), p_value = t(p_values_reg_sis_2), ci_95_sis_2)
 reg_results_sis_2
 reg_results_sis_2[,1:2] = format(round(reg_results_sis_2[,1:2], digits=2), nsmall = 2)
-reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat[[1]])[38:46])
+reg_results_sis_2$var_names = c("Intercept", colnames(out_diff_dat[[1]])[40:46])
 reg_results_sis_2 = data.frame(var_names = reg_results_sis_2$var_names, reg_results_sis_2[,1:4])
 typeof(reg_results_sis_2$p_value)
 
