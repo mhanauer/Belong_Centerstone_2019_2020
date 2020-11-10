@@ -18,7 +18,24 @@ head(center_dat)
 #install.packages("psych")
 #library(psych)
 library(prettyR)
+
 ```
+Get the count and percentage of MDD and PTSD
+Using 1a_ICD10 variable
+F33 = MDD 
+F43.1 = PTSD
+
+https://www.icd10data.com/ICD10CM/Codes/F01-F99/F40-F48/F43-/F43.1
+
+```{r}
+describe.factor(center_dat$X1a_ICD10)
+center_dat$ICD10_short =  gsub("\\..*","",center_dat$X1a_ICD10)
+describe.factor(center_dat$ICD10_short)
+
+```
+
+
+
 Create total scores for INQ and RAS
 ```{r}
 ## Reverse score f = 6,g = 7, j=10
@@ -444,7 +461,6 @@ Descriptives with complete data
 
 
 ```{r}
-library(installr)
 library(prettyR)
 library(Hmisc)
 dim(center_dat)
